@@ -16,7 +16,7 @@ from zoneinfo import ZoneInfo
 
 import psycopg
 
-from pipelines import db, metadados
+from pipelines import db, metadados, saltos
 from pipelines.config import Registry
 from pipelines.jobs.report import Report
 from pipelines.models import Observation, ValidationError
@@ -118,6 +118,9 @@ def collect_ibge(
     if any(o.value <= 0 for o in data[VAR_INDICE]):
         raise ValidationError("IBGE 1737/2266: número-índice não positivo")
     log.info("IBGE 1737: acumulado conferido com o encadeado em %s meses", checked)
+    for var, series_id in SERIES_IBGE.items():
+        tipo = "nivel" if var == VAR_INDICE else "taxa"
+        saltos.confere_serie(conn, series_id, tipo, data[var], registry.liberacoes, report)
 
     with conn.transaction():
         for var, series_id in SERIES_IBGE.items():
@@ -162,6 +165,8 @@ def collect_bcb(
         metadados.confere_ultimo(SERIES_BCB[codigo], ultimo_ref, ultimo_valor, parsed[codigo])
 
     validate_ipca(parsed[SGS_MENSAL], parsed[SGS_12M], "BCB SGS")
+    for codigo, series_id in SERIES_BCB.items():
+        saltos.confere_serie(conn, series_id, "taxa", parsed[codigo], registry.liberacoes, report)
 
     with conn.transaction():
         for codigo, series_id in SERIES_BCB.items():

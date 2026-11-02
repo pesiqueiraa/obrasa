@@ -1,0 +1,18 @@
+# Liberações da checagem de salto (pipelines/saltos.py).
+#
+# Quando um período novo ou revisado varia mais do que a maior variação da série nos 10
+# anos anteriores, a coleta dessa série para e o site continua com o último valor válido.
+# Para liberar: confira o valor na publicação oficial e registre aqui série, período,
+# valor exato, quem conferiu, quando e onde. A liberação vale só para aquele valor naquele
+# período; se a fonte mudar o número de novo, a trava volta a valer.
+#
+# Formato:
+#   - serie: bcb_sgs_1                 # id em config/sources.yaml, ou mapa/<id>/<código da UF>
+#     periodo: 2026-10-26              # 1º dia do período (dia, nas séries diárias)
+#     valor: "5.5007"                  # como a fonte publica, entre aspas
+#     conferido_por: nome
+#     conferido_em: 2026-11-02
+#     evidencia: https://...           # página oficial onde o valor foi conferido
+#     motivo: frase curta, sem adjetivo
+
+liberacoes: []

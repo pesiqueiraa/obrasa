@@ -119,3 +119,26 @@ def test_coletor_grava_revisao_nova(coletor):
         ).fetchone()
     assert [(int(v), r) for v, r in linhas] == [(1, 0), (2, 1)]  # a linha antiga continua
     assert int(atual[0]) == 2  # a revisão nova vale
+
+
+def test_salto_segurado_com_historico_lido_do_banco(coletor):
+    """Caminho completo da checagem de salto: o valor vigente vem de observations_current."""
+    from datetime import date
+    from decimal import Decimal
+
+    from pipelines import saltos
+    from pipelines.jobs.report import Report
+    from pipelines.models import Observation, ValidationError
+
+    with semeado(coletor):
+        for i in range(1, 25):  # 1900-02 a 1902-01, oscilando 0,3 p.p.
+            coletor.execute(
+                "insert into observations (series_id, ref_date, value, revision, collected_at,"
+                " raw_object) values ('teste_integridade_1', %s, %s, 0, now(), 'teste')",
+                (date(1900 + i // 12, i % 12 + 1, 1), Decimal("1.3") if i % 2 else Decimal(1)),
+            )
+        novo = [Observation(date(1902, 2, 1), Decimal("5"))]
+        with pytest.raises(ValidationError, match="salto fora do histórico"):
+            saltos.confere_serie(coletor, "teste_integridade_1", "taxa", novo, [], Report())
+        ok = [Observation(date(1902, 2, 1), Decimal("1.2"))]
+        saltos.confere_serie(coletor, "teste_integridade_1", "taxa", ok, [], Report())

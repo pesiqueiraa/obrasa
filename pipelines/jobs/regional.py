@@ -17,10 +17,10 @@ from decimal import Decimal
 
 import psycopg
 
-from pipelines import config, metadados
+from pipelines import config, metadados, saltos
 from pipelines.config import MapaUf, Registry
 from pipelines.jobs.report import Report
-from pipelines.models import ValidationError
+from pipelines.models import Observation, ValidationError
 from pipelines.raw_store import RawStore
 from pipelines.sources import ibge_agregados
 
@@ -59,7 +59,13 @@ class Gravacao:
     iguais: int
 
 
-def coleta(conn: psycopg.Connection, store: RawStore, m: MapaUf) -> Gravacao:
+def coleta(
+    conn: psycopg.Connection,
+    store: RawStore,
+    m: MapaUf,
+    liberacoes=(),
+    report: Report | None = None,
+) -> Gravacao:
     raw_meta = ibge_agregados.fetch_metadata(m.tabela)
     store.save(raw_meta, f"uf_{m.id}_metadados")
     descricao = ibge_agregados.parse_metadata(raw_meta.body, m.variavel, m.classificacao)
@@ -78,6 +84,19 @@ def coleta(conn: psycopg.Connection, store: RawStore, m: MapaUf) -> Gravacao:
             (m.id,),
         )
         atual = {(r[0], r[1]): (r[2], r[3]) for r in cur.fetchall()}
+        # Checagem de salto por UF (pipelines/saltos.py). Mapa em % é taxa; o resto, nível.
+        tipo = "taxa" if m.unidade.startswith("%") else "nivel"
+        curtos = []
+        for uf in sorted(dados):
+            serie = f"mapa/{m.id}/{uf}"
+            hist = {ref: v for (u, ref), (v, _) in atual.items() if u == uf}
+            obs = [Observation(ref, v) for (u, ref), v in novos.items() if u == uf]
+            if saltos.confere(serie, tipo, hist, obs, liberacoes).sem_historico:
+                curtos.append(uf)
+        if curtos and report is not None:
+            report.warnings.append(
+                f"mapa {m.id}: histórico curto para a checagem de salto em {len(curtos)} UFs"
+            )
         plano = planeja(atual, novos)
         cur.executemany(
             """
@@ -114,7 +133,7 @@ def run(conn: psycopg.Connection, store: RawStore, registry: Registry) -> Report
     report = Report()
     for m in config.load_regional(registry=registry).mapas:
         try:
-            g = coleta(conn, store, m)
+            g = coleta(conn, store, m, registry.liberacoes, report)
             log.info(
                 "%s: %d novos, %d revisados, %d sem mudança", m.id, g.novos, g.revisados, g.iguais
             )

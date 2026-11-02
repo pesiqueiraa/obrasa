@@ -3,6 +3,7 @@
 Para cada série: conferir a descrição na fonte → buscar → guardar resposta bruta →
 validar → gravar. As regras de validação são as mesmas para todas (docs/06, "Testes"):
   * nome, unidade, periodicidade e categorias iguais a `na_fonte` (pipelines/metadados.py);
+  * período novo ou revisado sem salto fora do histórico (pipelines/saltos.py);
   * no BCB, o último valor do webservice SGS igual ao da API de dados;
   * nenhum valor fora da faixa plausível declarada na série;
   * nenhum período no futuro (a meta Selic traz datas até a próxima reunião);
@@ -22,7 +23,7 @@ from zoneinfo import ZoneInfo
 
 import psycopg
 
-from pipelines import db, metadados
+from pipelines import db, metadados, saltos
 from pipelines.config import Registry, Series
 from pipelines.jobs.report import Report
 from pipelines.models import Observation, ValidationError
@@ -68,7 +69,12 @@ def validate(obs: list[Observation], s: Series, today: date) -> None:
 
 
 def collect_sgs(
-    conn: psycopg.Connection, store: RawStore, report: Report, s: Series, today: date
+    conn: psycopg.Connection,
+    store: RawStore,
+    report: Report,
+    s: Series,
+    today: date,
+    liberacoes=(),
 ) -> None:
     codigo = int(s.codigo_externo)
     raw_meta = bcb_sgs.fetch_metadata(codigo)
@@ -98,6 +104,7 @@ def collect_sgs(
     # A meta Selic (432) repete o valor vigente até a próxima reunião, com datas futuras.
     obs = sorted((o for o in obs if o.ref_date <= today), key=lambda o: o.ref_date)
     validate(obs, s, today)
+    saltos.confere_serie(conn, s.id, s.tipo, obs, liberacoes, report)
     assert fetched_at is not None
     with conn.transaction():
         report.summaries.append(
@@ -113,6 +120,7 @@ def collect_ibge_table(
     group: list[Series],
     today: date,
     calendars: dict[int, dict[date, date]],
+    liberacoes=(),
 ) -> None:
     """Coleta, numa requisição, as variáveis de uma tabela com a mesma classificação."""
     tipo = group[0].frequencia
@@ -141,6 +149,7 @@ def collect_ibge_table(
     )
     for s, var in zip(group, variaveis, strict=True):
         validate(data[var], s, today)
+        saltos.confere_serie(conn, s.id, s.tipo, data[var], liberacoes, report)
 
     with conn.transaction():
         for s, var in zip(group, variaveis, strict=True):
@@ -191,7 +200,7 @@ def run(
 
     for s in (s for s in todas if s.source_id == "bcb_sgs"):
         try:
-            collect_sgs(conn, store, report, s, today)
+            collect_sgs(conn, store, report, s, today, registry.liberacoes)
         except Exception as exc:  # cada série falha sozinha
             log.exception("coleta de %s falhou", s.id)
             report.errors.append(f"{s.id}: {exc}")
@@ -202,7 +211,9 @@ def run(
         groups[(tabela, s.classificacao, s.frequencia)].append(s)
     for (tabela, _, _), group in groups.items():
         try:
-            collect_ibge_table(conn, store, report, tabela, group, today, calendars)
+            collect_ibge_table(
+                conn, store, report, tabela, group, today, calendars, registry.liberacoes
+            )
         except Exception as exc:
             log.exception("coleta da tabela %s falhou", tabela)
             report.errors.append(f"IBGE {tabela}: {exc}")

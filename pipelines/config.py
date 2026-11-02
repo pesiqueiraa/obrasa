@@ -148,11 +148,24 @@ class Series(_Strict):
         return self
 
 
+class Liberacao(_Strict):
+    """Valor conferido por um humano que passa da checagem de salto (config/aprovacoes.yaml)."""
+
+    serie: str
+    periodo: date
+    valor: Decimal
+    conferido_por: str
+    conferido_em: date
+    evidencia: str
+    motivo: str
+
+
 class Registry(BaseModel):
     sources: list[Source]
     series: list[Series]
     indicators: list[Indicator]
     temas: list[Tema]
+    liberacoes: list[Liberacao] = []
 
     @model_validator(mode="after")
     def _references(self) -> Registry:
@@ -167,6 +180,11 @@ class Registry(BaseModel):
             aceitos = {base, base + sufixo_classificacao(s.classificacao)}
             if s.id not in aceitos:
                 raise ValueError(f"id da série {s.id} deveria ser um de {sorted(aceitos)}")
+        for lib in self.liberacoes:
+            if lib.serie not in series_ids and not lib.serie.startswith("mapa/"):
+                raise ValueError(f"liberação para série não registrada: {lib.serie}")
+            if not lib.evidencia.startswith("https://"):
+                raise ValueError(f"liberação de {lib.serie} {lib.periodo} sem link de evidência")
         tema_ids = {t.slug for t in self.temas}
         if len(tema_ids) != len(self.temas):
             raise ValueError("temas com slug repetido")
@@ -195,8 +213,13 @@ def load(config_dir: Path = CONFIG_DIR) -> Registry:
     sources = yaml.safe_load((config_dir / "sources.yaml").read_text(encoding="utf-8"))
     indicators = yaml.safe_load((config_dir / "indicators.yaml").read_text(encoding="utf-8"))
     temas = yaml.safe_load((config_dir / "temas.yaml").read_text(encoding="utf-8"))
+    aprovacoes = yaml.safe_load((config_dir / "aprovacoes.yaml").read_text(encoding="utf-8"))
     return Registry(
-        sources=sources["sources"], series=sources["series"], indicators=indicators, temas=temas
+        sources=sources["sources"],
+        series=sources["series"],
+        indicators=indicators,
+        temas=temas,
+        liberacoes=aprovacoes["liberacoes"] or [],
     )
 
 
