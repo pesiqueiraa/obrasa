@@ -47,8 +47,8 @@ jobs:
       R2_BUCKET: ${{ secrets.R2_BUCKET }}
       RESTAURO: postgresql://postgres:restauro@localhost:55440/postgres
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.12"
       - run: uv sync --locked --group backup
