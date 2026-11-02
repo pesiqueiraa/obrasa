@@ -1,7 +1,7 @@
 {
   "name": "brasilado",
   "private": true,
-  "packageManager": "pnpm@11.13.0",
+  "packageManager": "pnpm@11.28.9",
   "scripts": {
     "dev": "pnpm --filter @brasilado/web dev",
     "build": "pnpm --filter @brasilado/web build",
