@@ -108,7 +108,8 @@ class R2Destino:
 def destino_do_ambiente() -> Destino:
     modo = os.environ.get("BACKUP_DESTINO", "")
     if modo == "r2":
-        e = os.environ
+        # strip: segredo colado no painel costuma vir com uma quebra de linha no fim.
+        e = {k: v.strip() for k, v in os.environ.items() if k.startswith("R2_")}
         return R2Destino(
             e["R2_ACCOUNT_ID"], e["R2_ACCESS_KEY_ID"], e["R2_SECRET_ACCESS_KEY"], e["R2_BUCKET"]
         )
