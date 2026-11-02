@@ -6,6 +6,7 @@ import { readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { cacheLife, cacheTag } from "next/cache";
+import { parse as parseYaml } from "yaml";
 import { todayInBrazil } from "./format";
 import {
   chooseSeries,
@@ -60,6 +61,7 @@ export type Series = {
   monetaria: boolean;
   inicio: string | null;
   nota_metodologia: string | null;
+  classificacao: string | null;
 };
 
 export type Indicator = {
@@ -72,7 +74,13 @@ export type Indicator = {
   janela_padrao: Janela;
   frase_template: string;
   url_metodologia: string | null;
+  tema: string;
+  casas_decimais: number;
+  serie_nominal: string | null;
+  ordem: number | null;
 };
+
+export type Tema = { slug: string; titulo: string; resumo: string; ordem: number };
 
 export type Correction = {
   id: number;
@@ -88,6 +96,8 @@ export type IndicatorView = {
   indicator: Indicator;
   principal: SeriesBundle;
   reserva: SeriesBundle | null;
+  /** Versão nominal de indicador monetário (regra 3). A principal é a real. */
+  nominal: SeriesBundle | null;
   exibida: SeriesBundle;
   usandoReserva: boolean;
   proxima: Release | null;
@@ -144,6 +154,26 @@ async function fetchBundle(db: SupabaseClient, seriesId: string): Promise<Series
   return { series, source, obs: await fetchObservations(db, seriesId), releases };
 }
 
+/** Temas do site, de config/temas.yaml (texto de navegação, não dado). */
+export async function getTemas(): Promise<Tema[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("temas");
+  const temas = parseYaml(await readFile(join(configDir(), "temas.yaml"), "utf8")) as Tema[];
+  return [...temas].sort((a, b) => a.ordem - b.ordem);
+}
+
+/** Indicadores de um tema, na ordem do registro. */
+export async function getTemaViews(tema: string): Promise<IndicatorView[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("indicadores", `tema:${tema}`);
+  const { data, error } = await client().from("indicators").select("slug").eq("tema", tema).order("ordem");
+  if (error) throw new Error(`indicators do tema ${tema}: ${error.message}`);
+  const views = await Promise.all(data.map((r) => getIndicatorView(r.slug)));
+  return views.filter((v): v is IndicatorView => v !== null);
+}
+
 export async function listIndicatorSlugs(): Promise<string[]> {
   "use cache";
   cacheLife("hours");
@@ -169,6 +199,7 @@ export async function getIndicatorView(slug: string): Promise<IndicatorView | nu
 
   const principal = await fetchBundle(db, indicator.series_id);
   const reserva = indicator.fallback_series_id ? await fetchBundle(db, indicator.fallback_series_id) : null;
+  const nominal = indicator.serie_nominal ? await fetchBundle(db, indicator.serie_nominal) : null;
   const { escolhida, usandoReserva } = chooseSeries(principal, reserva);
   const latest = escolhida.obs.at(-1);
   if (!latest) throw new Error(`indicador ${slug} sem observações no banco`);
@@ -200,6 +231,7 @@ export async function getIndicatorView(slug: string): Promise<IndicatorView | nu
     indicator,
     principal,
     reserva,
+    nominal,
     exibida: escolhida,
     usandoReserva,
     proxima,
@@ -251,4 +283,16 @@ export async function getCorrections(slug?: string): Promise<(Correction & { ind
   const { data, error } = await q.order("data", { ascending: false });
   if (error) throw new Error(`corrections: ${error.message}`);
   return data;
+}
+
+/**
+ * Link para o dado da própria série na fonte. Os padrões foram testados contra as fontes
+ * em 01/11/2026 (docs/05): página da tabela no SIDRA e API do SGS com os últimos valores.
+ * Para outra fonte, vale o link registrado em config/sources.yaml.
+ */
+export function seriesUrl(source: Source, series: Series): string | null {
+  if (source.id === "ibge_agregados") return `https://sidra.ibge.gov.br/tabela/${series.codigo_externo.split("/")[0]}`;
+  if (source.id === "bcb_sgs")
+    return `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${series.codigo_externo}/dados/ultimos/12?formato=json`;
+  return source.url_fonte;
 }

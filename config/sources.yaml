@@ -1,6 +1,14 @@
 # Fontes e séries registradas. Toda fonte aqui precisa estar descrita em
 # docs/05-fontes-de-dados.md antes de entrar neste arquivo.
 # O id da série segue o padrão {source_id}_{codigo com "/" trocado por "_"}.
+#
+# Campos de coleta (pipelines/jobs/series.py):
+#   coletor      series (padrão) ou ipca (job próprio, pipelines/jobs/ipca.py)
+#   faixa        [mínimo, máximo] plausíveis; valor fora disso faz a coleta ser recusada
+#   desde        início do histórico buscado
+#   calendario   produto no calendário do IBGE (próxima divulgação)
+#   classificacao  filtro de categoria do IBGE, ex.: 11255[90707]
+# Códigos testados contra a fonte em 01/11/2026 (docs/05).
 
 sources:
   - id: ibge_agregados
@@ -24,6 +32,7 @@ sources:
 
 series:
   - id: ibge_agregados_1737_2265
+    coletor: ipca
     source_id: ibge_agregados
     codigo_externo: "1737/2265"
     nome: IPCA, variação acumulada em 12 meses
@@ -33,6 +42,7 @@ series:
     monetaria: false
     nota_metodologia: Publicada pelo IBGE na tabela 1737, variável 2265. Brasil (N1).
   - id: ibge_agregados_1737_63
+    coletor: ipca
     source_id: ibge_agregados
     codigo_externo: "1737/63"
     nome: IPCA, variação mensal
@@ -42,6 +52,7 @@ series:
     monetaria: false
     nota_metodologia: Publicada pelo IBGE na tabela 1737, variável 63. Brasil (N1).
   - id: ibge_agregados_1737_2266
+    coletor: ipca
     source_id: ibge_agregados
     codigo_externo: "1737/2266"
     nome: IPCA, número-índice (base dez/1993 = 100)
@@ -51,6 +62,7 @@ series:
     monetaria: false
     nota_metodologia: Publicada pelo IBGE na tabela 1737, variável 2266. Deflator padrão (docs/06).
   - id: bcb_sgs_13522
+    coletor: ipca
     source_id: bcb_sgs
     codigo_externo: "13522"
     nome: IPCA, acumulado em 12 meses
@@ -60,6 +72,7 @@ series:
     monetaria: false
     nota_metodologia: Série 13522 do SGS, republicação do IBGE 1737/2265. Usada como reserva.
   - id: bcb_sgs_433
+    coletor: ipca
     source_id: bcb_sgs
     codigo_externo: "433"
     nome: IPCA, variação mensal
@@ -68,3 +81,153 @@ series:
     tipo: taxa
     monetaria: false
     nota_metodologia: Série 433 do SGS, republicação do IBGE 1737/63. Usada como reserva.
+
+  # ---- Economia ----
+  - id: bcb_sgs_432
+    source_id: bcb_sgs
+    codigo_externo: "432"
+    nome: Meta da taxa Selic definida pelo Copom
+    unidade: "% a.a."
+    frequencia: diaria
+    tipo: taxa
+    monetaria: false
+    nota_metodologia: >-
+      Série 432 do SGS. Um valor por dia corrido, igual à meta vigente; a meta muda nas
+      reuniões do Copom. A fonte publica a meta até a véspera da reunião seguinte, com
+      datas futuras: o coletor guarda só até o dia da coleta.
+    faixa: [0, 100]
+    desde: 1999-03-05
+  - id: bcb_sgs_1
+    source_id: bcb_sgs
+    codigo_externo: "1"
+    nome: Dólar comercial, venda (taxa livre)
+    unidade: R$/US$
+    frequencia: diaria
+    tipo: nivel
+    monetaria: false
+    nota_metodologia: >-
+      Série 1 do SGS, um valor por dia útil. O histórico começa em 01/07/1994, início do
+      real, para não misturar moedas. É uma taxa de câmbio (reais por dólar), não um valor
+      em reais a corrigir pela inflação.
+    faixa: [0.5, 20]
+    desde: 1994-07-01
+  - id: bcb_sgs_24363
+    source_id: bcb_sgs
+    codigo_externo: "24363"
+    nome: Índice de Atividade Econômica do Banco Central (IBC-Br)
+    unidade: índice
+    frequencia: mensal
+    tipo: nivel
+    monetaria: false
+    nota_metodologia: Série 24363 do SGS, sem ajuste sazonal.
+    faixa: [30, 300]
+    desde: 2003-01-01
+  - id: ibge_agregados_5932_6562
+    source_id: ibge_agregados
+    codigo_externo: "5932/6562"
+    classificacao: "11255[90707]"
+    nome: PIB, taxa acumulada em quatro trimestres
+    unidade: "%"
+    frequencia: trimestral
+    tipo: taxa
+    monetaria: false
+    nota_metodologia: >-
+      Tabela 5932, variável 6562, PIB a preços de mercado (classificação 11255, categoria
+      90707). Variação do volume dos quatro últimos trimestres sobre os quatro anteriores.
+    faixa: [-20, 20]
+    calendario: 9300
+  - id: ibge_agregados_5932_6564
+    source_id: ibge_agregados
+    codigo_externo: "5932/6564"
+    classificacao: "11255[90707]"
+    nome: PIB, taxa contra o trimestre imediatamente anterior
+    unidade: "%"
+    frequencia: trimestral
+    tipo: taxa
+    monetaria: false
+    nota_metodologia: >-
+      Tabela 5932, variável 6564, PIB a preços de mercado (classificação 11255, categoria
+      90707). Variação do volume sobre o trimestre anterior, com ajuste sazonal.
+    faixa: [-20, 20]
+    calendario: 9300
+
+  # ---- Trabalho ----
+  - id: ibge_agregados_6381_4099
+    source_id: ibge_agregados
+    codigo_externo: "6381/4099"
+    nome: Taxa de desocupação (PNAD Contínua)
+    unidade: "%"
+    frequencia: trimestral_movel
+    tipo: taxa
+    monetaria: false
+    nota_metodologia: >-
+      Tabela 6381, variável 4099. Pessoas de 14 anos ou mais que procuravam trabalho e não
+      tinham, divididas pela força de trabalho. Trimestre móvel: o período set/2026 é
+      jul–set/2026.
+    faixa: [0, 40]
+    calendario: 9171
+  - id: ibge_agregados_6390_5933
+    source_id: ibge_agregados
+    codigo_externo: "6390/5933"
+    nome: Rendimento médio mensal real habitual (PNAD Contínua)
+    unidade: R$
+    frequencia: trimestral_movel
+    tipo: nivel
+    monetaria: true
+    nota_metodologia: >-
+      Tabela 6390, variável 5933. O IBGE expressa toda a série a preços do trimestre móvel
+      mais recente; a cada divulgação, os valores reais anteriores mudam e entram como
+      revisão.
+    faixa: [500, 20000]
+    calendario: 9171
+  - id: ibge_agregados_6390_5929
+    source_id: ibge_agregados
+    codigo_externo: "6390/5929"
+    nome: Rendimento médio mensal nominal habitual (PNAD Contínua)
+    unidade: R$
+    frequencia: trimestral_movel
+    tipo: nivel
+    monetaria: true
+    nota_metodologia: Tabela 6390, variável 5929. Valores correntes, sem correção pela inflação.
+    faixa: [200, 20000]
+    calendario: 9171
+  - id: ibge_agregados_8529_12466
+    source_id: ibge_agregados
+    codigo_externo: "8529/12466"
+    nome: Taxa de informalidade das pessoas ocupadas (PNAD Contínua)
+    unidade: "%"
+    frequencia: trimestral
+    tipo: taxa
+    monetaria: false
+    nota_metodologia: >-
+      Tabela 8529, variável 12466. Pela definição do IBGE: empregados e trabalhadores
+      domésticos sem carteira, empregadores e conta própria sem CNPJ e trabalhadores
+      familiares auxiliares, divididos pelo total de ocupados.
+    faixa: [0, 100]
+    calendario: 9173
+
+  # ---- Contas públicas ----
+  - id: bcb_sgs_13762
+    source_id: bcb_sgs
+    codigo_externo: "13762"
+    nome: Dívida bruta do governo geral (% do PIB)
+    unidade: "% do PIB"
+    frequencia: mensal
+    tipo: taxa
+    monetaria: false
+    nota_metodologia: Série 13762 do SGS, metodologia a partir de 2008, desde dez/2006.
+    faixa: [10, 200]
+    desde: 2006-12-01
+  - id: bcb_sgs_4513
+    source_id: bcb_sgs
+    codigo_externo: "4513"
+    nome: Dívida líquida do setor público consolidado (% do PIB)
+    unidade: "% do PIB"
+    frequencia: mensal
+    tipo: taxa
+    monetaria: false
+    nota_metodologia: >-
+      Série 4513 do SGS: dívida do governo federal, estados, municípios e estatais, menos
+      os créditos que eles têm a receber (como reservas internacionais).
+    faixa: [-50, 200]
+    desde: 2001-12-01

@@ -3,10 +3,10 @@
 // derivado de forma determinística de valores do banco (diferença na janela,
 // R$ 100 corrigidos).
 
-import { addDays, addMonths, formatDayMonth, formatNumber, monthShort } from "./format";
+import { addDays, addMonths, formatDayMonth, formatNumber, formatRef, shiftMonths } from "./format";
 
 export type Janela = "12m" | "5a" | "10a" | "tudo";
-export type Frequencia = "diaria" | "mensal" | "trimestral" | "anual" | "evento";
+export type Frequencia = "diaria" | "mensal" | "trimestral_movel" | "trimestral" | "anual" | "evento";
 
 export const JANELAS: { id: Janela; rotulo: string; meses: number | null }[] = [
   { id: "12m", rotulo: "12 meses", meses: 12 },
@@ -18,26 +18,43 @@ export const JANELAS: { id: Janela; rotulo: string; meses: number | null }[] = [
 export const FREQUENCIA_ROTULO: Record<Frequencia, string> = {
   diaria: "Diário",
   mensal: "Mensal",
+  trimestral_movel: "Mensal, trimestre móvel",
   trimestral: "Trimestral",
   anual: "Anual",
   evento: "A cada reunião do Copom",
 };
 
 export type Obs = {
-  refDate: string; // AAAA-MM-01
+  refDate: string; // AAAA-MM-DD; 1º dia do período, exceto em séries diárias
   value: number;
   revision: number;
   collectedAt: string;
   rawObject: string;
 };
 
-/** Observações dentro da janela: do mesmo mês N meses antes do último até o último. */
-export function sliceWindow(obs: Obs[], janela: Janela): Obs[] {
+/** Observações dentro da janela: da mesma data N meses antes da última até a última. */
+export function sliceWindow<T extends { refDate: string }>(obs: T[], janela: Janela): T[] {
   const def = JANELAS.find((j) => j.id === janela);
   if (!def) throw new Error(`janela desconhecida: ${janela}`);
   if (obs.length === 0 || def.meses === null) return obs;
-  const start = addMonths(obs[obs.length - 1].refDate, -def.meses);
+  const start = shiftMonths(obs[obs.length - 1].refDate, -def.meses);
   return obs.filter((o) => o.refDate >= start);
+}
+
+/**
+ * Pontos para desenhar uma série longa: em séries diárias, o último valor de cada mês
+ * (valores do banco, sem média nem interpolação). As demais passam como estão.
+ */
+export function lastOfMonth<T extends { refDate: string }>(obs: T[]): T[] {
+  const out: T[] = [];
+  for (const o of obs) {
+    if (out.length && out[out.length - 1].refDate.slice(0, 7) === o.refDate.slice(0, 7)) {
+      out[out.length - 1] = o;
+    } else {
+      out.push(o);
+    }
+  }
+  return out;
 }
 
 export type Variacao = {
@@ -59,12 +76,19 @@ export function variation(windowObs: Obs[], tipo: "taxa" | "nivel"): Variacao | 
   return { direcao, diferenca: Math.abs(diferenca), unidadeDiferenca: tipo === "taxa" ? "p.p." : "%", base, atual };
 }
 
-export function variationText(v: Variacao, janelaRotulo: string, formatBase: (n: number) => string): string {
-  const desde = `${monthShort(v.base.refDate)}: ${formatBase(v.base.value)}`;
-  if (v.direcao === "estavel") return `fica estável em ${janelaRotulo} (${desde})`;
+export function variationText(
+  v: Variacao,
+  janelaRotulo: string,
+  formatBase: (n: number) => string,
+  frequencia: Frequencia = "mensal",
+): string {
+  const desde = `${formatRef(v.base.refDate, frequencia)}: ${formatBase(v.base.value)}`;
+  // Janela "Tudo": o período é o da série inteira, não um prazo.
+  const periodo = janelaRotulo === "Tudo" ? "desde o início da série" : `em ${janelaRotulo}`;
+  if (v.direcao === "estavel") return `fica estável ${periodo} (${desde})`;
   const seta = v.direcao === "sobe" ? "▲" : "▼";
   const dif = `${formatNumber(v.diferenca)}${v.unidadeDiferenca === "%" ? "%" : " p.p."}`;
-  return `${seta} ${v.direcao} ${dif} em ${janelaRotulo} (${desde})`;
+  return `${seta} ${v.direcao} ${dif} ${periodo} (${desde})`;
 }
 
 /** Usa a série reserva só se ela tiver período mais recente que a principal. */
@@ -85,11 +109,21 @@ export function nextRelease(releases: Release[], latestRef: string): Release | n
   return upcoming[0] ?? null;
 }
 
-// Prazo usado quando a fonte não publica calendário: fim do mês seguinte ao de
-// referência mais esta folga.
+// Prazo usado quando a fonte não publica calendário: o 1º dia do período de referência
+// mais esta folga. Séries diárias: 5 dias corridos (fim de semana e feriado).
 const FOLGA_SEM_CALENDARIO: Partial<Record<Frequencia, { meses: number; dias: number }>> = {
+  diaria: { meses: 0, dias: 5 },
   mensal: { meses: 2, dias: 14 },
-  trimestral: { meses: 4, dias: 14 },
+  trimestral_movel: { meses: 2, dias: 14 },
+  trimestral: { meses: 6, dias: 14 },
+};
+
+// Distância, em meses, entre um período e o seguinte.
+export const PASSO_MESES: Partial<Record<Frequencia, number>> = {
+  mensal: 1,
+  trimestral_movel: 1,
+  trimestral: 3,
+  anual: 12,
 };
 
 export type Atraso = { atrasado: false } | { atrasado: true; desde: string; rotulo: string };
@@ -106,11 +140,15 @@ export function delayStatus(args: {
 }): Atraso {
   const { latestRef, frequencia, proxima, hoje } = args;
   let prazo: string | null = null;
-  if (proxima?.proximaDivulgacao && proxima.refDate === addMonths(latestRef, 1)) {
+  const passo = PASSO_MESES[frequencia];
+  if (proxima?.proximaDivulgacao && passo && proxima.refDate === addMonths(latestRef, passo)) {
     prazo = proxima.proximaDivulgacao;
   } else {
     const folga = FOLGA_SEM_CALENDARIO[frequencia];
-    if (folga) prazo = addDays(addMonths(latestRef, folga.meses), folga.dias - 1);
+    if (folga) {
+      const base = frequencia === "diaria" ? latestRef : addMonths(latestRef, folga.meses);
+      prazo = addDays(base, folga.dias - 1);
+    }
   }
   if (!prazo) return { atrasado: false };
   const desde = addDays(prazo, 1);

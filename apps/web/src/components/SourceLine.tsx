@@ -1,15 +1,17 @@
 // source-line (DESIGN.md): obrigatória sob todo número e todo gráfico.
-// "Fonte: IBGE · SIDRA, tabela 1737, variável 2265 · ref. set/2026 · atualizado em 09/10/2026"
-// O nome do órgão é link para a fonte; o resto é texto.
+// Completa: "Fonte: IBGE · SIDRA, tabela 1737, variável 2265 · ref. set/2026 · atualizado em 09/10/2026"
+// Curta (cartões): "Fonte: IBGE · ref. set/2026 · atualizado em 09/10/2026"; o código da
+// série fica na página do indicador. O nome do órgão é link para a fonte.
 
-import { formatDate, monthShort } from "@/lib/format";
-import type { Series, Source } from "@/lib/data";
+import { formatDate, formatRef } from "@/lib/format";
+import { seriesUrl, type Series, type Source } from "@/lib/data";
 import styles from "./ui.module.scss";
 
 export function seriesDescriptor(source: Source, series: Series): string {
   if (source.id === "ibge_agregados") {
     const [tabela, variavel] = series.codigo_externo.split("/");
-    return `SIDRA, tabela ${tabela}, variável ${variavel}`;
+    const cls = series.classificacao ? `, classificação ${series.classificacao}` : "";
+    return `SIDRA, tabela ${tabela}, variável ${variavel}${cls}`;
   }
   if (source.id === "bcb_sgs") return `SGS, série ${series.codigo_externo}`;
   return `${source.nome}, ${series.codigo_externo}`;
@@ -21,10 +23,12 @@ export function SourceLine(props: {
   refDate: string;
   atualizadoEm: string | null;
   periodo?: string;
+  curta?: boolean;
 }) {
-  const { source, series, refDate, atualizadoEm, periodo } = props;
-  const orgao = source.url_fonte ? (
-    <a href={source.url_fonte} rel="noopener">
+  const { source, series, refDate, atualizadoEm, periodo, curta } = props;
+  const url = seriesUrl(source, series);
+  const orgao = url ? (
+    <a href={url} rel="noopener">
       {source.orgao}
     </a>
   ) : (
@@ -32,7 +36,8 @@ export function SourceLine(props: {
   );
   return (
     <p className={styles.sourceLine}>
-      Fonte: {orgao} · {seriesDescriptor(source, series)} · ref. {periodo ?? monthShort(refDate)}
+      Fonte: {orgao}
+      {curta ? null : ` · ${seriesDescriptor(source, series)}`} · ref. {periodo ?? formatRef(refDate, series.frequencia)}
       {atualizadoEm ? ` · atualizado em ${formatDate(atualizadoEm)}` : null}
     </p>
   );

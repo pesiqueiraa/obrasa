@@ -1,0 +1,202 @@
+// Brasil hoje: o quadro de instrumentos (um tema por linha) e a agenda.
+
+.topo {
+  padding: var(--bd-space-xxl) 0 var(--bd-space-lg);
+  h1 {
+    font-size: 44px;
+    font-weight: 300;
+    line-height: 1.1;
+    margin: 0 0 var(--bd-space-sm);
+    @media (min-width: 672px) {
+      font-size: 60px;
+    }
+  }
+  p {
+    font-size: var(--bd-type-body-lg-font-size);
+    color: var(--bd-color-ink-muted);
+    max-width: 40rem;
+    margin: 0;
+  }
+}
+
+// Cada linha: tema | número | tendência, com a fonte embaixo. Linhas separadas por
+// filete, a primeira com filete forte, como a régua de um painel.
+.quadro {
+  border-top: 2px solid var(--bd-color-ink);
+  margin-bottom: var(--bd-space-xxl);
+}
+
+.linha {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "tema"
+    "numero"
+    "tendencia"
+    "fonte";
+  gap: var(--bd-space-sm);
+  padding: var(--bd-space-lg) 0;
+  border-bottom: 1px solid var(--bd-color-hairline);
+  @media (min-width: 672px) {
+    grid-template-columns: 1fr 1.3fr;
+    grid-template-areas:
+      "tema numero"
+      "tema tendencia"
+      "fonte fonte";
+    column-gap: var(--bd-space-xl);
+  }
+  @media (min-width: 1056px) {
+    grid-template-columns: 15rem 1fr 240px;
+    grid-template-areas:
+      "tema numero tendencia"
+      "tema fonte fonte";
+    align-items: start;
+  }
+}
+
+.tema {
+  grid-area: tema;
+  h2 {
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 1.2;
+    margin: 0 0 var(--bd-space-xxs);
+    a {
+      color: var(--bd-color-ink);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  }
+  p {
+    font-size: var(--bd-type-body-sm-font-size);
+    color: var(--bd-color-ink-muted);
+    margin: 0 0 var(--bd-space-xs);
+  }
+}
+
+.mais {
+  font-size: var(--bd-type-body-sm-font-size);
+}
+
+.numero {
+  grid-area: numero;
+}
+
+.rotulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bd-space-xs);
+  font-weight: 600;
+  margin: 0 0 var(--bd-space-xxs);
+  a {
+    color: var(--bd-color-ink);
+  }
+}
+
+.valor {
+  font-size: 48px;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+  @media (min-width: 1056px) {
+    font-size: 56px;
+  }
+}
+
+.nota {
+  font-size: var(--bd-type-caption-font-size);
+  color: var(--bd-color-ink-muted);
+  margin: var(--bd-space-xxs) 0 0;
+}
+
+.variacao {
+  font-size: var(--bd-type-body-sm-font-size);
+  font-variant-numeric: tabular-nums;
+  margin: var(--bd-space-xs) 0 0;
+}
+
+.tendencia {
+  grid-area: tendencia;
+  align-self: end;
+  svg {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+.fonte {
+  grid-area: fonte;
+}
+
+// agenda
+.agenda {
+  ol {
+    border-left: 2px solid var(--bd-color-ink);
+    margin-top: var(--bd-space-lg);
+  }
+}
+
+.agendaTitulo {
+  font-size: var(--bd-type-headline-font-size);
+  font-weight: 400;
+  margin: 0 0 var(--bd-space-xs);
+}
+
+.agendaSub {
+  font-size: var(--bd-type-body-sm-font-size);
+  color: var(--bd-color-ink-muted);
+  margin: 0;
+}
+
+.dia {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: var(--bd-space-md);
+  padding: var(--bd-space-md) 0 var(--bd-space-md) var(--bd-space-md);
+  position: relative;
+  &::before {
+    content: "";
+    position: absolute;
+    left: -7px;
+    top: calc(var(--bd-space-md) + 10px);
+    width: 12px;
+    height: 12px;
+    background: var(--bd-color-surface-1);
+    border: 2px solid var(--bd-color-ink);
+  }
+  & + & {
+    border-top: 1px solid var(--bd-color-hairline);
+  }
+  ul {
+    display: grid;
+    gap: var(--bd-space-xs);
+  }
+  li {
+    display: flex;
+    flex-direction: column;
+  }
+  li span {
+    font-size: var(--bd-type-body-sm-font-size);
+    color: var(--bd-color-ink-muted);
+  }
+}
+
+.data {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--bd-type-body-sm-font-size);
+  color: var(--bd-color-ink-muted);
+  line-height: 1.2;
+}
+
+.diaNum {
+  font-size: 32px;
+  font-weight: 300;
+  color: var(--bd-color-ink);
+  font-variant-numeric: tabular-nums;
+}

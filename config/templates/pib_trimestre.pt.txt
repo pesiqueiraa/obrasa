@@ -1,0 +1,16 @@
+# Frase "o que significa para você" do indicador pib-trimestre.
+# Versão 1 (02/11/2026). Linhas com "#" são comentários.
+# Variáveis (todas calculadas a partir de valores do banco, apps/web/src/lib/template.ts):
+#   {x}        valor com unidade, formato pt-BR (nas variantes sobe/cai, sem sinal)
+#   {x_num}    só o número (ex.: 5,6)
+#   {periodo}  período de referência por extenso (ex.: julho a setembro de 2026)
+# Variante pelo sinal: sobe (> 0), cai (< 0), estavel (= 0).
+
+[sobe]
+No {periodo}, o volume produzido pelo país cresceu {x} em relação ao trimestre anterior, com ajuste para as diferenças entre épocas do ano.
+
+[cai]
+No {periodo}, o volume produzido pelo país diminuiu {x} em relação ao trimestre anterior, com ajuste para as diferenças entre épocas do ano.
+
+[estavel]
+No {periodo}, o volume produzido pelo país ficou igual ao do trimestre anterior, com ajuste para as diferenças entre épocas do ano.

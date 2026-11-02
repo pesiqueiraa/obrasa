@@ -1,0 +1,15 @@
+# Temas do site (docs/08, D13). A ordem aqui é a ordem da navegação.
+# Eleições 2026 e Educação entram nas próximas etapas (docs/04).
+
+- slug: economia
+  titulo: Economia
+  resumo: Preços, juros, câmbio e o ritmo da atividade.
+  ordem: 1
+- slug: trabalho
+  titulo: Trabalho
+  resumo: Quem procura emprego, quanto se ganha e quantos trabalham sem carteira ou CNPJ.
+  ordem: 2
+- slug: contas-publicas
+  titulo: Contas públicas
+  resumo: Quanto o setor público deve, em relação a tudo o que o país produz em um ano.
+  ordem: 3

@@ -1,0 +1,9 @@
+# Frase "o que significa para você" do indicador informalidade.
+# Versão 1 (02/11/2026). Linhas com "#" são comentários.
+# Variáveis (todas calculadas a partir de valores do banco, apps/web/src/lib/template.ts):
+#   {x}        valor com unidade, formato pt-BR (nas variantes sobe/cai, sem sinal)
+#   {x_num}    só o número (ex.: 5,6)
+#   {periodo}  período de referência por extenso (ex.: julho a setembro de 2026)
+
+[padrao]
+No {periodo}, de cada 100 pessoas que trabalhavam, {x_num} estavam na informalidade: sem carteira assinada ou sem CNPJ, pela definição do IBGE.

@@ -1,4 +1,4 @@
-"""Ponto de entrada: `uv run python -m pipelines.run ipca`.
+"""Ponto de entrada: `uv run python -m pipelines.run todos` (ou `ipca`, `series`).
 
 Variáveis de ambiente:
   DATABASE_URL               conexão Postgres (obrigatória)
@@ -15,9 +15,15 @@ import logging
 import sys
 
 from pipelines import config, db, raw_store
-from pipelines.jobs import ipca
+from pipelines.jobs import ipca, series
+from pipelines.jobs.report import Report
 
-JOBS = {"ipca": ipca.run}
+
+def todos(conn, store, registry) -> Report:
+    return ipca.run(conn, store, registry).merge(series.run(conn, store, registry))
+
+
+JOBS = {"ipca": ipca.run, "series": series.run, "todos": todos}
 
 
 def main(argv: list[str] | None = None) -> int:

@@ -2,9 +2,27 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { buildCsv } from "./csv";
-import { addMonths, formatDate, formatValue, monthShort, todayInBrazil } from "./format";
-import { chooseSeries, delayStatus, nextRelease, sliceWindow, variation, variationText, type Obs } from "./indicator";
-import { fraseAcumulado12m, parseTemplate } from "./template";
+import {
+  addMonths,
+  formatDate,
+  formatRef,
+  formatRefLong,
+  formatValue,
+  monthShort,
+  shiftMonths,
+  todayInBrazil,
+} from "./format";
+import {
+  chooseSeries,
+  delayStatus,
+  lastOfMonth,
+  nextRelease,
+  sliceWindow,
+  variation,
+  variationText,
+  type Obs,
+} from "./indicator";
+import { frase, fraseAcumulado12m, inicioDoValorVigente, parseTemplate } from "./template";
 
 function monthly(start: string, values: number[]): Obs[] {
   return values.map((value, i) => ({
@@ -19,7 +37,24 @@ function monthly(start: string, values: number[]): Obs[] {
 describe("formatação pt-BR", () => {
   it("usa vírgula decimal e % colado", () => {
     expect(formatValue(4.58, "%")).toBe("4,58%");
-    expect(formatValue(1234.5, "R$ bilhões")).toBe("R$ 1.234,50");
+    expect(formatValue(1234.5, "R$ bilhões")).toBe("R$ 1.234,50 bilhões");
+    expect(formatValue(13.75, "% a.a.")).toBe("13,75% a.a.");
+    expect(formatValue(82.93, "% do PIB", 1)).toBe("82,9% do PIB");
+    expect(formatValue(3811, "R$", 0)).toBe("R$ 3.811");
+    expect(formatValue(5.4212, "R$/US$", 4)).toBe("R$ 5,4212");
+  });
+  it("período de referência por frequência", () => {
+    expect(formatRef("2026-10-30", "diaria")).toBe("30/10/2026");
+    expect(formatRef("2026-09-01", "trimestral_movel")).toBe("jul–set/2026");
+    expect(formatRef("2026-01-01", "trimestral_movel")).toBe("nov–jan/2025–2026");
+    expect(formatRef("2026-04-01", "trimestral")).toBe("2º tri/2026");
+    expect(formatRefLong("2026-09-01", "trimestral_movel")).toBe("julho a setembro de 2026");
+    expect(formatRefLong("2026-07-01", "trimestral")).toBe("3º trimestre de 2026");
+    expect(formatRefLong("2026-10-30", "diaria")).toBe("30 de outubro de 2026");
+  });
+  it("soma meses mantendo o dia", () => {
+    expect(shiftMonths("2026-03-31", -1)).toBe("2026-02-28");
+    expect(shiftMonths("2026-10-30", -12)).toBe("2025-10-30");
   });
   it("mês curto e datas", () => {
     expect(monthShort("2026-09-01")).toBe("set/2026");
@@ -145,5 +180,77 @@ describe("CSV", () => {
     expect(lines.at(-1)).toBe(
       "2026-09-01,4.58,%,ibge_agregados_1737_2265,0,2026-11-02T01:31:35Z,storage://raw/x.json",
     );
+  });
+});
+
+describe("séries de outras frequências", () => {
+  it("último valor de cada mês, sem média", () => {
+    const obs = [
+      { refDate: "2026-09-29", value: 1 },
+      { refDate: "2026-09-30", value: 2 },
+      { refDate: "2026-10-01", value: 3 },
+      { refDate: "2026-10-30", value: 4 },
+    ];
+    expect(lastOfMonth(obs).map((o) => o.value)).toEqual([2, 4]);
+  });
+
+  it("janela de 12 meses em série diária começa no mesmo dia", () => {
+    const obs = [
+      { refDate: "2025-10-29", value: 1 },
+      { refDate: "2025-10-30", value: 2 },
+      { refDate: "2026-10-30", value: 3 },
+    ];
+    expect(sliceWindow(obs, "12m").map((o) => o.refDate)).toEqual(["2025-10-30", "2026-10-30"]);
+  });
+
+  it("atraso de série diária depois de 5 dias corridos", () => {
+    const base = { latestRef: "2026-10-30", frequencia: "diaria" as const, proxima: null };
+    expect(delayStatus({ ...base, hoje: "2026-11-03" }).atrasado).toBe(false);
+    expect(delayStatus({ ...base, hoje: "2026-11-04" }).atrasado).toBe(true);
+  });
+
+  it("trimestral usa o calendário do trimestre seguinte", () => {
+    const proxima = { refDate: "2026-07-01", divulgadoEm: null, proximaDivulgacao: "2026-12-02" };
+    const args = { latestRef: "2026-04-01", frequencia: "trimestral" as const, proxima };
+    expect(delayStatus({ ...args, hoje: "2026-12-02" }).atrasado).toBe(false);
+    expect(delayStatus({ ...args, hoje: "2026-12-03" }).atrasado).toBe(true);
+  });
+});
+
+describe("frases dos templates do repositório", () => {
+  const tpl = (f: string) =>
+    parseTemplate(readFileSync(join(__dirname, `../../../../config/templates/${f}`), "utf8"));
+
+  it("desocupação usa o trimestre móvel por extenso", () => {
+    const texto = frase("desocupacao.pt.txt", tpl("desocupacao.pt.txt"), {
+      refDate: "2026-09-01",
+      value: 5.6,
+      unidade: "%",
+      casas: 1,
+      frequencia: "trimestral_movel",
+    });
+    expect(texto).toBe(
+      "No trimestre de julho a setembro de 2026, de cada 100 pessoas na força de trabalho, 5,6 procuravam emprego e não tinham.",
+    );
+  });
+
+  it("PIB escolhe a variante pelo sinal e mostra o valor sem sinal", () => {
+    const t = tpl("pib_trimestre.pt.txt");
+    const ctx = { refDate: "2026-04-01", unidade: "%", casas: 1, frequencia: "trimestral" as const };
+    expect(frase("pib_trimestre.pt.txt", t, { ...ctx, value: -0.4 })).toContain("diminuiu 0,4%");
+    expect(frase("pib_trimestre.pt.txt", t, { ...ctx, value: 0.4 })).toContain("cresceu 0,4%");
+    expect(frase("pib_trimestre.pt.txt", t, { ...ctx, value: 0.04 })).toContain("ficou igual");
+  });
+
+  it("Selic: 'desde' é o início do valor vigente na série", () => {
+    const obs = [
+      { refDate: "2026-09-17", value: 14.25 },
+      { refDate: "2026-09-18", value: 13.75 },
+      { refDate: "2026-09-19", value: 13.75 },
+      { refDate: "2026-11-01", value: 13.75 },
+    ];
+    const ctx = { refDate: "2026-11-01", value: 13.75, unidade: "% a.a.", casas: 2, frequencia: "diaria" as const, obs };
+    expect(inicioDoValorVigente(ctx)).toBe("2026-09-18");
+    expect(frase("selic.pt.txt", tpl("selic.pt.txt"), ctx)).toContain("está em 13,75% ao ano desde 18 de setembro de 2026");
   });
 });

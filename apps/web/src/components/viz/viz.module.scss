@@ -1,0 +1,222 @@
+// Visualizações próprias de cada tema (DESIGN.md, "Components"). Sem sombra, cantos
+// retos, cores só da paleta de gráficos; texto em Plex Sans com algarismos tabulares.
+
+.figure {
+  margin: 0;
+}
+
+.svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  font-family: var(--bd-type-body-font-family);
+  font-variant-numeric: tabular-nums;
+}
+
+.grid {
+  stroke: var(--bd-color-hairline);
+  stroke-width: 1;
+}
+
+.axisZero {
+  stroke: var(--bd-color-ink-muted);
+  stroke-width: 1;
+}
+
+.tickY {
+  font-size: 12px;
+  fill: var(--bd-color-ink-muted);
+  text-anchor: end;
+  dominant-baseline: middle;
+}
+
+.tickX {
+  font-size: 12px;
+  fill: var(--bd-color-ink-muted);
+  text-anchor: middle;
+}
+
+.endLabel {
+  font-size: 13px;
+  font-weight: 600;
+  dominant-baseline: middle;
+}
+
+// waffle
+.waffle {
+  margin: 0;
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--bd-space-xs);
+  svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+  figcaption {
+    font-size: var(--bd-type-body-sm-font-size);
+    color: var(--bd-color-ink);
+    max-width: 170px;
+  }
+}
+
+.waffleMuted {
+  .cellOn {
+    fill: var(--bd-color-ink-subtle);
+  }
+  figcaption {
+    color: var(--bd-color-ink-muted);
+  }
+}
+
+.cell {
+  fill: var(--bd-color-surface-2);
+}
+
+.cellOn {
+  fill: var(--bd-color-chart-1);
+}
+
+// proportion-bar
+.prop {
+  display: grid;
+  gap: var(--bd-space-xs);
+}
+
+.propTrack {
+  height: 20px;
+  background: var(--bd-color-surface-2);
+  position: relative;
+}
+
+.propFill {
+  height: 100%;
+  background: var(--bd-color-chart-1);
+}
+
+.propLegend {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--bd-space-md);
+  font-size: var(--bd-type-body-sm-font-size);
+  font-variant-numeric: tabular-nums;
+  span:last-child {
+    text-align: right;
+    color: var(--bd-color-ink-muted);
+  }
+}
+
+// pib-ruler
+.regua {
+  display: grid;
+  gap: var(--bd-space-lg);
+  padding-top: var(--bd-space-lg);
+  position: relative;
+}
+
+.reguaScale {
+  position: relative;
+  height: 28px;
+  border-bottom: 1px solid var(--bd-color-ink);
+}
+
+.tick,
+.tickMajor {
+  position: absolute;
+  bottom: 0;
+  width: 1px;
+  background: var(--bd-color-ink);
+}
+
+.tick {
+  height: 6px;
+}
+
+.tickMajor {
+  height: 12px;
+}
+
+.tickLabel {
+  position: absolute;
+  bottom: 14px;
+  left: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--bd-color-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.tickMajor:first-child .tickLabel {
+  transform: none;
+}
+
+.tickMajor:last-child .tickLabel {
+  transform: translateX(-100%);
+}
+
+.reguaRow {
+  display: grid;
+  gap: var(--bd-space-xs);
+}
+
+.reguaTitle {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--bd-space-xs) var(--bd-space-md);
+  margin: 0;
+  font-weight: 600;
+  a {
+    color: var(--bd-color-ink);
+  }
+}
+
+.reguaValue {
+  font-size: 28px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.reguaRef {
+  font-size: var(--bd-type-body-sm-font-size);
+  font-weight: 400;
+  color: var(--bd-color-ink-muted);
+}
+
+.reguaTrack {
+  position: relative;
+  height: 28px;
+  background: repeating-linear-gradient(
+    to right,
+    var(--bd-color-hairline) 0,
+    var(--bd-color-hairline) 1px,
+    transparent 1px,
+    transparent 10%
+  );
+  border-bottom: 1px solid var(--bd-color-hairline);
+}
+
+.reguaBand {
+  position: absolute;
+  top: 6px;
+  height: 16px;
+  background: var(--bd-color-surface-2);
+}
+
+.reguaMarker {
+  position: absolute;
+  top: 0;
+  width: 4px;
+  height: 28px;
+  margin-left: -2px;
+  background: var(--bd-color-chart-1);
+}
+
+.reguaRange {
+  margin: 0;
+  font-size: var(--bd-type-caption-font-size);
+  color: var(--bd-color-ink-muted);
+  font-variant-numeric: tabular-nums;
+}

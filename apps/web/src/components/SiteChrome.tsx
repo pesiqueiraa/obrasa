@@ -1,17 +1,22 @@
 import Link from "next/link";
+import { getTemas } from "@/lib/data";
+import { ThemeNav } from "./ThemeNav";
 import styles from "./ui.module.scss";
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const temas = await getTemas();
+  const items = [{ href: "/", rotulo: "Brasil hoje" }, ...temas.map((t) => ({ href: `/${t.slug}`, rotulo: t.titulo }))];
   return (
     <header className={styles.topNav}>
-      <div className="container">
+      <div className={`container ${styles.topNavInner}`}>
         {/* Nome provisório em texto, Plex Sans 600, até a decisão D1 (docs/08). */}
         <Link href="/" className={styles.brand}>
           Brasilado
         </Link>
-        <nav aria-label="Principal" className={styles.navLinks}>
-          <Link href="/metodologia">Metodologia</Link>
-        </nav>
+        <ThemeNav items={items} />
+        <Link href="/metodologia" className={styles.navAside}>
+          Metodologia
+        </Link>
       </div>
     </header>
   );

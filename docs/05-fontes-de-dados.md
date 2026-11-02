@@ -44,17 +44,18 @@ Resposta: `[{"data":"01/07/2026","valor":"0.07"}]`
 
 | Código | Série | Unidade | Frequência | Status |
 |---|---|---|---|---|
-| 432 | Meta Selic definida pelo Copom | % a.a. | Diária | ok |
+| 432 | Meta Selic definida pelo Copom | % a.a. | Diária | ok (testado em 01/11/2026: um valor por dia corrido desde 05/03/1999; **traz datas futuras** até a véspera da próxima reunião, que o coletor descarta) |
 | 11 | Selic diária | % a.d. | Diária | ok |
 | 1178 | Selic anualizada base 252 | % a.a. | Diária | ok |
 | 433 | IPCA, variação mensal (reserva do IBGE) | % | Mensal | ok (testado em 01/11/2026: desde jan/1980) |
 | 13522 | IPCA acumulado em 12 meses | % | Mensal | ok (testado em 01/11/2026: desde dez/1980, idêntico a IBGE 1737/2265 em todos os meses) |
-| 1 | Dólar comercial, venda (taxa livre) | R$/US$ | Diária | confirmar |
+| 1 | Dólar comercial, venda (taxa livre) | R$/US$ | Diária | ok (testado em 01/11/2026: dias úteis; usado desde 01/07/1994, início do real) |
 | 10813 | Dólar comercial, compra (taxa livre) | R$/US$ | Diária | ok |
-| 13762 | Dívida bruta do governo geral (% do PIB), metodologia a partir de 2008 | % | Mensal | ok |
+| 13762 | Dívida bruta do governo geral (% do PIB), metodologia a partir de 2008 | % | Mensal | ok (testado em 01/11/2026: desde dez/2006) |
 | 4537 | Dívida bruta do governo geral (% do PIB), metodologia até 2007 | % | Mensal | ok |
-| 4513 | Dívida líquida do setor público consolidado (% do PIB) | % | Mensal | confirmar |
-| 24363 | IBC-Br | Índice | Mensal | confirmar |
+| 4513 | Dívida líquida do setor público consolidado (% do PIB) | % | Mensal | ok (testado em 01/11/2026: desde dez/2001) |
+| 24363 | IBC-Br, sem ajuste sazonal | Índice | Mensal | ok (testado em 01/11/2026: desde jan/2003) |
+| 5793, 4649, 5364 | Resultado primário (candidatas) | — | Mensal | confirmar: respondem, mas o nome oficial não pôde ser conferido (catálogo do SGS e portal de dados abertos do BC com HTTP 502 em 01/11/2026). Não usar até conferir. |
 
 Catálogo completo: https://www3.bcb.gov.br/sgspub/ (`confirmar`: respondeu HTTP 502 em 01/11/2026).
 
@@ -103,8 +104,10 @@ GET https://servicodados.ibge.gov.br/api/v3/agregados/{tabela}/metadados
 | 1737 | 2265 | IPCA, acumulado em 12 meses | ok (testado em 01/11/2026: valores a partir de dez/1980; antes vem `...`) |
 | 1737 | 2266 | IPCA, número-índice (base dez/1993 = 100; usar como deflator) | ok (testado em 01/11/2026) |
 | 7060 | 63 / 66 | IPCA por grupos e itens: variação / peso (classificação 315) | ok |
-| 6381 | 4099 | Taxa de desocupação, trimestre móvel (PNAD Contínua) | confirmar |
-| 5932 | — | PIB, taxas de variação trimestrais (Contas Nacionais Trimestrais) | confirmar |
+| 6381 | 4099 | Taxa de desocupação, trimestre móvel (PNAD Contínua). O período é o mês final do trimestre (202609 = jul–set/2026) | ok (testado em 01/11/2026: desde 201203) |
+| 6390 | 5933 / 5929 | Rendimento médio mensal habitual de todos os trabalhos, real / nominal, trimestre móvel. O real vem a preços do trimestre mais recente e muda a cada divulgação | ok (testado em 01/11/2026: desde 201203) |
+| 8529 | 12466 | Taxa de informalidade das pessoas ocupadas, trimestral | ok (testado em 01/11/2026: desde 201504) |
+| 5932 | 6562 / 6564 | PIB, taxa acumulada em 4 trimestres / contra o trimestre anterior (com ajuste sazonal). Exige `classificacao=11255[90707]` (PIB a preços de mercado). Período AAAA0T = trimestre | ok (testado em 01/11/2026: desde 1996) |
 | 6579 | — | População residente estimada | confirmar |
 
 Calendário de divulgações: https://www.ibge.gov.br/calendario-de-divulgacoes.html (`confirmar` URL: em 01/11/2026 o site `www.ibge.gov.br` respondeu HTTP 403 a clientes automáticos; conferir num navegador).
@@ -113,6 +116,7 @@ Calendário de divulgações: https://www.ibge.gov.br/calendario-de-divulgacoes.
 ```http
 GET https://servicodados.ibge.gov.br/api/v3/calendario/{produto}?de=MM-DD-AAAA&ate=MM-DD-AAAA
 ```
+- Produtos usados: IPCA `9256`; PNAD Contínua mensal `9171` (referência = mês final do trimestre móvel); PNAD Contínua trimestral `9173` e Contas Nacionais Trimestrais `9300` (referência = 1º mês do trimestre). Testados em 01/11/2026.
 - IPCA é o produto `9256`. Cada item traz `data_divulgacao` (`dd/mm/aaaa hh:mm:ss`, horário de Brasília) e o mês de referência em `ano_referencia_inicio` e `mes_referencia_inicio`.
 
 **Malhas e localidades:**

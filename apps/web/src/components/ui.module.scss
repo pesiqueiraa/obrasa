@@ -1,20 +1,33 @@
-// Componentes do DESIGN.md: top-nav, footer, indicator-card, source-line,
-// frequency-chip, chart-panel, correction-banner. Cantos retos, sem sombra.
+// Componentes do DESIGN.md: top-nav, theme-nav, footer, indicator-tile, indicator-card,
+// source-line, frequency-chip, chart-panel, correction-banner. Cantos retos, sem sombra.
 
 .topNav {
-  height: 48px;
   border-bottom: 1px solid var(--bd-color-hairline);
   background: var(--bd-color-canvas);
   font-size: var(--bd-type-body-sm-font-size);
-  > div {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+// Celular: marca e Metodologia na primeira linha, temas rolando na segunda.
+// A partir de 1056px: tudo numa linha de 48px.
+.topNavInner {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "brand aside"
+    "nav nav";
+  align-items: center;
+  @media (min-width: 1056px) {
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "brand nav aside";
+    gap: var(--bd-space-xl);
   }
 }
 
 .brand {
+  grid-area: brand;
   font-weight: 600;
   font-size: 16px;
   color: var(--bd-color-ink);
@@ -24,19 +37,61 @@
   align-items: center;
 }
 
-.navLinks {
-  display: flex;
-  gap: var(--bd-space-md);
-  a {
-    color: var(--bd-color-ink);
-    text-decoration: none;
-    min-height: 48px;
-    display: inline-flex;
-    align-items: center;
-  }
-  a:hover {
+.navAside {
+  grid-area: aside;
+  color: var(--bd-color-ink);
+  text-decoration: none;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  &:hover {
     text-decoration: underline;
   }
+}
+
+.themeNav {
+  grid-area: nav;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 0 calc(-1 * var(--bd-space-md));
+  padding: 0 var(--bd-space-md);
+  @media (min-width: 1056px) {
+    margin: 0;
+    padding: 0;
+  }
+  ul {
+    display: flex;
+    gap: var(--bd-space-lg);
+    white-space: nowrap;
+  }
+  a {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--bd-color-ink-muted);
+    text-decoration: none;
+    @media (min-width: 1056px) {
+      min-height: 48px;
+    }
+    &:hover {
+      color: var(--bd-color-ink);
+    }
+  }
+}
+
+.themeOn {
+  color: var(--bd-color-ink) !important;
+  font-weight: 600;
+}
+
+.themeUnderline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--bd-color-primary);
 }
 
 .footer {
@@ -60,7 +115,83 @@
   }
 }
 
-// indicator-card
+// indicator-tile: grade de indicadores nas páginas de tema
+// Filetes entre cartões sem pintar as células vazias da última linha.
+.tileGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  border-top: 1px solid var(--bd-color-hairline);
+  border-left: 1px solid var(--bd-color-hairline);
+  @media (min-width: 672px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 1056px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.tile {
+  background: var(--bd-color-canvas);
+  border-right: 1px solid var(--bd-color-hairline);
+  border-bottom: 1px solid var(--bd-color-hairline);
+  min-width: 0;
+  padding: var(--bd-space-lg) var(--bd-space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-xs);
+  @media (min-width: 672px) {
+    padding: var(--bd-space-lg);
+  }
+  .variation {
+    margin: 0;
+  }
+  .sourceLine {
+    margin-top: auto;
+    padding-top: var(--bd-space-sm);
+  }
+}
+
+.tileHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--bd-space-sm);
+}
+
+.tileBody {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--bd-space-md);
+  svg {
+    flex: none;
+    margin-bottom: 6px;
+  }
+}
+
+.tileValue {
+  font-size: 36px;
+  white-space: nowrap;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+
+// indicator-card (topo da página de indicador)
+.hero {
+  max-width: 44rem;
+}
+
+.heroLabel {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 0;
+}
+
 .card {
   display: block;
   background: var(--bd-color-canvas);
@@ -244,4 +375,19 @@
   font-size: var(--bd-type-body-sm-font-size);
   padding: var(--bd-space-md);
   margin-bottom: var(--bd-space-md);
+}
+
+// troca real/nominal (regra 3)
+.switcher {
+  max-width: 320px;
+  margin-bottom: var(--bd-space-md);
+}
+
+// caminho de volta ao tema
+.crumb {
+  font-size: var(--bd-type-body-sm-font-size);
+  margin: 0 0 var(--bd-space-md);
+  a {
+    color: var(--bd-color-ink-muted);
+  }
 }

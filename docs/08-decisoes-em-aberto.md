@@ -23,4 +23,7 @@ Formato: cada decisão tem opções, uma recomendação provisória e o que depe
 
 | ID | Decisão | Data | Motivo |
 |---|---|---|---|
-| — | — | — | — |
+| D13 | Plataforma organizada por temas (Brasil hoje, Economia, Trabalho, Contas públicas; depois Eleições 2026, Educação e Notícias), cada tema com página própria e uma visualização diferente no topo | 01/11/2026 | Pedido do responsável pelo projeto: abas por assunto e menos repetição entre seções |
+| D14 | Mapa eleitoral em um só tom, com escolha do candidato; sem pintar o município pela cor do vencedor | 01/11/2026 | Mapa de vencedor exagera áreas grandes e pouco povoadas e associa cor a lado (docs/02) |
+| D15 | Resultados de Eleições 2026 vêm do TSE (dados abertos), com malhas municipais do IBGE | 01/11/2026 | Fonte oficial; endpoints ficam como `confirmar` em docs/05 até serem testados |
+| D16 | Ordem das próximas etapas: design por temas → Economia, Trabalho e Contas públicas → Eleições 2026 → Educação → Notícias por tema | 01/11/2026 | Aprovado pelo responsável pelo projeto |

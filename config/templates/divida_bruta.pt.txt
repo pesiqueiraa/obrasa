@@ -1,0 +1,9 @@
+# Frase "o que significa para você" do indicador divida-bruta.
+# Versão 1 (02/11/2026). Linhas com "#" são comentários.
+# Variáveis (todas calculadas a partir de valores do banco, apps/web/src/lib/template.ts):
+#   {x}        valor com unidade, formato pt-BR (nas variantes sobe/cai, sem sinal)
+#   {x_num}    só o número (ex.: 5,6)
+#   {periodo}  período de referência por extenso (ex.: julho a setembro de 2026)
+
+[padrao]
+Em {periodo}, o que a União, os estados e os municípios deviam equivalia a {x_num}% de tudo o que o país produz em um ano.

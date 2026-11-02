@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { MotionRoot } from "@/components/MotionRoot";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import "../styles/tokens.css";
 import "./globals.scss";
@@ -15,9 +16,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <a href="#conteudo" className="skip-link">
           Ir para o conteúdo
         </a>
-        <SiteHeader />
-        <main id="conteudo">{children}</main>
-        <SiteFooter />
+        <MotionRoot>
+          <SiteHeader />
+          <main id="conteudo">{children}</main>
+          <SiteFooter />
+        </MotionRoot>
       </body>
     </html>
   );

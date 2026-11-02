@@ -1,11 +1,13 @@
 "use client";
 
-// chart-panel (DESIGN.md): título; subtítulo com unidade e base; abas de janela;
-// gráfico; source-line; ações "Ver tabela" e "Baixar CSV". Todo gráfico tem
-// descrição em texto e tabela com os dados (WCAG 2.2 AA, docs/04).
+// chart-panel (DESIGN.md): título; subtítulo com unidade e base; troca real/nominal em
+// série monetária (regra 3); abas de janela; gráfico; source-line; "Ver tabela" e
+// "Baixar CSV". Todo gráfico tem descrição em texto e tabela com os dados.
 
 import {
   Button,
+  ContentSwitcher,
+  Switch,
   Tab,
   TabList,
   TabPanel,
@@ -20,8 +22,8 @@ import {
 } from "@carbon/react";
 import dynamic from "next/dynamic";
 import { useId, useMemo, useState, type ReactNode } from "react";
-import { formatNumber, formatValue, monthLong, monthShort } from "@/lib/format";
-import { JANELAS, sliceWindow, type Janela, type Obs } from "@/lib/indicator";
+import { formatNumber, formatRef, formatRefLong, formatValue, type FrequenciaRef } from "@/lib/format";
+import { JANELAS, lastOfMonth, sliceWindow, type Janela } from "@/lib/indicator";
 import styles from "./ui.module.scss";
 
 const LineChart = dynamic(() => import("./LineChartClient"), {
@@ -29,41 +31,73 @@ const LineChart = dynamic(() => import("./LineChartClient"), {
   loading: () => <div className={styles.chart} aria-hidden="true" />,
 });
 
-export type ChartPanelProps = {
-  titulo: string;
-  subtitulo: string;
+export type Ponto = { refDate: string; value: number };
+
+export type Variante = {
+  id: string;
+  rotulo: string; // "Real" / "Nominal"
   serieRotulo: string;
-  unidade: string;
-  obs: Obs[];
-  janelaPadrao: Janela;
-  csvHref: string;
+  subtitulo: string;
+  obs: Ponto[];
   sourceLine: ReactNode;
 };
 
+export type ChartPanelProps = {
+  titulo: string;
+  unidade: string;
+  casas: number;
+  frequencia: FrequenciaRef;
+  eixo: string;
+  variantes: Variante[];
+  janelaPadrao: Janela;
+  csvHref: string;
+};
+
 export function ChartPanel(props: ChartPanelProps) {
-  const { titulo, subtitulo, serieRotulo, unidade, obs, janelaPadrao, csvHref, sourceLine } = props;
+  const { titulo, unidade, casas, frequencia, eixo, variantes, janelaPadrao, csvHref } = props;
   const [selected, setSelected] = useState(JANELAS.findIndex((j) => j.id === janelaPadrao));
+  const [varIdx, setVarIdx] = useState(0);
   const [showTable, setShowTable] = useState(false);
-  const tableId = useId();
+  const id = useId();
   const janela = JANELAS[selected];
-  const windowObs = useMemo(() => sliceWindow(obs, janela.id), [obs, janela.id]);
+  const variante = variantes[varIdx];
+  const windowObs = useMemo(() => sliceWindow(variante.obs, janela.id), [variante.obs, janela.id]);
+  // Série diária em janela longa: último valor de cada mês, para o gráfico e a tabela.
+  const mensalizar = frequencia === "diaria" && janela.id !== "12m";
+  const pontos = useMemo(() => (mensalizar ? lastOfMonth(windowObs) : windowObs), [mensalizar, windowObs]);
+  const refFreq: FrequenciaRef = mensalizar ? "mensal" : frequencia;
+  const fmt = (n: number) => formatValue(n, unidade, casas);
 
   const first = windowObs[0];
   const last = windowObs[windowObs.length - 1];
   const min = windowObs.reduce((a, o) => (o.value < a.value ? o : a), first);
   const max = windowObs.reduce((a, o) => (o.value > a.value ? o : a), first);
   const descricao =
-    `Gráfico de linha: ${serieRotulo}, de ${monthLong(first.refDate)} a ${monthLong(last.refDate)}. ` +
-    `Valor mais recente: ${formatValue(last.value, unidade)}. ` +
-    `Menor valor na janela: ${formatValue(min.value, unidade)} em ${monthShort(min.refDate)}; ` +
-    `maior: ${formatValue(max.value, unidade)} em ${monthShort(max.refDate)}.`;
+    `Gráfico de linha: ${variante.serieRotulo}, de ${formatRefLong(first.refDate, frequencia)} a ${formatRefLong(last.refDate, frequencia)}. ` +
+    `Valor mais recente: ${fmt(last.value)}. ` +
+    `Menor valor na janela: ${fmt(min.value)} em ${formatRef(min.refDate, frequencia)}; ` +
+    `maior: ${fmt(max.value)} em ${formatRef(max.refDate, frequencia)}.`;
 
   return (
-    <section className={styles.panel} aria-labelledby={`${tableId}-titulo`}>
-      <h2 id={`${tableId}-titulo`} className={styles.panelTitle}>
+    <section className={styles.panel} aria-labelledby={`${id}-titulo`}>
+      <h2 id={`${id}-titulo`} className={styles.panelTitle}>
         {titulo}
       </h2>
-      <p className={styles.panelSubtitle}>{subtitulo}</p>
+      <p className={styles.panelSubtitle}>{variante.subtitulo}</p>
+
+      {variantes.length > 1 ? (
+        <div className={styles.switcher}>
+          <ContentSwitcher
+            size="md"
+            selectedIndex={varIdx}
+            onChange={({ index }) => typeof index === "number" && setVarIdx(index)}
+          >
+            {variantes.map((v) => (
+              <Switch key={v.id} name={v.id} text={v.rotulo} />
+            ))}
+          </ContentSwitcher>
+        </div>
+      ) : null}
 
       <div className={styles.tabsScroller}>
         <Tabs selectedIndex={selected} onChange={({ selectedIndex }) => setSelected(selectedIndex)}>
@@ -79,8 +113,22 @@ export function ChartPanel(props: ChartPanelProps) {
                   <>
                     <p className="visually-hidden">{descricao}</p>
                     <div className={styles.chart}>
-                      <LineChart obs={windowObs} serieRotulo={serieRotulo} unidade={unidade} pontos={j.id === "12m"} />
+                      <LineChart
+                        obs={pontos}
+                        serieRotulo={variante.serieRotulo}
+                        unidade={unidade}
+                        casas={casas}
+                        eixo={eixo}
+                        frequencia={refFreq}
+                        pontos={pontos.length <= 16}
+                      />
                     </div>
+                    {mensalizar ? (
+                      <p className={styles.caption}>
+                        Série diária: nesta janela, o gráfico e a tabela mostram o último valor de cada mês. O CSV
+                        traz todos os dias.
+                      </p>
+                    ) : null}
                   </>
                 ) : null}
               </TabPanel>
@@ -89,14 +137,14 @@ export function ChartPanel(props: ChartPanelProps) {
         </Tabs>
       </div>
 
-      {sourceLine}
+      {variante.sourceLine}
 
       <div className={styles.actions}>
         <Button
           kind="tertiary"
           size="md"
           aria-expanded={showTable}
-          aria-controls={`${tableId}-tabela`}
+          aria-controls={`${id}-tabela`}
           onClick={() => setShowTable((s) => !s)}
         >
           {showTable ? "Esconder tabela" : "Ver tabela"}
@@ -107,19 +155,19 @@ export function ChartPanel(props: ChartPanelProps) {
       </div>
 
       {showTable ? (
-        <div id={`${tableId}-tabela`} className={styles.tableWrap}>
-          <Table size="sm" aria-label={`${serieRotulo}, janela de ${janela.rotulo}`}>
+        <div id={`${id}-tabela`} className={styles.tableWrap}>
+          <Table size="sm" aria-label={`${variante.serieRotulo}, janela de ${janela.rotulo}`}>
             <TableHead>
               <TableRow>
-                <TableHeader>Mês de referência</TableHeader>
+                <TableHeader>Referência</TableHeader>
                 <TableHeader>Valor ({unidade})</TableHeader>
               </TableRow>
             </TableHead>
             <TableBody>
-              {[...windowObs].reverse().map((o) => (
+              {[...pontos].reverse().map((o) => (
                 <TableRow key={o.refDate}>
-                  <TableCell>{monthShort(o.refDate)}</TableCell>
-                  <TableCell>{formatNumber(o.value)}</TableCell>
+                  <TableCell>{formatRef(o.refDate, mensalizar ? "diaria" : frequencia)}</TableCell>
+                  <TableCell>{formatNumber(o.value, casas)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

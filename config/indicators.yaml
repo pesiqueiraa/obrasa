@@ -4,6 +4,7 @@
 
 - slug: ipca-12-meses
   titulo: Inflação em 12 meses (IPCA)
+  tema: economia
   fonte_primaria:
     orgao: IBGE
     tipo: ibge_agregados
@@ -30,3 +31,145 @@
   # url_metodologia: https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9256-indice-nacional-de-precos-ao-consumidor-amplo.html
   url_metodologia: null
   ordem: 1
+
+- slug: selic
+  titulo: Taxa básica de juros (meta Selic)
+  tema: economia
+  fonte_primaria: {orgao: Banco Central, tipo: bcb_sgs, codigo: 432, status: ok}
+  unidade: "% a.a."
+  tipo_serie: taxa
+  frequencia: diaria
+  janela_padrao: 5a
+  monetaria: false
+  frase_template: selic.pt.txt
+  ordem: 2
+
+- slug: dolar
+  titulo: Dólar comercial
+  tema: economia
+  fonte_primaria: {orgao: Banco Central, tipo: bcb_sgs, codigo: 1, status: ok}
+  unidade: R$/US$
+  tipo_serie: nivel
+  frequencia: diaria
+  janela_padrao: 12m
+  monetaria: false
+  casas_decimais: 4
+  frase_template: dolar.pt.txt
+  ordem: 3
+
+- slug: pib-4-trimestres
+  titulo: PIB em quatro trimestres
+  tema: economia
+  fonte_primaria: {orgao: IBGE, tipo: ibge_agregados, tabela: 5932, variavel: 6562, status: ok}
+  unidade: "%"
+  tipo_serie: taxa
+  frequencia: trimestral
+  janela_padrao: 10a
+  monetaria: false
+  casas_decimais: 1
+  frase_template: pib_4t.pt.txt
+  ordem: 4
+
+- slug: pib-trimestre
+  titulo: PIB no trimestre
+  tema: economia
+  fonte_primaria: {orgao: IBGE, tipo: ibge_agregados, tabela: 5932, variavel: 6564, status: ok}
+  unidade: "%"
+  tipo_serie: taxa
+  frequencia: trimestral
+  janela_padrao: 5a
+  monetaria: false
+  casas_decimais: 1
+  frase_template: pib_trimestre.pt.txt
+  ordem: 5
+
+- slug: ibc-br
+  titulo: Prévia da atividade (IBC-Br)
+  tema: economia
+  fonte_primaria: {orgao: Banco Central, tipo: bcb_sgs, codigo: 24363, status: ok}
+  unidade: índice
+  tipo_serie: nivel
+  frequencia: mensal
+  janela_padrao: 5a
+  monetaria: false
+  frase_template: ibc_br.pt.txt
+  ordem: 6
+
+- slug: ipca-mes
+  titulo: Inflação do mês (IPCA)
+  tema: economia
+  fonte_primaria: {orgao: IBGE, tipo: ibge_agregados, tabela: 1737, variavel: 63, status: ok}
+  fonte_reserva: {orgao: Banco Central, tipo: bcb_sgs, codigo: 433, status: ok}
+  unidade: "%"
+  tipo_serie: taxa
+  frequencia: mensal
+  janela_padrao: 12m
+  monetaria: false
+  frase_template: ipca_mes.pt.txt
+  ordem: 7
+
+- slug: desocupacao
+  titulo: Desocupação
+  tema: trabalho
+  fonte_primaria: {orgao: IBGE, tipo: ibge_agregados, tabela: 6381, variavel: 4099, status: ok}
+  unidade: "%"
+  tipo_serie: taxa
+  frequencia: trimestral_movel
+  janela_padrao: 10a
+  monetaria: false
+  casas_decimais: 1
+  frase_template: desocupacao.pt.txt
+  ordem: 1
+
+- slug: rendimento-medio
+  titulo: Rendimento médio do trabalho
+  tema: trabalho
+  fonte_primaria: {orgao: IBGE, tipo: ibge_agregados, tabela: 6390, variavel: 5933, status: ok}
+  serie_nominal: {orgao: IBGE, tipo: ibge_agregados, tabela: 6390, variavel: 5929, status: ok}
+  unidade: R$
+  tipo_serie: nivel
+  frequencia: trimestral_movel
+  janela_padrao: 10a
+  monetaria: true
+  casas_decimais: 0
+  frase_template: rendimento.pt.txt
+  ordem: 2
+
+- slug: informalidade
+  titulo: Informalidade
+  tema: trabalho
+  fonte_primaria: {orgao: IBGE, tipo: ibge_agregados, tabela: 8529, variavel: 12466, status: ok}
+  unidade: "%"
+  tipo_serie: taxa
+  frequencia: trimestral
+  janela_padrao: tudo
+  monetaria: false
+  casas_decimais: 1
+  frase_template: informalidade.pt.txt
+  ordem: 3
+
+- slug: divida-bruta
+  titulo: Dívida bruta do governo
+  tema: contas-publicas
+  fonte_primaria: {orgao: Banco Central, tipo: bcb_sgs, codigo: 13762, status: ok}
+  unidade: "% do PIB"
+  tipo_serie: taxa
+  frequencia: mensal
+  janela_padrao: 10a
+  monetaria: false
+  casas_decimais: 1
+  frase_template: divida_bruta.pt.txt
+  ordem: 1
+
+- slug: divida-liquida
+  titulo: Dívida líquida do setor público
+  tema: contas-publicas
+  fonte_primaria: {orgao: Banco Central, tipo: bcb_sgs, codigo: 4513, status: ok}
+  unidade: "% do PIB"
+  tipo_serie: taxa
+  frequencia: mensal
+  janela_padrao: 10a
+  monetaria: false
+  casas_decimais: 1
+  frase_template: divida_liquida.pt.txt
+  ordem: 2

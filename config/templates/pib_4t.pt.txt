@@ -1,0 +1,16 @@
+# Frase "o que significa para você" do indicador pib-4-trimestres.
+# Versão 1 (02/11/2026). Linhas com "#" são comentários.
+# Variáveis (todas calculadas a partir de valores do banco, apps/web/src/lib/template.ts):
+#   {x}        valor com unidade, formato pt-BR (nas variantes sobe/cai, sem sinal)
+#   {x_num}    só o número (ex.: 5,6)
+#   {periodo}  período de referência por extenso (ex.: julho a setembro de 2026)
+# Variante pelo sinal: sobe (> 0), cai (< 0), estavel (= 0).
+
+[sobe]
+Nos quatro trimestres até o {periodo}, o país produziu {x} a mais do que nos quatro trimestres anteriores, já descontada a variação de preços.
+
+[cai]
+Nos quatro trimestres até o {periodo}, o país produziu {x} a menos do que nos quatro trimestres anteriores, já descontada a variação de preços.
+
+[estavel]
+Nos quatro trimestres até o {periodo}, o país produziu o mesmo volume dos quatro trimestres anteriores, já descontada a variação de preços.

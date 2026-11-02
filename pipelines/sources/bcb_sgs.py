@@ -5,13 +5,15 @@ GET https://api.bcb.gov.br/dados/serie/bcdata.sgs.{codigo}/dados?formato=json
 Resposta: [{"data": "01/07/2026", "valor": "0.07"}]
 
 Testado em 01/11/2026: séries mensais aceitam o histórico inteiro numa requisição;
-o modo ultimos/N aceita no máximo 20 registros.
+o modo ultimos/N aceita no máximo 20 registros. Séries diárias são buscadas em janelas
+de até 10 anos (docs/05). A meta Selic (432) traz datas futuras, válidas até a próxima
+reunião do Copom: quem chama corta no dia de hoje.
 """
 
 from __future__ import annotations
 
 import json
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from decimal import Decimal, InvalidOperation
 
 from pipelines import http
@@ -29,6 +31,23 @@ def fetch(codigo: int, inicio: date, fim: date) -> RawResponse:
         "dataFinal": fim.strftime("%d/%m/%Y"),
     }
     return http.get(SOURCE_ID, url, params=params)
+
+
+JANELA_DIARIA_ANOS = 10
+
+
+def windows(inicio: date, fim: date, anos: int = JANELA_DIARIA_ANOS) -> list[tuple[date, date]]:
+    """Fatia [inicio, fim] em janelas de até `anos` anos, sem sobreposição."""
+    out = []
+    start = inicio
+    while start <= fim:
+        try:
+            end = start.replace(year=start.year + anos) - timedelta(days=1)
+        except ValueError:  # 29/02
+            end = start.replace(year=start.year + anos, day=28) - timedelta(days=1)
+        out.append((start, min(end, fim)))
+        start = min(end, fim) + timedelta(days=1)
+    return out
 
 
 def parse(body: bytes, *, monthly: bool = True) -> list[Observation]:

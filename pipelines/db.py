@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal
@@ -76,11 +77,12 @@ def sync_registry(conn: psycopg.Connection, registry: Registry) -> None:
             cur.execute(
                 """
                 insert into series (id, source_id, codigo_externo, nome, unidade, frequencia, tipo,
-                                    monetaria, nota_metodologia)
-                values (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                    monetaria, nota_metodologia, classificacao)
+                values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 on conflict (id) do update set nome = excluded.nome, unidade = excluded.unidade,
                   frequencia = excluded.frequencia, tipo = excluded.tipo,
-                  monetaria = excluded.monetaria, nota_metodologia = excluded.nota_metodologia
+                  monetaria = excluded.monetaria, nota_metodologia = excluded.nota_metodologia,
+                  classificacao = excluded.classificacao
                 """,
                 (
                     s.id,
@@ -92,19 +94,23 @@ def sync_registry(conn: psycopg.Connection, registry: Registry) -> None:
                     s.tipo,
                     s.monetaria,
                     s.nota_metodologia,
+                    s.classificacao,
                 ),
             )
         for i in registry.indicators:
             cur.execute(
                 """
                 insert into indicators (slug, titulo, series_id, fallback_series_id, transformacao,
-                                        verificacao, janela_padrao, frase_template, url_metodologia, ordem)
-                values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                        verificacao, janela_padrao, frase_template, url_metodologia,
+                                        ordem, tema, casas_decimais, serie_nominal)
+                values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 on conflict (slug) do update set titulo = excluded.titulo,
                   series_id = excluded.series_id, fallback_series_id = excluded.fallback_series_id,
                   transformacao = excluded.transformacao, verificacao = excluded.verificacao,
                   janela_padrao = excluded.janela_padrao, frase_template = excluded.frase_template,
-                  url_metodologia = excluded.url_metodologia, ordem = excluded.ordem
+                  url_metodologia = excluded.url_metodologia, ordem = excluded.ordem,
+                  tema = excluded.tema, casas_decimais = excluded.casas_decimais,
+                  serie_nominal = excluded.serie_nominal
                 """,
                 (
                     i.slug,
@@ -117,6 +123,9 @@ def sync_registry(conn: psycopg.Connection, registry: Registry) -> None:
                     i.frase_template,
                     i.url_metodologia,
                     i.ordem,
+                    i.tema,
+                    i.casas_decimais,
+                    i.serie_nominal.series_id if i.serie_nominal else None,
                 ),
             )
 
@@ -145,8 +154,14 @@ def write_observations(
     observations: list[Observation],
     *,
     collected_at: datetime,
-    raw_object: str,
+    raw_object: str | Mapping[date, str],
 ) -> WriteSummary:
+    """Grava o que mudou. `raw_object` é a resposta bruta de todas as observações, ou
+    um mapa data → resposta bruta quando a coleta foi feita em várias requisições."""
+
+    def raw_for(ref: date) -> str:
+        return raw_object if isinstance(raw_object, str) else raw_object[ref]
+
     current = current_values(conn, series_id)
     planned = plan_revisions(current, observations)
     with conn.cursor() as cur:
@@ -156,7 +171,7 @@ def write_observations(
             values (%s, %s, %s, %s, %s, %s)
             """,
             [
-                (series_id, p.ref_date, p.value, p.revision, collected_at, raw_object)
+                (series_id, p.ref_date, p.value, p.revision, collected_at, raw_for(p.ref_date))
                 for p in planned
             ],
         )

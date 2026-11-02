@@ -33,7 +33,7 @@ pnpm install
 # 3. Coleta do IPCA (IBGE + Banco Central) para o banco local
 eval "$(supabase status -o env | grep -E '^(API_URL|SERVICE_ROLE_KEY|DB_URL)=')"
 DATABASE_URL="$DB_URL" SUPABASE_URL="$API_URL" SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY" \
-  uv run python -m pipelines.run ipca
+  uv run python -m pipelines.run todos
 
 # 4. Web (copie apps/web/.env.example para apps/web/.env.local e preencha com API_URL e ANON_KEY)
 pnpm dev   # http://localhost:3000/indicador/ipca-12-meses

@@ -33,6 +33,7 @@
 @use "@carbon/react/scss/type";
 @use "@carbon/react/scss/components/button";
 @use "@carbon/react/scss/components/tabs";
+@use "@carbon/react/scss/components/content-switcher";
 @use "@carbon/react/scss/components/data-table";
 @use "@carbon/react/scss/components/link";
 
@@ -182,6 +183,10 @@ a {
     font-size: 20px;
     font-weight: 600;
     margin: var(--bd-space-xl) 0 var(--bd-space-sm);
+  }
+  code,
+  a {
+    overflow-wrap: anywhere; // caminhos e URLs longos quebram no celular
   }
   code {
     font-family: var(--bd-type-source-line-font-family);

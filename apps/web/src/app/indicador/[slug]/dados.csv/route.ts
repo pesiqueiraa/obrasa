@@ -2,7 +2,7 @@
 // série, unidade e data de coleta (docs/04, F0).
 
 import { buildCsv } from "@/lib/csv";
-import { getIndicatorView, listIndicatorSlugs } from "@/lib/data";
+import { getIndicatorView, listIndicatorSlugs, seriesUrl } from "@/lib/data";
 
 export async function generateStaticParams() {
   const slugs = await listIndicatorSlugs();
@@ -19,7 +19,7 @@ export async function GET(_request: Request, ctx: RouteContext<"/indicador/[slug
       titulo: indicator.titulo,
       orgao: exibida.source.orgao,
       fonteNome: exibida.source.nome,
-      urlFonte: exibida.source.url_fonte,
+      urlFonte: seriesUrl(exibida.source, exibida.series),
       seriesId: exibida.series.id,
       codigoExterno: exibida.series.codigo_externo,
       serieNome: exibida.series.nome,

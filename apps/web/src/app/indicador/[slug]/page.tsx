@@ -5,12 +5,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { ChartPanel } from "@/components/ChartPanel";
-import { IndicatorCard } from "@/components/IndicatorCard";
+import { ChartPanel, type Variante } from "@/components/ChartPanel";
+import { IndicatorHero } from "@/components/IndicatorHero";
 import { SourceLine } from "@/components/SourceLine";
 import styles from "@/components/ui.module.scss";
-import { getIndicatorView, listIndicatorSlugs } from "@/lib/data";
-import { formatDate, monthShort } from "@/lib/format";
+import { getIndicatorView, getTemas, listIndicatorSlugs, type SeriesBundle } from "@/lib/data";
+import { formatDate, formatRef } from "@/lib/format";
 
 export async function generateStaticParams() {
   const slugs = await listIndicatorSlugs();
@@ -23,19 +23,78 @@ export async function generateMetadata(props: PageProps<"/indicador/[slug]">): P
   return { title: view?.indicator.titulo ?? "Indicador" };
 }
 
+const EIXO: Record<string, string> = {
+  "%": "%",
+  "% a.a.": "% ao ano",
+  "% do PIB": "% do PIB",
+  "R$": "reais",
+  "R$/US$": "reais por dólar",
+  "índice": "índice",
+};
+
+function variante(id: string, rotulo: string, b: SeriesBundle, atualizadoEm: string | null, subtitulo: string): Variante {
+  const first = b.obs[0];
+  const last = b.obs[b.obs.length - 1];
+  const f = b.series.frequencia;
+  return {
+    id,
+    rotulo,
+    serieRotulo: b.series.nome,
+    subtitulo,
+    obs: b.obs.map((o) => ({ refDate: o.refDate, value: o.value })),
+    sourceLine: (
+      <SourceLine
+        source={b.source}
+        series={b.series}
+        refDate={last.refDate}
+        periodo={`${formatRef(first.refDate, f)} a ${formatRef(last.refDate, f)}`}
+        atualizadoEm={atualizadoEm}
+      />
+    ),
+  };
+}
+
 async function IndicatorContent({ params }: Pick<PageProps<"/indicador/[slug]">, "params">) {
   const { slug } = await params;
   const view = await getIndicatorView(slug);
   if (!view) notFound();
+  const temas = await getTemas();
+  const tema = temas.find((t) => t.slug === view.indicator.tema);
 
-  const { indicator, exibida, principal, usandoReserva, atualizadoEm, correcoesRecentes } = view;
+  const { indicator, exibida, principal, nominal, usandoReserva, atualizadoEm, correcoesRecentes } = view;
   const { series, source, obs } = exibida;
   const first = obs[0];
   const latest = obs[obs.length - 1];
+  const f = series.frequencia;
+  const desde = `Série desde ${formatRef(first.refDate, f)}.`;
+
+  const variantes: Variante[] = nominal
+    ? [
+        variante(
+          "real",
+          "Real",
+          exibida,
+          atualizadoEm,
+          `${series.nome}, em reais a preços de ${formatRef(latest.refDate, f)} (corrigido pelo IBGE). ${desde}`,
+        ),
+        variante(
+          "nominal",
+          "Nominal",
+          nominal,
+          atualizadoEm,
+          `${nominal.series.nome}, em reais de cada período, sem correção pela inflação. ${desde}`,
+        ),
+      ]
+    : [variante("unica", "", exibida, atualizadoEm, `${series.nome}, em ${series.unidade}. ${desde}`)];
 
   return (
     <>
       <div className="container section">
+        {tema ? (
+          <p className={styles.crumb}>
+            <Link href={`/${tema.slug}`}>{tema.titulo}</Link>
+          </p>
+        ) : null}
         {correcoesRecentes.length > 0 ? (
           <p className={styles.banner} role="status">
             Este indicador teve{" "}
@@ -46,33 +105,25 @@ async function IndicatorContent({ params }: Pick<PageProps<"/indicador/[slug]">,
         ) : null}
         {usandoReserva ? (
           <p className={styles.banner} role="status">
-            O dado de {monthShort(latest.refDate)} ainda não está disponível na fonte principal (
+            O dado de {formatRef(latest.refDate, f)} ainda não está disponível na fonte principal (
             {principal.source.orgao}). Mostramos a republicação do {source.orgao}, que é a fonte reserva deste
             indicador.
           </p>
         ) : null}
-        <IndicatorCard view={view} headingLevel={1} />
+        <IndicatorHero view={view} />
       </div>
 
       <div className="section section--surface">
         <div className="container">
           <ChartPanel
             titulo={indicator.titulo}
-            subtitulo={`${series.nome}, em ${series.unidade}, por mês de referência. Série desde ${monthShort(first.refDate)}.`}
-            serieRotulo={series.nome}
             unidade={series.unidade}
-            obs={obs}
+            casas={indicator.casas_decimais}
+            frequencia={f}
+            eixo={EIXO[series.unidade] ?? series.unidade}
+            variantes={variantes}
             janelaPadrao={indicator.janela_padrao}
             csvHref={`/indicador/${indicator.slug}/dados.csv`}
-            sourceLine={
-              <SourceLine
-                source={source}
-                series={series}
-                refDate={latest.refDate}
-                periodo={`${monthShort(first.refDate)} a ${monthShort(latest.refDate)}`}
-                atualizadoEm={atualizadoEm}
-              />
-            }
           />
         </div>
       </div>
@@ -81,7 +132,7 @@ async function IndicatorContent({ params }: Pick<PageProps<"/indicador/[slug]">,
         <div className="prose">
           <h2 className="headline">Metodologia</h2>
           <p>
-            De onde vem o número, como conferimos o valor publicado e o histórico de revisões:{" "}
+            De onde vem o número, como ele é conferido e o histórico de revisões:{" "}
             <Link href={`/metodologia/${indicator.slug}`}>metodologia deste indicador</Link>.
           </p>
         </div>

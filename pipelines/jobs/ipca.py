@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import itertools
 import logging
-from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from zoneinfo import ZoneInfo
@@ -18,6 +17,7 @@ import psycopg
 
 from pipelines import db
 from pipelines.config import Registry
+from pipelines.jobs.report import Report
 from pipelines.models import Observation, ValidationError
 from pipelines.raw_store import RawStore
 from pipelines.sources import bcb_sgs, ibge_agregados
@@ -84,13 +84,6 @@ def compare_sources(primary: list[Observation], reserve: list[Observation]) -> l
     """Meses em que a reserva (BCB) difere da fonte principal (IBGE)."""
     pri = {o.ref_date: o.value for o in primary}
     return [o.ref_date for o in reserve if o.ref_date in pri and pri[o.ref_date] != o.value]
-
-
-@dataclass
-class Report:
-    summaries: list[db.WriteSummary] = field(default_factory=list)
-    errors: list[str] = field(default_factory=list)
-    warnings: list[str] = field(default_factory=list)
 
 
 def collect_ibge(conn: psycopg.Connection, store: RawStore, report: Report) -> list[Observation]:

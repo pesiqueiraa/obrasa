@@ -1,35 +1,41 @@
 "use client";
 
 // Gráfico de linha com @carbon/charts-react (DESIGN.md, "Implementação").
-// Uma série: chart-1 (#23408E). Linha pode não começar do zero, mas o eixo fica
-// sempre visível e rotulado. Sem animação.
+// Uma série: chart-1 (#23408E). A linha pode não começar do zero, mas o eixo fica
+// sempre visível e rotulado. Sem animação do Carbon.
 
 import { LineChart } from "@carbon/charts-react";
 import { ScaleTypes, type LineChartOptions } from "@carbon/charts";
 import "@carbon/charts-react/styles.css";
-import { formatNumber, monthShort, parseRef } from "@/lib/format";
-import type { Obs } from "@/lib/indicator";
+import { formatNumber, formatRef, formatValue, parseDay, type FrequenciaRef } from "@/lib/format";
 
 const CHART_1 = "#23408E";
 
 function toDate(ref: string): Date {
-  const [y, m] = parseRef(ref);
-  return new Date(y, m - 1, 1);
+  const [y, m, d] = parseDay(ref);
+  return new Date(y, m - 1, d);
 }
 
 function toRef(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
 export default function LineChartClient({
   obs,
   serieRotulo,
   unidade,
+  casas,
+  eixo,
+  frequencia,
   pontos,
 }: {
-  obs: Obs[];
+  obs: { refDate: string; value: number }[];
   serieRotulo: string;
   unidade: string;
+  casas: number;
+  eixo: string;
+  frequencia: FrequenciaRef;
   pontos: boolean;
 }) {
   const data = obs.map((o) => ({ group: serieRotulo, date: toDate(o.refDate), value: o.value }));
@@ -42,19 +48,21 @@ export default function LineChartClient({
     points: { enabled: pontos, radius: 3 },
     color: { scale: { [serieRotulo]: CHART_1 } },
     axes: {
-      bottom: { mapsTo: "date", scaleType: ScaleTypes.TIME, title: "Mês de referência" },
+      bottom: { mapsTo: "date", scaleType: ScaleTypes.TIME, title: "Referência" },
       left: {
         mapsTo: "value",
         scaleType: ScaleTypes.LINEAR,
-        title: unidade === "%" ? "% acumulado em 12 meses" : unidade,
+        title: eixo,
         includeZero: false,
-        ticks: { formatter: (v: number | Date) => formatNumber(Number(v), Math.abs(Number(v)) >= 100 ? 0 : 1) },
+        ticks: {
+          formatter: (v: number | Date) => formatNumber(Number(v), Math.abs(Number(v)) >= 100 ? 0 : Math.min(casas, 1)),
+        },
       },
     },
     tooltip: {
       valueFormatter: (value: unknown, label: string) => {
-        if (value instanceof Date) return monthShort(toRef(value));
-        return label === "x-value" ? String(value) : `${formatNumber(Number(value))}${unidade === "%" ? "%" : ""}`;
+        if (value instanceof Date) return formatRef(toRef(value), frequencia);
+        return label === "x-value" ? String(value) : formatValue(Number(value), unidade, casas);
       },
     },
     locale: { code: "pt-BR", number: (v: number) => formatNumber(v) },

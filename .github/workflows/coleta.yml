@@ -17,8 +17,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  ipca:
-    name: IPCA (IBGE 1737; reserva BCB SGS 433 e 13522)
+  series:
+    name: Séries oficiais (IBGE e Banco Central)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: producao
@@ -36,4 +36,4 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           RAW_STORE: supabase
-        run: uv run python -m pipelines.run ipca
+        run: uv run python -m pipelines.run todos

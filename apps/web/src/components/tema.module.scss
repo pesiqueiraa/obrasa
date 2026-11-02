@@ -1,0 +1,74 @@
+// Página de tema: cabeçalho, bloco próprio do tema e grade de indicadores.
+
+.cabecalho {
+  max-width: 44rem;
+  h1 {
+    font-size: 36px;
+    font-weight: 300;
+    line-height: 1.15;
+    margin: 0 0 var(--bd-space-sm);
+    @media (min-width: 672px) {
+      font-size: var(--bd-type-display-lg-font-size);
+    }
+  }
+  p {
+    font-size: var(--bd-type-body-lg-font-size);
+    color: var(--bd-color-ink-muted);
+    margin: 0;
+  }
+}
+
+.destaque {
+  background: var(--bd-color-canvas);
+  border: 1px solid var(--bd-color-hairline);
+  padding: var(--bd-space-lg) var(--bd-space-md);
+  @media (min-width: 672px) {
+    padding: var(--bd-space-xl);
+  }
+}
+
+.destaqueTitulo {
+  font-size: var(--bd-type-headline-font-size);
+  font-weight: 400;
+  line-height: 1.25;
+  margin: 0 0 var(--bd-space-xs);
+}
+
+.destaqueSub {
+  color: var(--bd-color-ink-muted);
+  font-size: var(--bd-type-body-sm-font-size);
+  max-width: 40rem;
+  margin: 0 0 var(--bd-space-lg);
+}
+
+.fontes {
+  margin-top: var(--bd-space-lg);
+  padding-top: var(--bd-space-sm);
+  border-top: 1px solid var(--bd-color-hairline);
+  display: grid;
+  gap: var(--bd-space-xxs);
+}
+
+.waffles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bd-space-xl);
+  align-items: flex-start;
+}
+
+.bloco {
+  margin-top: var(--bd-space-xl);
+  max-width: 40rem;
+}
+
+.blocoTitulo {
+  font-size: var(--bd-type-body-font-size);
+  font-weight: 600;
+  margin: 0 0 var(--bd-space-sm);
+}
+
+.secaoTitulo {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 var(--bd-space-md);
+}

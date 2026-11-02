@@ -406,6 +406,30 @@ Usado em Quanto eu pago e no Simulador da reforma: "Estimativa. Veja a metodolog
 ### `correction-banner`
 Aparece no topo de qualquer página cujo dado foi corrigido nos últimos 30 dias, com link para o registro de correções.
 
+### `theme-nav`
+Navegação por temas no topo: Brasil hoje, Economia, Trabalho, Contas públicas (e os próximos temas, na ordem de `config/temas.yaml`). O item ativo tem texto `ink` 600 e sublinhado de 3px em `primary`, que desliza entre itens. No celular, os temas ficam numa segunda linha com rolagem horizontal; Metodologia fica à direita da marca.
+
+### `brasil-hoje-board`
+A home é um quadro de instrumentos: uma linha por tema, abaixo de um filete de 2px em `ink`. Colunas no desktop: tema (nome, resumo, link para o tema) · indicador principal (rótulo, chip, valor de 56px, variação) · sparkline. A `source-line` curta fica embaixo do valor. Não é uma grade de cartões.
+
+### `release-agenda`
+Linha do tempo das próximas divulgações, com as datas dos calendários coletados. Linha vertical de 2px em `ink`, um marcador quadrado por dia, dia em 32px light. Mostra só datas que existem no banco.
+
+### `indicator-tile`
+Versão compacta do `indicator-card` para a grade de cada tema: rótulo e chip, valor de 36px com sparkline ao lado, base do valor real quando monetário, variação e `source-line` curta. Grade de 1/2/3 colunas separada por filetes, sem frase. O tile inteiro é link (stretched link), e a linha de fonte continua clicável.
+
+### `sparkline`
+Linha de 1,5px em `chart-1` com ponto no último valor, sem eixo. Sempre acompanhada do valor e da `source-line`; é decorativa para leitor de tela (`aria-hidden`). Série diária usa o último valor de cada mês.
+
+### Bloco próprio de cada tema
+Cada página de tema abre com uma visualização diferente, para a navegação não ficar repetitiva. Todas têm título, subtítulo com unidade e período, descrição em texto para leitor de tela e uma `source-line` por série usada.
+- **Economia, `dual-line`**: meta Selic e IPCA 12 meses no mesmo eixo, 10 anos, rótulo direto no fim de cada linha (`chart-1` e `chart-2`), sem legenda separada.
+- **Trabalho, `waffle`**: 100 quadrados, "de cada 100 pessoas na força de trabalho". O valor decimal preenche parte do último quadrado (nada é arredondado). Ao lado, o mesmo período um ano antes, em cinza. Abaixo, `proportion-bar` da informalidade (parte em `chart-1`, resto em cinza).
+- **Contas públicas, `pib-ruler`**: régua de 0 a 100% do PIB (estende se algum valor passar). Para cada dívida, faixa cinza do menor ao maior valor da série, com as datas escritas, e marcador em `primary` no valor atual.
+
+### Movimento
+Biblioteca `motion`, com `MotionConfig reducedMotion="user"`: quem pede menos movimento vê tudo parado no estado final. Só três momentos: o sublinhado da navegação desliza; sparklines e linhas do bloco do tema se desenham uma vez ao entrar na tela; o waffle e a régua se preenchem uma vez. Nada se move em loop, nada anima no hover.
+
 ### Módulo de notícias (padrão WIRED)
 - **`news-story-row`**: linha com divisória fina, como a story-row da WIRED. Contém o `outlet-eyebrow` (nome do veículo), o título em Plex Serif, a hora e um mini `indicator-card` ao lado (empilhado embaixo no celular). O link vai para o site do veículo.
 - **`news-cluster`**: título neutro do grupo em `news-headline-lg`, seguido de uma `news-story-row` por veículo e, se houver, das `fact-check-row`.
