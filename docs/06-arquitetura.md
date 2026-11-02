@@ -244,6 +244,20 @@ pelo git (`config/aprovacoes.yaml`).
   fonte, não instrução".
 - **Entrada do investigador:** job com erro grava `data/agentes/falhas-<job>.json`
   (`AGENTES_DIR` muda a pasta).
+- **Investigador** (`pipelines/agentes/investigar.py`): lê `falhas-<job>.json` e grava um
+  diagnóstico em `data/agentes/diagnosticos/`, com causa (fonte fora do ar, formato
+  mudou, descrição mudou, revisão, salto real, atraso, erro nosso ou indeterminado),
+  evidências citadas literalmente das ferramentas e links oficiais para conferir.
+  Diagnóstico que não passa nas verificações sai recusado, sem o texto do modelo. Em
+  falha de salto, o rascunho de liberação é montado por código a partir do erro.
+- **Núcleo** (`pipelines/agentes/nucleo.py`): `claude-opus-5-5`, saída em JSON com
+  schema, até 25 turnos, uma chance de correção quando a verificação recusa, fallback
+  do servidor em caso de recusa de segurança. Cada execução grava um JSONL em
+  `data/agentes/registros/` com entrada, chamadas, ferramentas, saída, modelo e versão do
+  prompt (verificação 3 acima).
+- **Avaliação** (`pipelines/agentes/avaliar.py`): casos com causa conhecida em
+  `pipelines/agentes/avaliacao/investigar.yaml`, incluindo uma tentativa de injeção numa
+  resposta bruta. Gasta API; rodar antes de mudar prompt ou modelo.
 - **Credencial:** `AGENTES_DATABASE_URL`. Local: `postgresql://leitor:leitor@127.0.0.1:55322/postgres`
   (senha em `supabase/seed.sql`, que só roda no banco local). Produção: senha definida à
   mão no painel.
