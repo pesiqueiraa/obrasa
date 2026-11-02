@@ -20,7 +20,7 @@ $desktop: 1056px;
     border: 0;
     border-bottom: 1px solid var(--bd-color-ink-muted);
     padding: 8px 28px 8px 12px;
-    min-height: 40px;
+    min-height: max(40px, var(--bd-alvo-toque));
     appearance: none;
     background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
       linear-gradient(135deg, currentColor 50%, transparent 50%);
@@ -42,7 +42,7 @@ $desktop: 1056px;
   background: var(--bd-color-surface-1);
   border-bottom: 1px solid var(--bd-color-ink-muted);
   padding: 0 12px;
-  min-height: 40px;
+  min-height: max(40px, var(--bd-alvo-toque));
   font-size: 16px;
   color: var(--bd-color-ink-muted);
   &:focus-within {
@@ -75,7 +75,7 @@ $desktop: 1056px;
   border: 1px solid var(--bd-color-surface-2);
   color: var(--bd-color-ink);
   padding: 6px 12px;
-  min-height: 32px;
+  min-height: max(32px, var(--bd-alvo-toque));
   cursor: pointer;
   &:hover {
     border-color: var(--bd-color-ink);
@@ -137,8 +137,8 @@ $desktop: 1056px;
   border: 0;
   font-size: 22px;
   line-height: 1;
-  width: 40px;
-  min-height: 40px;
+  width: max(40px, var(--bd-alvo-toque));
+  min-height: max(40px, var(--bd-alvo-toque));
   color: var(--bd-color-ink-muted);
   &:hover {
     color: var(--bd-color-ink);
@@ -236,7 +236,7 @@ $desktop: 1056px;
     @extend %botao;
     font-size: 13px;
     padding: 4px 10px;
-    min-height: 28px;
+    min-height: max(28px, var(--bd-alvo-toque));
   }
 }
 
@@ -345,8 +345,8 @@ $desktop: 1056px;
   button {
     @extend %botao;
     font-size: 20px;
-    width: 40px;
-    min-height: 40px;
+    width: max(40px, var(--bd-alvo-toque));
+    min-height: max(40px, var(--bd-alvo-toque));
     padding: 0;
     &:disabled {
       opacity: 0.35;

@@ -12,6 +12,7 @@ import { useEffect, useMemo, useState } from "react";
 import { feature, mesh } from "topojson-client";
 import type { GeometryCollection, Topology } from "topojson-specification";
 import type { MapaPresidente as Dados } from "@/lib/eleicoes";
+import { useLeitura } from "../viz/useLeitura";
 import styles from "./eleicoes.module.scss";
 import { inteiro, nomeProprio, pct } from "./util";
 
@@ -27,13 +28,26 @@ function faixa(share: number): number {
   return Math.min(4, Math.floor(share * 5));
 }
 
+type FocoMun = { ibge: number; x: number; y: number; esq: boolean; cima: boolean; toque: boolean };
+
 export function MapaPresidente({ candidatos }: { candidatos: Record<1 | 2, CandidatoMapa[]> }) {
   const [malha, setMalha] = useState<Malha | null>(null);
   const [dados, setDados] = useState<Dados | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [turno, setTurno] = useState<1 | 2>(2);
   const [nr, setNr] = useState(candidatos[2][0]?.nr ?? candidatos[1][0].nr);
-  const [foco, setFoco] = useState<{ ibge: number; x: number; y: number } | null>(null);
+  // Mouse ou dedo sobre o mapa: o município sob o ponteiro (useLeitura). Arrastar o dedo
+  // percorre os municípios. O dedo cobre a dica flutuante, então no toque a leitura fica só
+  // na linha acima do mapa, e um anel marca onde o dedo está; com mouse, a dica segue o
+  // ponteiro e abre para o lado com mais espaço.
+  const { foco, props: leitura } = useLeitura<FocoMun, SVGSVGElement>(({ clientX, clientY, alvo, toque }) => {
+    const ibge = Number(document.elementFromPoint(clientX, clientY)?.getAttribute("data-m"));
+    if (!ibge) return null;
+    const box = alvo.getBoundingClientRect();
+    const x = clientX - box.left;
+    const y = clientY - box.top;
+    return { ibge, x, y, esq: x > box.width / 2, cima: y > box.height * 0.6, toque };
+  });
 
   useEffect(() => {
     let vivo = true;
@@ -99,6 +113,7 @@ export function MapaPresidente({ candidatos }: { candidatos: Record<1 | 2, Candi
   };
   const info = foco && porMunicipio?.get(foco.ibge);
   const nomeMun = foco && dados?.municipios[foco.ibge];
+  const contorno = foco ? desenho?.municipios.find((m) => m.ibge === foco.ibge)?.d : null;
 
   return (
     <div className={styles.mapa}>
@@ -139,7 +154,19 @@ export function MapaPresidente({ candidatos }: { candidatos: Record<1 | 2, Candi
         ))}
       </ul>
 
-      <div className={styles.mapaCaixa} onMouseLeave={() => setFoco(null)}>
+      <p className={styles.leituraMun} aria-hidden="true">
+        {info && nomeMun ? (
+          <>
+            <strong>
+              {nomeMun[0]} ({nomeMun[1]})
+            </strong>
+            : {pct(info.votos, info.val)} dos válidos · {inteiro(info.votos)} de {inteiro(info.val)} votos
+          </>
+        ) : (
+          "Passe o mouse ou o dedo sobre o mapa para ver cada município."
+        )}
+      </p>
+      <div className={styles.mapaCaixa}>
         {erro ? <p className={styles.mapaErro}>{erro}</p> : null}
         {!desenho || !porMunicipio ? (
           !erro && <p className={styles.mapaCarregando}>Carregando mapa dos 5.570 municípios…</p>
@@ -149,13 +176,7 @@ export function MapaPresidente({ candidatos }: { candidatos: Record<1 | 2, Candi
             className={styles.mapaSvg}
             role="img"
             aria-label={`Mapa do Brasil por município: votos válidos de ${nomeProprio(atual.nome)} no ${turno}º turno, em faixas de 20 pontos percentuais. A tabela por estado abaixo traz os mesmos dados.`}
-            onPointerMove={(e) => {
-              const t = e.target as SVGElement;
-              const ibge = Number(t.dataset.m);
-              if (!ibge) return setFoco(null);
-              const box = e.currentTarget.getBoundingClientRect();
-              setFoco({ ibge, x: e.clientX - box.left, y: e.clientY - box.top });
-            }}
+            {...leitura}
           >
             <g>
               {desenho.municipios.map((m) => {
@@ -166,10 +187,20 @@ export function MapaPresidente({ candidatos }: { candidatos: Record<1 | 2, Candi
             </g>
             <path d={desenho.divisas} className={styles.divisa} />
             <path d={desenho.borda} className={styles.borda} />
+            {contorno ? <path d={contorno} className={styles.focoMun} /> : null}
           </svg>
         )}
-        {info && nomeMun ? (
-          <div className={styles.dica} style={{ left: foco!.x, top: foco!.y }} role="status">
+        {foco?.toque && info ? (
+          <span className={styles.alvoDedo} style={{ left: foco.x, top: foco.y }} aria-hidden="true" />
+        ) : null}
+        {info && nomeMun && !foco!.toque ? (
+          <div
+            className={styles.dica}
+            data-esq={foco!.esq || undefined}
+            data-cima={foco!.cima || undefined}
+            style={{ left: foco!.x, top: foco!.y }}
+            role="status"
+          >
             <strong>
               {nomeMun[0]} ({nomeMun[1]})
             </strong>

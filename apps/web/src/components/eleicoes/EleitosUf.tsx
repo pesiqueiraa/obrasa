@@ -27,7 +27,7 @@ export function EleitosUf({ eleitos }: { eleitos: Eleito[] }) {
             return (
               <tr key={uf}>
                 <th scope="row">
-                  <abbr title={UF_NOME[uf]}>{uf}</abbr>
+                  {UF_NOME[uf]}
                 </th>
                 <td>{g ? <>{nomeProprio(g.nome)} <span className={styles.partido}>{g.partido}</span></> : "–"}</td>
                 <td>{g ? `${g.turno}º turno` : "–"}</td>

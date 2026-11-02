@@ -15,6 +15,7 @@ import {
 import {
   chooseSeries,
   delayStatus,
+  lacunas,
   lastOfMonth,
   nextRelease,
   sliceWindow,
@@ -260,5 +261,33 @@ describe("frases dos templates do repositório", () => {
     const ctx = { refDate: "2026-11-01", value: 13.75, unidade: "% a.a.", casas: 2, frequencia: "diaria" as const, obs };
     expect(inicioDoValorVigente(ctx)).toBe("2026-09-18");
     expect(frase("selic.pt.txt", tpl("selic.pt.txt"), ctx)).toContain("está em 13,75% ao ano desde 18 de setembro de 2026");
+  });
+});
+
+describe("lacunas no gráfico", () => {
+  const o = (refDate: string) => ({ refDate, value: 1 });
+
+  it("série diária resumida por mês (último dia útil) não ganha lacuna entre meses seguidos", () => {
+    const obs = [o("2025-08-29"), o("2025-09-30"), o("2025-10-31")];
+    expect(lacunas(obs, 1)).toEqual([o("2025-08-29"), o("2025-09-30"), o("2025-10-31")].map((x) => ({ ...x, lacuna: false })));
+  });
+
+  it("mês que a fonte não publicou vira ponto vazio", () => {
+    const r = lacunas([o("2025-08-01"), o("2025-11-01")], 1);
+    expect(r.map((x) => [x.refDate, x.lacuna])).toEqual([
+      ["2025-08-01", false],
+      ["2025-09-01", true],
+      ["2025-10-01", true],
+      ["2025-11-01", false],
+    ]);
+  });
+
+  it("série anual sem 2020 e 2021 interrompe a linha nesses anos", () => {
+    const r = lacunas([o("2019-01-01"), o("2022-01-01")], 12);
+    expect(r.filter((x) => x.lacuna).map((x) => x.refDate)).toEqual(["2020-01-01", "2021-01-01"]);
+  });
+
+  it("sem passo (série diária na janela de 12 meses), nada muda", () => {
+    expect(lacunas([o("2026-01-02"), o("2026-01-05")], undefined).every((x) => !x.lacuna)).toBe(true);
   });
 });

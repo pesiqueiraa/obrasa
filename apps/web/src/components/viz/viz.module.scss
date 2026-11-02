@@ -305,3 +305,70 @@
   background: var(--bd-color-chart-1);
   color: var(--bd-color-canvas);
 }
+
+// Leitura por mouse ou dedo (LeituraLinha, JurosInflacao): fio vertical, ponto vazado e
+// etiqueta escura com período e valor, como na minilinha.
+.leitura {
+  position: relative;
+  // a régua e a dica do Carbon dão lugar à nossa leitura
+  :global(g.ruler),
+  :global(.cds--cc--tooltip) {
+    display: none !important;
+  }
+}
+
+.leituraFio {
+  position: absolute;
+  width: 0;
+  border-left: 1px solid var(--bd-color-ink-muted);
+  pointer-events: none;
+}
+
+.leituraPonto {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background: var(--bd-color-canvas);
+  border: 2px solid var(--bd-color-chart-1);
+  pointer-events: none;
+}
+
+.leituraEtiqueta {
+  position: absolute;
+  background: var(--bd-color-ink);
+  color: var(--bd-color-canvas);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+  padding: 3px 8px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 2;
+  &[data-esq] {
+    transform: translateX(-100%);
+  }
+}
+
+// Linha de leitura acima do gráfico de duas séries: o mês e os dois valores. Altura fixa
+// para o gráfico não pular quando a leitura aparece.
+.leituraLinha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px var(--bd-space-sm);
+  min-height: 3em;
+  margin: 0 0 var(--bd-space-xs);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--bd-color-ink-muted);
+  font-variant-numeric: tabular-nums;
+  span {
+    font-weight: 600;
+  }
+  strong {
+    color: var(--bd-color-ink);
+  }
+}

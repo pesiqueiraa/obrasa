@@ -34,7 +34,7 @@ export function Regua({ linhas }: { linhas: LinhaRegua[] }) {
       {linhas.map((l, i) => (
         <div key={l.slug} className={styles.reguaRow}>
           <p className={styles.reguaTitle}>
-            <Link href={`/indicador/${l.slug}`}>{l.titulo}</Link>
+            <Link href={`/indicador/${l.slug}`} className="toque">{l.titulo}</Link>
             <span className={styles.reguaValue}>
               {l.valorTexto} <span className={styles.reguaRef}>em {l.ref}</span>
             </span>

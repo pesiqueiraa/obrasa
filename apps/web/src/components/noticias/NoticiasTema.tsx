@@ -19,7 +19,7 @@ export async function NoticiasTema({ tema, titulo }: { tema: string; titulo: str
         <h2 id={`noticias-${tema}`} className={styles.blocoTitulo}>
           Notícias sobre {titulo.toLocaleLowerCase("pt-BR")}
         </h2>
-        <Link href={`/noticias#${tema}`} className={styles.mais}>
+        <Link href={`/noticias#${tema}`} className={`toque ${styles.mais}`}>
           Ver todas as notícias
         </Link>
       </div>

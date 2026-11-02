@@ -25,6 +25,7 @@ import { useId, useState, type ReactNode } from "react";
 import { formatNumber, formatRef, formatRefLong, formatValue, type FrequenciaRef } from "@/lib/format";
 import { JANELAS, lastOfMonth, sliceWindow, type Janela } from "@/lib/indicator";
 import styles from "./ui.module.scss";
+import { LeituraLinha } from "./viz/LeituraLinha";
 
 const LineChart = dynamic(() => import("./LineChartClient"), {
   ssr: false,
@@ -115,15 +116,21 @@ export function ChartPanel(props: ChartPanelProps) {
                   <>
                     <p className="visually-hidden">{descricao}</p>
                     <div className={styles.chart}>
-                      <LineChart
-                        obs={pontos}
-                        serieRotulo={variante.serieRotulo}
-                        unidade={unidade}
-                        casas={casas}
-                        eixo={eixo}
-                        frequencia={refFreq}
-                        pontos={pontos.length <= 16}
-                      />
+                      <LeituraLinha
+                        rotulos={pontos.map(
+                          (o) => `${formatRef(o.refDate, mensalizar ? "diaria" : frequencia)}: ${formatValue(o.value, unidade, casas)}`,
+                        )}
+                      >
+                        <LineChart
+                          obs={pontos}
+                          serieRotulo={variante.serieRotulo}
+                          unidade={unidade}
+                          casas={casas}
+                          eixo={eixo}
+                          frequencia={refFreq}
+                          pontos={pontos.length <= 16}
+                        />
+                      </LeituraLinha>
                     </div>
                     {mensalizar ? (
                       <p className={styles.caption}>

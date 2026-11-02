@@ -8,6 +8,7 @@ import type { IndicatorView } from "@/lib/data";
 import { formatDate, formatRef } from "@/lib/format";
 import { present } from "@/lib/present";
 import { frase } from "@/lib/template";
+import { Compartilhar } from "./Compartilhar";
 import { FrequencyChip } from "./FrequencyChip";
 import { SourceLine } from "./SourceLine";
 import { Variacao } from "./Variacao";
@@ -51,6 +52,7 @@ export function IndicatorHero({ view }: { view: IndicatorView }) {
             ? "Divulgação diária, nos dias úteis."
             : "Próxima divulgação: sem data no calendário coletado da fonte."}
       </p>
+      <Compartilhar titulo={indicator.titulo} />
     </section>
   );
 }

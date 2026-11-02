@@ -13,6 +13,7 @@ import { formatRef, formatValue } from "@/lib/format";
 import type { DesenhoUf, MapaUfDados } from "@/lib/regional";
 import ui from "./ui.module.scss";
 import styles from "./mapaUf.module.scss";
+import { useLeitura } from "./viz/useLeitura";
 
 const W = 600;
 const H = 600;
@@ -26,7 +27,11 @@ export function MapaUf({ mapas, desenho }: { mapas: MapaUfDados[]; desenho: Dese
   const [k, setK] = useState(0);
   const m = mapas[k];
   const [p, setP] = useState(m.periodos.length - 1);
-  const [foco, setFoco] = useState<number | null>(null);
+  // Mouse ou dedo sobre o mapa: o estado sob o ponteiro (arrastar percorre os estados).
+  const { foco, setFoco, props: leitura } = useLeitura<number, SVGSVGElement>(({ clientX, clientY }) => {
+    const uf = Number(document.elementFromPoint(clientX, clientY)?.getAttribute("data-uf"));
+    return uf || null;
+  });
   const reduz = useReducedMotion();
   const idRange = useId();
 
@@ -81,8 +86,19 @@ export function MapaUf({ mapas, desenho }: { mapas: MapaUfDados[]; desenho: Dese
       </div>
 
       <div className={styles.corpo}>
-        <div className={styles.caixa} onPointerLeave={() => setFoco(null)}>
+        <div className={styles.caixa}>
+          <p className={styles.leitura} aria-hidden="true">
+            {foco != null && vals[foco] !== undefined ? (
+              <>
+                <strong>{m.nomes[foco]}</strong>: {fmt(vals[foco])} · {ordem.findIndex((o) => o.uf === foco) + 1}º de{" "}
+                {ordem.length}
+              </>
+            ) : (
+              "Passe o mouse ou o dedo sobre um estado para ver o valor."
+            )}
+          </p>
           <svg
+            {...leitura}
             viewBox={`0 0 ${W} ${H}`}
             role="img"
             aria-label={`Mapa do Brasil por estado: ${m.titulo.toLowerCase()}, ${periodo(ref)}. A lista ao lado traz os mesmos números.`}
@@ -92,8 +108,7 @@ export function MapaUf({ mapas, desenho }: { mapas: MapaUfDados[]; desenho: Dese
                 key={u.uf}
                 d={u.d}
                 className={styles[`b${faixa(vals[u.uf], lim)}`]}
-                onPointerEnter={() => setFoco(u.uf)}
-                onClick={() => setFoco(u.uf)}
+                data-uf={u.uf}
               />
             ))}
             <path d={desenho.divisas} className={styles.divisa} />
@@ -111,7 +126,11 @@ export function MapaUf({ mapas, desenho }: { mapas: MapaUfDados[]; desenho: Dese
         </div>
 
         <LayoutGroup id={`lista-${m.id}`}>
-          <ol className={styles.lista} aria-label={`Estados em ordem, ${periodo(ref)}`}>
+          <ol
+            className={styles.lista}
+            aria-label={`Estados em ordem, ${periodo(ref)}`}
+            onPointerLeave={(e) => e.pointerType === "mouse" && setFoco(null)}
+          >
             {ordem.map(({ uf, v }, pos) => (
               <motion.li
                 key={uf}

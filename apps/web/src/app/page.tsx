@@ -38,11 +38,11 @@ function Linha({ tema, titulo, views, i }: { tema: string; titulo: string; views
   return (
     <li className={styles.linha}>
       <h2 className={styles.tema}>
-        <Link href={`/${tema}`}>{titulo}</Link>
+        <Link href={`/${tema}`} className="toque">{titulo}</Link>
       </h2>
       <div className={styles.numero}>
         <p className={styles.rotulo}>
-          <Link href={`/indicador/${lead.indicator.slug}`}>{lead.indicator.titulo}</Link>
+          <Link href={`/indicador/${lead.indicator.slug}`} className="toque">{lead.indicator.titulo}</Link>
           <FrequencyChip frequencia={s.frequencia} atraso={lead.atraso} />
         </p>
         <p className={styles.valor}>
@@ -83,11 +83,11 @@ async function LinhaEleicao({ tema, titulo }: { tema: string; titulo: string }) 
   return (
     <li className={styles.linha}>
       <h2 className={styles.tema}>
-        <Link href={`/${tema}`}>{titulo}</Link>
+        <Link href={`/${tema}`} className="toque">{titulo}</Link>
       </h2>
       <div className={styles.numero}>
         <p className={styles.rotulo}>
-          <Link href={`/${tema}`}>Presidente, 2º turno</Link>
+          <Link href={`/${tema}`} className="toque">Presidente, 2º turno</Link>
           <span className={ui.chip}>Por eleição</span>
         </p>
         <p className={styles.valor}>{pct(a.votos, t2.validos)}</p>
@@ -136,7 +136,7 @@ function Agenda({ itens }: { itens: Item[] }) {
               <ul>
                 {grupo.map((it) => (
                   <li key={it.slug}>
-                    <Link href={`/indicador/${it.slug}`}>{it.titulo}</Link>
+                    <Link href={`/indicador/${it.slug}`} className="toque">{it.titulo}</Link>
                     <span>
                       {it.orgao}, ref. {it.ref}
                     </span>
@@ -147,7 +147,7 @@ function Agenda({ itens }: { itens: Item[] }) {
           );
         })}
       </ol>
-      <Link href="/agenda" className={styles.agendaMais}>
+      <Link href="/agenda" className={`toque ${styles.agendaMais}`}>
         Agenda completa, com as reuniões do Copom
       </Link>
     </section>

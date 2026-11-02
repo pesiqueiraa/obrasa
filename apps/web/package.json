@@ -9,6 +9,7 @@
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "tokens": "node scripts/design-tokens.mjs",
     "auditar-tela": "node --env-file=.env.local scripts/auditar-tela.mjs"
   },
@@ -27,6 +28,7 @@
     "yaml": "^2.9.1"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.0",
     "@types/d3-geo": "^3.1.1",
     "@types/node": "^20",
     "@types/react": "^19",

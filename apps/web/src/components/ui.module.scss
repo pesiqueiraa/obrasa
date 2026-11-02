@@ -8,6 +8,16 @@
   position: sticky;
   top: 0;
   z-index: 10;
+  // Abaixo de 1056px o cabeçalho sai de cena ao rolar para baixo (CabecalhoRecolhe).
+  @media (max-width: 1055px) {
+    transition: transform 0.2s cubic-bezier(0.2, 0, 0.38, 0.9);
+    &[data-oculto] {
+      transform: translateY(-100%);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
 }
 
 // Celular: marca e Metodologia na primeira linha, temas rolando na segunda.
@@ -101,7 +111,11 @@
   align-items: center;
   gap: var(--bd-space-md);
   min-height: 48px;
+  white-space: nowrap;
   > a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 48px;
     color: var(--bd-color-ink);
     text-decoration: none;
     &:hover {
@@ -119,7 +133,7 @@
     background: none;
     border: 0;
     padding: 0;
-    min-height: 44px;
+    min-height: max(44px, var(--bd-alvo-toque));
     cursor: pointer;
     span {
       font-size: 10px;
@@ -166,10 +180,25 @@
     margin: 0;
     padding: 0;
   }
+  // esmaece a borda do lado em que há temas escondidos
+  --esq: 0px;
+  --dir: 0px;
+  &[data-borda-esq] {
+    --esq: 32px;
+  }
+  &[data-borda-dir] {
+    --dir: 32px;
+  }
+  mask-image: linear-gradient(to right, transparent 0, #000 var(--esq), #000 calc(100% - var(--dir)), transparent 100%);
   ul {
     display: flex;
     gap: var(--bd-space-lg);
     white-space: nowrap;
+    // A lista com a largura dos temas (e não a da faixa): sem isso, o recuo da direita
+    // do <nav> sumia ao rolar até o fim e o último tema (Notícias) encostava na borda.
+    @media (max-width: 1055px) {
+      width: max-content;
+    }
     @media (min-width: 1056px) {
       gap: 20px;
     }
@@ -178,7 +207,7 @@
     position: relative;
     display: inline-flex;
     align-items: center;
-    min-height: 44px;
+    min-height: max(44px, var(--bd-alvo-toque));
     color: var(--bd-color-ink-muted);
     text-decoration: none;
     @media (min-width: 1056px) {
@@ -466,6 +495,23 @@
 .tabsScroller {
   overflow-x: auto;
   margin-bottom: var(--bd-space-md);
+  // No celular as quatro janelas dividem a largura e cabem sem a seta de rolar do Carbon.
+  // Seletores longos: o CSS do Carbon fixa `flex: 1 0 auto` com especificidade alta.
+  @media (max-width: 671px) {
+    :global(.cds--tabs .cds--tab--list) {
+      width: 100%;
+    }
+    :global(.cds--tabs .cds--tab--list .cds--tabs__nav-item.cds--tabs__nav-link) {
+      flex: 1 1 0;
+      min-width: 0;
+      max-width: none;
+      justify-content: center;
+      padding-inline: 4px;
+    }
+    :global(.cds--tabs .cds--tab--overflow-nav-button) {
+      display: none;
+    }
+  }
 }
 
 .chart {
@@ -511,6 +557,53 @@
   font-size: var(--bd-type-body-sm-font-size);
   margin: 0 0 var(--bd-space-md);
   a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--bd-alvo-toque);
     color: var(--bd-color-ink-muted);
   }
+}
+
+// Em 320px, "Ferramentas" e "Metodologia" cabem ao lado da marca com um vão menor.
+@media (max-width: 359px) {
+  .topNavInner {
+    column-gap: var(--bd-space-xs);
+  }
+  .brand {
+    font-size: 20px;
+  }
+  .navAside {
+    gap: var(--bd-space-sm);
+  }
+}
+
+// Botão Compartilhar (Compartilhar.tsx): mesmo desenho dos botões terciários do painel.
+.compartilhar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bd-space-sm);
+  margin-top: var(--bd-space-md);
+  button {
+    font: inherit;
+    font-size: 14px;
+    background: none;
+    border: 1px solid var(--bd-color-primary);
+    color: var(--bd-color-primary);
+    padding: 6px 16px;
+    min-height: max(40px, var(--bd-alvo-toque));
+    cursor: pointer;
+    &:hover {
+      background: var(--bd-color-surface-1);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--bd-color-primary);
+      outline-offset: 2px;
+    }
+  }
+}
+
+.compartilharAviso {
+  font-size: var(--bd-type-caption-font-size);
+  color: var(--bd-color-ink-muted);
 }

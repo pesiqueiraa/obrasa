@@ -33,7 +33,7 @@ export function TabelaUf({ turno, linhas, votos, apuracao }: { turno: Turno; lin
             const soma = cols.reduce((s, l) => s + v(a.uf, l.c.nr), 0);
             return (
               <tr key={a.uf} className={a.uf === "BR" ? styles.linhaTotal : undefined}>
-                <th scope="row">{a.uf === "BR" ? "Brasil" : <abbr title={UF_NOME[a.uf]}>{a.uf}</abbr>}</th>
+                <th scope="row">{a.uf === "BR" ? "Brasil" : UF_NOME[a.uf]}</th>
                 {cols.map((l) => (
                   <td key={l.c.nr} className="num">
                     {pct(v(a.uf, l.c.nr), a.validos)}

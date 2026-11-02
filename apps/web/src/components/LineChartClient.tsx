@@ -7,11 +7,8 @@
 import { LineChart } from "@carbon/charts-react";
 import { ScaleTypes, type LineChartOptions } from "@carbon/charts";
 import "@carbon/charts-react/styles.css";
-import { addMonths, formatNumber, formatRef, formatValue, parseDay, type FrequenciaRef } from "@/lib/format";
-
-// Distância entre períodos; um período ausente na fonte vira ponto vazio, e a linha
-// é interrompida ali em vez de ligar os vizinhos (ex.: PNAD anual sem 2020 e 2021).
-const PASSO: Partial<Record<FrequenciaRef, number>> = { mensal: 1, trimestral_movel: 1, trimestral: 3, anual: 12 };
+import { formatNumber, formatRef, formatValue, parseDay, type FrequenciaRef } from "@/lib/format";
+import { lacunas, PASSO_MESES } from "@/lib/indicator";
 
 const CHART_1 = "#23408E";
 
@@ -42,16 +39,13 @@ export default function LineChartClient({
   frequencia: FrequenciaRef;
   pontos: boolean;
 }) {
-  const passo = PASSO[frequencia];
-  const data: { group: string; date: Date; value: number | null }[] = [];
-  obs.forEach((o, i) => {
-    if (passo && i > 0) {
-      for (let r = addMonths(obs[i - 1].refDate, passo); r < o.refDate; r = addMonths(r, passo)) {
-        data.push({ group: serieRotulo, date: toDate(r), value: null });
-      }
-    }
-    data.push({ group: serieRotulo, date: toDate(o.refDate), value: o.value });
-  });
+  // Período ausente na fonte vira ponto vazio, e a linha é interrompida ali em vez de
+  // ligar os vizinhos (ex.: PNAD anual sem 2020 e 2021).
+  const data = lacunas(obs, PASSO_MESES[frequencia]).map((o) => ({
+    group: serieRotulo,
+    date: toDate(o.refDate),
+    value: o.lacuna ? null : o.value,
+  }));
   const options: LineChartOptions = {
     height: "320px",
     animations: false,
@@ -72,7 +66,9 @@ export default function LineChartClient({
         },
       },
     },
+    // a leitura é do LeituraLinha (mouse e dedo); a dica do Carbon fica desligada
     tooltip: {
+      enabled: false,
       valueFormatter: (value: unknown, label: string) => {
         if (value instanceof Date) return formatRef(toRef(value), frequencia);
         return label === "x-value" ? String(value) : formatValue(Number(value), unidade, casas);

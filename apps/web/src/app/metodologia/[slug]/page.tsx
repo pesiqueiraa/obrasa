@@ -73,13 +73,13 @@ function SeriesFacts({ bundle, papel }: { bundle: SeriesBundle; papel: string })
           </tr>
           <tr>
             <th scope="row">Dado na fonte</th>
-            <td>{url ? <a href={url}>{url}</a> : "sem link"}</td>
+            <td>{url ? <a href={url} className="toque">{url}</a> : "sem link"}</td>
           </tr>
           {source.url_documentacao ? (
             <tr>
               <th scope="row">Documentação da API</th>
               <td>
-                <a href={source.url_documentacao}>{source.url_documentacao}</a>
+                <a href={source.url_documentacao} className="toque">{source.url_documentacao}</a>
               </td>
             </tr>
           ) : null}
@@ -87,7 +87,7 @@ function SeriesFacts({ bundle, papel }: { bundle: SeriesBundle; papel: string })
             <tr>
               <th scope="row">Metodologia da fonte</th>
               <td>
-                <a href={source.url_metodologia}>{source.url_metodologia}</a>
+                <a href={source.url_metodologia} className="toque">{source.url_metodologia}</a>
               </td>
             </tr>
           ) : null}
@@ -114,7 +114,7 @@ async function MethodologyContent({ params }: Pick<PageProps<"/metodologia/[slug
     <div className="container section">
       <div className="prose">
         <p>
-          <Link href={`/indicador/${indicator.slug}`}>← {indicator.titulo}</Link>
+          <Link href={`/indicador/${indicator.slug}`} className="toque">← {indicator.titulo}</Link>
         </p>
         <h1 className="display">Metodologia: {indicator.titulo}</h1>
         <p className="body-lg">

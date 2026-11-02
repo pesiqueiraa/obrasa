@@ -131,6 +131,28 @@ export const PASSO_MESES: Partial<Record<Frequencia, number>> = {
   anual: 12,
 };
 
+/**
+ * Pontos do gráfico com os períodos que a fonte não publicou marcados como lacuna, para a
+ * linha ser interrompida ali em vez de ligar os vizinhos. Compara só ano e mês: a série
+ * diária resumida por mês cai no último dia útil (29/08, 30/09…), e isso não é lacuna.
+ */
+export function lacunas<T extends { refDate: string }>(
+  obs: T[],
+  passo: number | undefined,
+): ((T & { lacuna: false }) | { refDate: string; lacuna: true })[] {
+  const out: ((T & { lacuna: false }) | { refDate: string; lacuna: true })[] = [];
+  const mes = (r: string) => r.slice(0, 7);
+  obs.forEach((o, i) => {
+    if (passo && i > 0) {
+      for (let r = addMonths(obs[i - 1].refDate, passo); mes(r) < mes(o.refDate); r = addMonths(r, passo)) {
+        out.push({ refDate: r, lacuna: true });
+      }
+    }
+    out.push({ ...o, lacuna: false });
+  });
+  return out;
+}
+
 export type Atraso = { atrasado: false } | { atrasado: true; desde: string; rotulo: string };
 
 /**

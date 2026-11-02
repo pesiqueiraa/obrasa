@@ -34,7 +34,7 @@ $tons: 14%, 32%, 52%, 74%, 100%;
     background: none;
     border: 0;
     padding: 8px 14px;
-    min-height: 40px;
+    min-height: max(40px, var(--bd-alvo-toque));
     color: var(--bd-color-ink-muted);
     cursor: pointer;
     &[aria-checked="true"] {
@@ -57,6 +57,9 @@ $tons: 14%, 32%, 52%, 74%, 100%;
   color: var(--bd-color-ink-muted);
   input {
     width: min(100%, 22rem);
+    // área de toque maior; a barra e a bolinha nativas continuam do mesmo tamanho
+    height: max(16px, var(--bd-alvo-toque));
+    margin: 0;
     accent-color: var(--bd-color-primary);
   }
 }
@@ -187,3 +190,18 @@ $tons: 14%, 32%, 52%, 74%, 100%;
   text-align: right;
   min-width: 3.5rem;
 }
+
+// Linha de leitura acima do mapa: o estado sob o mouse ou o dedo, com valor e posição.
+// Fica fora do alcance do dedo e tem altura fixa, para o mapa não pular.
+.leitura {
+  min-height: 1.5em;
+  margin: 0 0 var(--bd-space-xs);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--bd-color-ink-muted);
+  font-variant-numeric: tabular-nums;
+  strong {
+    color: var(--bd-color-ink);
+  }
+}
+

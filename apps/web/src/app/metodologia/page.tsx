@@ -13,7 +13,7 @@ async function IndicatorList() {
       {views.map((v) =>
         v ? (
           <li key={v.indicator.slug}>
-            <Link href={`/metodologia/${v.indicator.slug}`}>{v.indicator.titulo}</Link>
+            <Link href={`/metodologia/${v.indicator.slug}`} className="toque">{v.indicator.titulo}</Link>
           </li>
         ) : null,
       )}

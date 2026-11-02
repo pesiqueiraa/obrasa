@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { ViewTransition } from "react";
 import { MotionRoot } from "@/components/MotionRoot";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: { default: "oBrasa", template: "%s · oBrasa" },
   description: "Dados oficiais do Brasil, com contexto e sem lado.",
 };
+
+// Cor da barra do navegador no celular: o fundo do site (DESIGN.md, `canvas`).
+export const viewport: Viewport = { themeColor: "#ffffff" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

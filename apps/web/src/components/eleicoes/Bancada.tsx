@@ -3,13 +3,24 @@
 // Bancadas eleitas: um quadrado por cadeira, agrupados por partido na ordem do número de
 // eleitos (empate: ordem alfabética). Não há eixo esquerda–direita: a ordem é só o
 // tamanho. Grupos vizinhos alternam dois tons da mesma cor, para ver onde cada um termina.
-// Passar o mouse ou o foco num partido da lista destaca as cadeiras dele.
+// Passar o mouse, o foco ou o dedo num partido da lista destaca as cadeiras dele. No
+// toque, o destaque fica até tocar em outro partido ou fora da lista (no iPhone, tocar
+// num botão não lhe dá foco, então o foco sozinho não serve).
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./eleicoes.module.scss";
 
 export function Bancada({ titulo, partidos, colunas }: { titulo: string; partidos: { partido: string; eleitos: number }[]; colunas: number }) {
   const [ativo, setAtivo] = useState<string | null>(null);
+  const lista = useRef<HTMLUListElement>(null);
+  useEffect(() => {
+    if (!ativo) return;
+    const fora = (e: PointerEvent) => {
+      if (!lista.current?.contains(e.target as Node)) setAtivo(null);
+    };
+    document.addEventListener("pointerdown", fora);
+    return () => document.removeEventListener("pointerdown", fora);
+  }, [ativo]);
   const ordem = [...partidos].sort((a, b) => b.eleitos - a.eleitos || a.partido.localeCompare(b.partido));
   const total = ordem.reduce((s, p) => s + p.eleitos, 0);
   const cadeiras = ordem.flatMap((p, i) => Array.from({ length: p.eleitos }, () => ({ partido: p.partido, tom: i % 2 })));
@@ -30,7 +41,7 @@ export function Bancada({ titulo, partidos, colunas }: { titulo: string; partido
           />
         ))}
       </div>
-      <ul className={styles.partidos}>
+      <ul className={styles.partidos} ref={lista}>
         {ordem.map((p, i) => (
           <li key={p.partido}>
             <button
@@ -41,6 +52,7 @@ export function Bancada({ titulo, partidos, colunas }: { titulo: string; partido
               onMouseLeave={() => setAtivo(null)}
               onFocus={() => setAtivo(p.partido)}
               onBlur={() => setAtivo(null)}
+              onClick={() => setAtivo(p.partido)}
             >
               <span className={`${styles.chave} ${i % 2 ? styles.tom2 : styles.tom1}`} aria-hidden="true" />
               {p.partido} <strong>{p.eleitos}</strong>

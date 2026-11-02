@@ -104,6 +104,10 @@ body {
 
 main {
   flex: 1;
+  // O conteúdo chega em partes (pré-renderização parcial). Sem altura mínima, o rodapé
+  // aparece no alto da tela e é empurrado para baixo quando o conteúdo chega: no celular,
+  // um deslocamento de layout (CLS) de 0,53. Com a altura da tela, ele nasce abaixo da dobra.
+  min-height: 100svh;
 }
 
 a {
@@ -304,5 +308,29 @@ html body .cds--chart-holder {
   from {
     opacity: 0;
     transform: translateX(-32px);
+  }
+}
+
+// Alvo de toque (DESIGN.md, "Responsive Behavior"): 48px em tela de toque, sem mudar o
+// desktop. Uso: `min-height: max(<tamanho no desktop>, var(--bd-alvo-toque));`.
+:root {
+  --bd-alvo-toque: 0px;
+}
+@media (pointer: coarse) {
+  :root {
+    --bd-alvo-toque: 48px;
+  }
+  // Link solto (o único conteúdo do bloco, como título de tema ou item de lista): área de
+  // toque de 48px. Link no meio de uma frase não leva a classe (WCAG 2.5.8 o dispensa).
+  .toque {
+    display: inline-flex;
+    align-items: center;
+    min-height: 48px;
+    overflow-wrap: anywhere;
+  }
+  // Botões do Carbon (Ver tabela, Baixar CSV, abas) passam de 40px para 48px.
+  .cds--btn,
+  .cds--tabs .cds--tabs__nav-link {
+    min-height: 48px;
   }
 }

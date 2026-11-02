@@ -11,6 +11,7 @@ import { useId, useState } from "react";
 import { formatNumber, formatRef } from "@/lib/format";
 import { leValor } from "@/lib/contas";
 import type { IndiceIpca } from "@/lib/ferramentas";
+import { Compartilhar } from "../Compartilhar";
 import { Fonte } from "./Fonte";
 import { SeletorMes } from "./SeletorMes";
 import styles from "./ferramentas.module.scss";
@@ -132,6 +133,7 @@ export function Calculadora({ indice, inicial }: { indice: IndiceIpca; inicial: 
           + Adicionar outro valor
         </button>
       ) : null}
+      <Compartilhar titulo="Calculadora da inflação" />
 
       {a?.corrigido && b?.corrigido && a.valor != null && b.valor != null ? (
         <p className={styles.comparacao}>

@@ -2,11 +2,11 @@
 
 // Minilinha de tendência (DESIGN.md, "sparkline"). Decorativa: o valor, a variação e a
 // janela estão em texto ao lado, por isso aria-hidden. Desenha-se uma vez ao aparecer.
-// Com `rotulos`, passar o mouse ou o dedo mostra o período e o valor do ponto mais
-// próximo (um fio, um ponto e uma etiqueta); parado, nada além da linha aparece.
+// Com `rotulos`, passar o mouse ou arrastar o dedo mostra o período e o valor do ponto
+// mais próximo (um fio, um ponto e uma etiqueta; useLeitura); parado, nada além da linha.
 
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useLeitura } from "./useLeitura";
 
 export function Sparkline({
   values,
@@ -21,10 +21,19 @@ export function Sparkline({
   delay?: number;
   rotulos?: (string | null)[];
 }) {
-  const [foco, setFoco] = useState<number | null>(null);
+  const pad = 3;
+  const { foco, props: leitura } = useLeitura<number, SVGSVGElement>(({ clientX, alvo }) => {
+    const box = alvo.getBoundingClientRect();
+    const alvoI = Math.round(((clientX - box.left - pad) / (box.width - pad * 2)) * (values.length - 1));
+    // o ponto com dado mais próximo (pula períodos que a fonte não publicou)
+    let melhor: number | null = null;
+    values.forEach((v, i) => {
+      if (v !== null && (melhor === null || Math.abs(i - alvoI) < Math.abs(melhor - alvoI))) melhor = i;
+    });
+    return melhor;
+  });
   const nums = values.filter((v): v is number => v !== null);
   if (nums.length < 2) return null;
-  const pad = 3;
   const min = Math.min(...nums);
   const max = Math.max(...nums);
   const span = max - min || 1;
@@ -38,16 +47,6 @@ export function Sparkline({
     .join(" ");
   const lastX = x(values.length - 1);
   const lastY = y(nums[nums.length - 1]);
-  const lerPonto = (e: React.PointerEvent<SVGSVGElement>) => {
-    const box = e.currentTarget.getBoundingClientRect();
-    const alvo = Math.round(((e.clientX - box.left - pad) / (box.width - pad * 2)) * (values.length - 1));
-    // o ponto com dado mais próximo (pula períodos que a fonte não publicou)
-    let melhor: number | null = null;
-    values.forEach((v, i) => {
-      if (v !== null && (melhor === null || Math.abs(i - alvo) < Math.abs(melhor - alvo))) melhor = i;
-    });
-    setFoco(melhor);
-  };
   const fv = foco !== null ? values[foco] : null;
   const svg = (
     <svg
@@ -56,10 +55,8 @@ export function Sparkline({
       viewBox={`0 0 ${width} ${height}`}
       aria-hidden="true"
       focusable="false"
-      onPointerMove={rotulos ? lerPonto : undefined}
-      onPointerDown={rotulos ? lerPonto : undefined}
-      onPointerLeave={rotulos ? () => setFoco(null) : undefined}
-      style={rotulos ? { touchAction: "pan-y", cursor: "crosshair", position: "relative", zIndex: 1 } : undefined}
+      {...(rotulos ? leitura : {})}
+      style={rotulos ? { ...leitura.style, cursor: "crosshair", position: "relative", zIndex: 1 } : undefined}
     >
       <motion.path
         d={d}

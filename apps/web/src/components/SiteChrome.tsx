@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getTemas } from "@/lib/data";
+import { CabecalhoRecolhe } from "./CabecalhoRecolhe";
 import { Logo } from "./Logo";
 import { MenuFerramentas } from "./MenuFerramentas";
 import { ThemeNav } from "./ThemeNav";
@@ -9,7 +10,7 @@ export async function SiteHeader() {
   const temas = await getTemas();
   const items = [{ href: "/", rotulo: "Brasil hoje" }, ...temas.map((t) => ({ href: `/${t.slug}`, rotulo: t.titulo }))];
   return (
-    <header className={styles.topNav}>
+    <CabecalhoRecolhe>
       <div className={`container ${styles.topNavInner}`}>
         <Link href="/" className={styles.brand} aria-label="oBrasa, página inicial">
           <Logo />
@@ -20,7 +21,7 @@ export async function SiteHeader() {
           <Link href="/metodologia">Metodologia</Link>
         </div>
       </div>
-    </header>
+    </CabecalhoRecolhe>
   );
 }
 

@@ -497,6 +497,13 @@ Herdado da IBM, com estes ajustes:
 - `display-lg` cai de 42px para 32px abaixo de 672px.
 - Abas de janela rolam na horizontal dentro do próprio container no celular. A página nunca rola de lado.
 - Gráficos ficam com altura mínima de 220px no celular, com "Ver tabela" logo abaixo.
+- **Alvo de toque no código:** `--bd-alvo-toque` vale 48px em tela de toque (`pointer: coarse`) e 0 no mouse. Controle pequeno usa `min-height: max(<tamanho no desktop>, var(--bd-alvo-toque))`, e o desktop não muda. Link solto (único conteúdo do bloco: título de tema, item de lista, "Ver todas") leva a classe global `toque`. Link no meio de uma frase fica como está.
+- **Campos de texto e listas de seleção com 16px**, para o iPhone não dar zoom ao tocar.
+- **Nada só no hover.** Toda leitura que aparece ao passar o mouse também aparece com o dedo (`useLeitura`): tocar mostra o ponto, arrastar o dedo para os lados percorre a série ou o mapa, a leitura fica depois de soltar e some ao tocar fora. Arrastar para cima ou para baixo continua rolando a página. Nos gráficos: fio vertical, ponto vazado e etiqueta com período e valor; com duas séries, a leitura vai numa linha acima do gráfico. Nos mapas, a leitura vai numa linha acima do mapa (o dedo cobriria uma dica), com contorno no estado ou município e, no toque, um anel onde o dedo está. Informação nunca fica só no atributo `title`, que o celular não mostra.
+- **Texto de gráfico em SVG** não encolhe junto com o desenho: o gráfico mede a própria largura e desenha em pixels reais, para o texto ficar com 12px ou mais.
+- **Cabeçalho abaixo de 1056px:** sai de cena ao rolar para baixo e volta ao rolar para cima; nunca sai com o menu Ferramentas aberto ou com o foco de teclado dentro dele. A faixa de temas rola até o tema aberto e esmaece a borda do lado em que há mais temas.
+- **Compartilhar:** a página do indicador e a calculadora têm o botão "Compartilhar" (folha do sistema no celular; copia o link onde ela não existe). Compartilha só título e endereço, nunca um número.
+- Teste: `pnpm --filter @brasilado/web test:e2e` confere tudo isso num celular emulado, em 320 e 375px.
 
 ## Implementação
 

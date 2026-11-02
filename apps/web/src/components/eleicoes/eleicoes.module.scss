@@ -43,7 +43,9 @@ $tons: (12%, 30%, 50%, 74%, 100%);
 
 .dueloNomes {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  // minmax(0, 1fr): a coluna encolhe abaixo do conteúdo; sem isso, nome e percentual
+  // empurram a grade para fora do cartão no celular.
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--bd-space-md);
   p {
     margin: 0;
@@ -57,10 +59,12 @@ $tons: (12%, 30%, 50%, 74%, 100%);
 .dueloNome {
   font-size: var(--bd-type-body-lg-font-size);
   font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 .dueloPct {
-  font-size: 44px;
+  // 320px de tela: 32px; cresce até 44px; 64px a partir de 672px.
+  font-size: clamp(32px, 10vw, 44px);
   font-weight: 300;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
@@ -195,7 +199,7 @@ $tons: (12%, 30%, 50%, 74%, 100%);
   border: 1px solid var(--bd-color-ink);
   label {
     padding: var(--bd-space-xs) var(--bd-space-md);
-    min-height: 40px;
+    min-height: max(40px, var(--bd-alvo-toque));
     display: inline-flex;
     align-items: center;
   }
@@ -213,7 +217,7 @@ $tons: (12%, 30%, 50%, 74%, 100%);
   label {
     border: 1px solid var(--bd-color-hairline-strong, var(--bd-color-ink-muted));
     padding: var(--bd-space-xxs) var(--bd-space-sm);
-    min-height: 36px;
+    min-height: max(36px, var(--bd-alvo-toque));
     display: inline-flex;
     align-items: center;
     gap: var(--bd-space-xxs);
@@ -317,6 +321,48 @@ $tons: (12%, 30%, 50%, 74%, 100%);
   pointer-events: none;
   white-space: nowrap;
   z-index: 2;
+  &[data-esq] {
+    transform: translate(calc(-100% - 12px), 12px);
+  }
+  &[data-cima] {
+    transform: translate(12px, calc(-100% - 12px));
+  }
+  &[data-esq][data-cima] {
+    transform: translate(calc(-100% - 12px), calc(-100% - 12px));
+  }
+}
+
+// Linha de leitura acima do mapa por município (fora do alcance do dedo; altura fixa
+// para o mapa não pular). Contorno no município em foco e anel onde o dedo está.
+.leituraMun {
+  min-height: 3em;
+  margin: 0 0 var(--bd-space-xs);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--bd-color-ink-muted);
+  font-variant-numeric: tabular-nums;
+  strong {
+    color: var(--bd-color-ink);
+  }
+}
+
+.focoMun {
+  fill: none !important;
+  stroke: var(--bd-color-ink) !important;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.alvoDedo {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  border-radius: 50%;
+  border: 2px solid var(--bd-color-ink);
+  box-shadow: 0 0 0 2px var(--bd-color-canvas);
+  pointer-events: none;
 }
 
 .nota {
@@ -331,7 +377,7 @@ $tons: (12%, 30%, 50%, 74%, 100%);
     cursor: pointer;
     color: var(--bd-color-primary);
     text-decoration: underline;
-    min-height: 44px;
+    min-height: max(44px, var(--bd-alvo-toque));
     display: flex;
     align-items: center;
   }
@@ -469,7 +515,7 @@ $tons: (12%, 30%, 50%, 74%, 100%);
   display: inline-flex;
   align-items: center;
   gap: var(--bd-space-xxs);
-  min-height: 32px;
+  min-height: max(32px, var(--bd-alvo-toque));
   padding: 0 var(--bd-space-xs);
   border: 1px solid var(--bd-color-hairline);
   background: var(--bd-color-canvas);
