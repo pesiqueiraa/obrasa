@@ -1,0 +1,18 @@
+# Reuniões do Copom (docs/05, "Banco Central · Calendário do Copom"). O Banco Central
+# publica o calendário uma vez por ano, só numa página montada no navegador, sem API:
+#   https://www.bcb.gov.br/controleinflacao/calendarioreunioescopom
+# Por isso as datas entram aqui à mão. O job `agenda` confere cada reunião que já aconteceu
+# contra a API de comunicados do BC (número da reunião e dia da decisão) e recusa gravar
+# se alguma data divergir. Calendário de 2026 divulgado pelo BC em 24/06/2025; conferido
+# em 02/11/2026. O de 2027 entra quando o BC publicar (em geral, em junho).
+
+fonte: https://www.bcb.gov.br/controleinflacao/calendarioreunioescopom
+reunioes:
+  - {numero: 276, inicio: 2026-01-27, decisao: 2026-01-28}
+  - {numero: 277, inicio: 2026-03-17, decisao: 2026-03-18}
+  - {numero: 278, inicio: 2026-04-28, decisao: 2026-04-29}
+  - {numero: 279, inicio: 2026-06-16, decisao: 2026-06-17}
+  - {numero: 280, inicio: 2026-08-04, decisao: 2026-08-05}
+  - {numero: 281, inicio: 2026-09-15, decisao: 2026-09-16}
+  - {numero: 282, inicio: 2026-11-03, decisao: 2026-11-04}
+  - {numero: 283, inicio: 2026-12-08, decisao: 2026-12-09}

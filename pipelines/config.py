@@ -263,3 +263,77 @@ def load_noticias(config_dir: Path = CONFIG_DIR, temas: list[Tema] | None = None
     if desconhecidos := set(n.temas) - slugs:
         raise ValueError(f"noticias.yaml cita temas fora de temas.yaml: {sorted(desconhecidos)}")
     return n
+
+
+# ---- Agenda: reuniões do Copom (config/copom.yaml) ----
+
+
+class ReuniaoCopom(_Strict):
+    numero: int
+    inicio: date
+    decisao: date
+
+    @model_validator(mode="after")
+    def _check(self) -> ReuniaoCopom:
+        if not 0 <= (self.decisao - self.inicio).days <= 2:
+            raise ValueError(f"reunião {self.numero}: decisão fora dos dias da reunião")
+        return self
+
+
+class Copom(_Strict):
+    fonte: str
+    reunioes: list[ReuniaoCopom]
+
+    @model_validator(mode="after")
+    def _check(self) -> Copom:
+        numeros = [r.numero for r in self.reunioes]
+        if numeros != sorted(set(numeros)):
+            raise ValueError("reuniões do Copom repetidas ou fora de ordem")
+        datas = [r.inicio for r in self.reunioes]
+        if datas != sorted(datas):
+            raise ValueError("reuniões do Copom fora da ordem das datas")
+        return self
+
+
+def load_copom(config_dir: Path = CONFIG_DIR) -> Copom:
+    return Copom(**yaml.safe_load((config_dir / "copom.yaml").read_text(encoding="utf-8")))
+
+
+# ---- Mapas por estado (config/regional.yaml) ----
+
+
+class MapaUf(_Strict):
+    id: str
+    tema: str
+    titulo: str
+    indicador: str
+    tabela: int
+    variavel: int
+    classificacao: str | None = None
+    frequencia: Literal["mensal", "trimestral_movel", "trimestral", "anual"]
+    periodos: str
+    unidade: str
+    casas: int
+    faixa: tuple[Decimal, Decimal]
+
+
+class Regional(_Strict):
+    mapas: list[MapaUf]
+
+    @model_validator(mode="after")
+    def _check(self) -> Regional:
+        ids = [m.id for m in self.mapas]
+        if len(set(ids)) != len(ids):
+            raise ValueError("mapas com id repetido (config/regional.yaml)")
+        return self
+
+
+def load_regional(config_dir: Path = CONFIG_DIR, registry: Registry | None = None) -> Regional:
+    r = Regional(**yaml.safe_load((config_dir / "regional.yaml").read_text(encoding="utf-8")))
+    reg = registry or load(config_dir)
+    slugs = {i.slug for i in reg.indicators}
+    temas = {t.slug for t in reg.temas}
+    for m in r.mapas:
+        if m.indicador not in slugs or m.tema not in temas:
+            raise ValueError(f"mapa {m.id}: indicador ou tema fora do registro")
+    return r

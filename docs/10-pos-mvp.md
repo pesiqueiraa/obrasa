@@ -25,6 +25,7 @@ Roadmap das features depois da primeira versão, organizado por fases. Cada fase
 - **Esforço:** M
 
 ### 2.2 Agenda do que vem aí
+- **Feito em parte (02/11/2026):** `/agenda` com divulgações do IBGE e reuniões do Copom (docs/08, D23). Faltam prazos do orçamento, reforma tributária e votações.
 - **O quê:** calendário com reuniões do Copom, divulgações do IBGE, prazos do orçamento, marcos da reforma tributária e votações importantes ([09](09-calendario.md)).
 - **Por quê:** dá motivo para voltar e alimenta os alertas.
 - **Esforço:** P
@@ -40,8 +41,17 @@ Roadmap das features depois da primeira versão, organizado por fases. Cada fase
 - **Esforço:** G
 
 ### 2.5 Cards para compartilhar
+- **Feito em parte (02/11/2026):** imagem de compartilhamento de cada indicador (docs/08, D25). Falta o QR code.
 - **O quê:** imagem pronta para WhatsApp e redes, gerada a partir de cada indicador, com fonte, data e QR code embutidos na própria imagem.
 - **Por quê:** quando o card é encaminhado, a origem vai junto. É o antídoto direto ao número solto.
+- **Esforço:** P
+
+---
+
+### 2.6 Busca rápida
+- **O quê:** caixa de busca no cabeçalho (atalho `/` no teclado) que encontra indicadores, temas, ferramentas e estados pelo nome ou por sinônimos comuns ("desemprego" → Desocupação, "juros" → Selic). Resultado com o valor atual e a linha de fonte.
+- **Por quê:** com mais temas, ferramentas e mapas, chegar ao número pelo nome fica mais rápido que pela navegação.
+- **Cuidado:** a lista de sinônimos é pública e versionada, como os termos das notícias; sem busca por IA.
 - **Esforço:** P
 
 ---

@@ -8,6 +8,7 @@ import { present } from "@/lib/present";
 import { frase } from "@/lib/template";
 import { FrequencyChip } from "./FrequencyChip";
 import { SourceLine } from "./SourceLine";
+import { Variacao } from "./Variacao";
 import styles from "./ui.module.scss";
 
 export function IndicatorHero({ view }: { view: IndicatorView }) {
@@ -33,7 +34,7 @@ export function IndicatorHero({ view }: { view: IndicatorView }) {
         <span className="visually-hidden"> em {formatRef(p.latest.refDate, series.frequencia)}</span>
       </p>
       {p.baseReal ? <p className={styles.caption}>{p.baseReal}</p> : null}
-      {p.variacao ? <p className={styles.variation}>{p.variacao}</p> : null}
+      {p.variacao ? <Variacao texto={p.variacao} className={styles.variation} /> : null}
       <p className={styles.phrase}>{texto}</p>
       <SourceLine source={source} series={series} refDate={p.latest.refDate} atualizadoEm={atualizadoEm} />
       <p className={styles.caption}>

@@ -9,6 +9,7 @@ import { present } from "@/lib/present";
 import { FrequencyChip } from "./FrequencyChip";
 import { SourceLine } from "./SourceLine";
 import { Sparkline } from "./viz/Sparkline";
+import { Variacao } from "./Variacao";
 import styles from "./ui.module.scss";
 
 export function IndicatorTile({ view, delay = 0 }: { view: IndicatorView; delay?: number }) {
@@ -29,10 +30,10 @@ export function IndicatorTile({ view, delay = 0 }: { view: IndicatorView; delay?
           {p.fmt(p.latest.value)}
           <span className="visually-hidden"> em {formatRef(p.latest.refDate, exibida.series.frequencia)}</span>
         </p>
-        <Sparkline values={p.spark} delay={delay} />
+        <Sparkline values={p.spark} rotulos={p.sparkRotulos} delay={delay} />
       </div>
       {p.baseReal ? <p className={styles.caption}>{p.baseReal}</p> : null}
-      {p.variacao ? <p className={styles.variation}>{p.variacao}</p> : null}
+      {p.variacao ? <Variacao texto={p.variacao} className={styles.variation} /> : null}
       <SourceLine
         source={exibida.source}
         series={exibida.series}

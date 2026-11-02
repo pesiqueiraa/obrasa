@@ -10,6 +10,8 @@ import { TemaDestaque } from "@/components/TemaDestaque";
 import styles from "@/components/tema.module.scss";
 import ui from "@/components/ui.module.scss";
 import { getTemas, getTemaViews } from "@/lib/data";
+import { MapaUf } from "@/components/MapaUf";
+import { getDesenhoUf, getMapasUf } from "@/lib/regional";
 
 export async function generateStaticParams() {
   const temas = await getTemas();
@@ -27,7 +29,8 @@ async function TemaContent({ params }: Pick<PageProps<"/[tema]">, "params">) {
   const { tema } = await params;
   const t = (await getTemas()).find((x) => x.slug === tema && x.pagina !== "propria");
   if (!t) notFound();
-  const views = await getTemaViews(t.slug);
+  const [views, mapas] = await Promise.all([getTemaViews(t.slug), getMapasUf(t.slug)]);
+  const desenho = mapas.length ? await getDesenhoUf() : null;
   return (
     <>
       <div className="container section">
@@ -39,6 +42,7 @@ async function TemaContent({ params }: Pick<PageProps<"/[tema]">, "params">) {
       <div className="section section--surface">
         <div className="container">
           <TemaDestaque tema={t.slug} views={views} />
+          {desenho ? <MapaUf mapas={mapas} desenho={desenho} /> : null}
         </div>
       </div>
       <div className="container section">

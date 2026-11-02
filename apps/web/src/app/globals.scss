@@ -252,3 +252,57 @@ html body .cds--chart-holder {
   --cds-focus-inverse: #ffffff;
   --cds-link-inverse: #9db2f5;
 }
+
+// Troca de tema (DESIGN.md, "Movimento"): o conteúdo sai para um lado e entra pelo outro.
+// O resto da página não participa (sem o esmaecer padrão da página inteira).
+:root {
+  view-transition-name: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(.desliza-avanca) {
+    animation: 160ms cubic-bezier(0.2, 0, 0.38, 0.9) both sai-esquerda;
+  }
+  ::view-transition-new(.desliza-avanca) {
+    animation: 220ms cubic-bezier(0, 0, 0.38, 0.9) 60ms both entra-direita;
+  }
+  ::view-transition-old(.desliza-volta) {
+    animation: 160ms cubic-bezier(0.2, 0, 0.38, 0.9) both sai-direita;
+  }
+  ::view-transition-new(.desliza-volta) {
+    animation: 220ms cubic-bezier(0, 0, 0.38, 0.9) 60ms both entra-esquerda;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+@keyframes sai-esquerda {
+  to {
+    opacity: 0;
+    transform: translateX(-32px);
+  }
+}
+@keyframes sai-direita {
+  to {
+    opacity: 0;
+    transform: translateX(32px);
+  }
+}
+@keyframes entra-direita {
+  from {
+    opacity: 0;
+    transform: translateX(32px);
+  }
+}
+@keyframes entra-esquerda {
+  from {
+    opacity: 0;
+    transform: translateX(-32px);
+  }
+}

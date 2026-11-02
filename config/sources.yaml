@@ -29,6 +29,14 @@ sources:
     url_documentacao: null
     url_metodologia: null
     licenca: Dados abertos do Banco Central
+  - id: bcb_copom
+    nome: Calendário de reuniões do Copom
+    orgao: Banco Central
+    url_fonte: https://www.bcb.gov.br/controleinflacao/calendarioreunioescopom
+    # As datas vêm de config/copom.yaml; as reuniões passadas são conferidas na API de comunicados.
+    url_documentacao: https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados?quantidade=12
+    url_metodologia: null
+    licenca: Dados abertos do Banco Central
   - id: tse_dados_abertos
     nome: Portal de Dados Abertos (resultados e candidaturas)
     orgao: TSE

@@ -2,20 +2,26 @@
 
 // Minilinha de tendência (DESIGN.md, "sparkline"). Decorativa: o valor, a variação e a
 // janela estão em texto ao lado, por isso aria-hidden. Desenha-se uma vez ao aparecer.
+// Com `rotulos`, passar o mouse ou o dedo mostra o período e o valor do ponto mais
+// próximo (um fio, um ponto e uma etiqueta); parado, nada além da linha aparece.
 
 import { motion } from "motion/react";
+import { useState } from "react";
 
 export function Sparkline({
   values,
   width = 120,
   height = 36,
   delay = 0,
+  rotulos,
 }: {
   values: (number | null)[];
   width?: number;
   height?: number;
   delay?: number;
+  rotulos?: (string | null)[];
 }) {
+  const [foco, setFoco] = useState<number | null>(null);
   const nums = values.filter((v): v is number => v !== null);
   if (nums.length < 2) return null;
   const pad = 3;
@@ -32,8 +38,29 @@ export function Sparkline({
     .join(" ");
   const lastX = x(values.length - 1);
   const lastY = y(nums[nums.length - 1]);
-  return (
-    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden="true" focusable="false">
+  const lerPonto = (e: React.PointerEvent<SVGSVGElement>) => {
+    const box = e.currentTarget.getBoundingClientRect();
+    const alvo = Math.round(((e.clientX - box.left - pad) / (box.width - pad * 2)) * (values.length - 1));
+    // o ponto com dado mais próximo (pula períodos que a fonte não publicou)
+    let melhor: number | null = null;
+    values.forEach((v, i) => {
+      if (v !== null && (melhor === null || Math.abs(i - alvo) < Math.abs(melhor - alvo))) melhor = i;
+    });
+    setFoco(melhor);
+  };
+  const fv = foco !== null ? values[foco] : null;
+  const svg = (
+    <svg
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      aria-hidden="true"
+      focusable="false"
+      onPointerMove={rotulos ? lerPonto : undefined}
+      onPointerDown={rotulos ? lerPonto : undefined}
+      onPointerLeave={rotulos ? () => setFoco(null) : undefined}
+      style={rotulos ? { touchAction: "pan-y", cursor: "crosshair", position: "relative", zIndex: 1 } : undefined}
+    >
       <motion.path
         d={d}
         fill="none"
@@ -55,6 +82,41 @@ export function Sparkline({
         viewport={{ once: true }}
         transition={{ duration: 0.2, delay: delay + 0.85 }}
       />
+      {foco !== null && fv != null ? (
+        <g pointerEvents="none">
+          <line x1={x(foco)} x2={x(foco)} y1={0} y2={height} stroke="var(--bd-color-ink-muted)" strokeWidth={1} />
+          <circle cx={x(foco)} cy={y(fv)} r={3.5} fill="var(--bd-color-canvas)" stroke="var(--bd-color-chart-1)" strokeWidth={2} />
+        </g>
+      ) : null}
     </svg>
+  );
+  if (!rotulos) return svg;
+  const rotulo = foco !== null ? rotulos[foco] : null;
+  return (
+    <span style={{ position: "relative", display: "inline-block", lineHeight: 0 }}>
+      {svg}
+      {rotulo ? (
+        <span
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            bottom: "100%",
+            left: Math.min(Math.max(x(foco!), 0), width),
+            transform: `translateX(${x(foco!) > width / 2 ? "-100%" : "0"})`,
+            marginBottom: 4,
+            background: "var(--bd-color-ink)",
+            color: "var(--bd-color-canvas)",
+            font: "600 12px/1.4 var(--bd-type-body-sm-font-family, inherit)",
+            fontVariantNumeric: "tabular-nums",
+            padding: "2px 6px",
+            whiteSpace: "nowrap",
+            pointerEvents: "none",
+            zIndex: 2,
+          }}
+        >
+          {rotulo}
+        </span>
+      ) : null}
+    </span>
   );
 }

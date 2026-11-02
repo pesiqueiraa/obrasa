@@ -1,0 +1,189 @@
+// mapa-uf (DESIGN.md): mapa por estado com divisas grossas e lista ordenada ao lado.
+
+$tablet: 672px;
+$desktop: 1056px;
+$tons: 14%, 32%, 52%, 74%, 100%;
+
+.mapaUf {
+  margin-top: var(--bd-space-xl);
+  padding-top: var(--bd-space-lg);
+  border-top: 1px solid var(--bd-color-hairline);
+}
+
+.topo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-sm);
+  margin-bottom: var(--bd-space-md);
+}
+
+.titulo {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.segmentos {
+  display: inline-flex;
+  flex-wrap: wrap;
+  border: 1px solid var(--bd-color-hairline-strong);
+  width: fit-content;
+  button {
+    font: inherit;
+    font-size: 14px;
+    background: none;
+    border: 0;
+    padding: 8px 14px;
+    min-height: 40px;
+    color: var(--bd-color-ink-muted);
+    cursor: pointer;
+    &[aria-checked="true"] {
+      background: var(--bd-color-ink);
+      color: var(--bd-color-canvas);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--bd-color-primary);
+      outline-offset: 2px;
+    }
+  }
+}
+
+.periodo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bd-space-xs) var(--bd-space-sm);
+  font-size: 13px;
+  color: var(--bd-color-ink-muted);
+  input {
+    width: min(100%, 22rem);
+    accent-color: var(--bd-color-primary);
+  }
+}
+
+.corpo {
+  display: grid;
+  gap: var(--bd-space-lg);
+  @media (min-width: $desktop) {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    align-items: start;
+  }
+}
+
+.caixa {
+  max-width: 600px;
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    touch-action: manipulation;
+  }
+  svg path {
+    stroke: none;
+    transition: fill 0.45s ease;
+    cursor: pointer;
+  }
+  .mapaUf[data-reduz] & svg path {
+    transition: none;
+  }
+}
+
+@each $t in $tons {
+  $i: index($tons, $t) - 1;
+  .b#{$i} {
+    fill: color-mix(in srgb, var(--bd-color-chart-1) #{$t}, var(--bd-color-canvas));
+    background: color-mix(in srgb, var(--bd-color-chart-1) #{$t}, var(--bd-color-canvas));
+  }
+}
+
+// Divisas entre estados: traço grosso na cor do fundo, para separar bem as UFs.
+.divisa {
+  fill: none !important;
+  stroke: var(--bd-color-canvas) !important;
+  stroke-width: 2.6;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.borda {
+  fill: none !important;
+  stroke: var(--bd-color-ink-muted) !important;
+  stroke-width: 1;
+  pointer-events: none;
+}
+
+.foco {
+  fill: none !important;
+  stroke: var(--bd-color-ink) !important;
+  stroke-width: 2.6;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.escala {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bd-space-xs) var(--bd-space-md);
+  list-style: none;
+  margin: var(--bd-space-sm) 0 0;
+  padding: 0;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  span {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 2px solid var(--bd-color-ink);
+  li {
+    display: grid;
+    grid-template-columns: 1.6rem minmax(0, 9.5rem) 1fr auto;
+    align-items: center;
+    gap: var(--bd-space-xs);
+    padding: 3px 4px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--bd-color-hairline);
+    background: var(--bd-color-canvas);
+    &[data-foco] {
+      background: var(--bd-color-surface-1);
+      font-weight: 600;
+    }
+  }
+}
+
+.pos {
+  color: var(--bd-color-ink-muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+
+.nome {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.barra {
+  height: 8px;
+  span {
+    display: block;
+    height: 100%;
+    transition: width 0.45s ease;
+  }
+}
+
+.valor {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  min-width: 3.5rem;
+}

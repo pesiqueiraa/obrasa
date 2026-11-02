@@ -22,7 +22,7 @@
   @media (min-width: 1056px) {
     grid-template-columns: auto 1fr auto;
     grid-template-areas: "brand nav aside";
-    gap: var(--bd-space-xl);
+    gap: var(--bd-space-lg);
   }
 }
 
@@ -96,13 +96,62 @@
 
 .navAside {
   grid-area: aside;
-  color: var(--bd-color-ink);
-  text-decoration: none;
-  min-height: 48px;
   display: inline-flex;
   align-items: center;
-  &:hover {
-    text-decoration: underline;
+  gap: var(--bd-space-md);
+  min-height: 48px;
+  > a {
+    color: var(--bd-color-ink);
+    text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// Menu "Ferramentas": abre abaixo do cabeçalho, alinhado à direita.
+.ferramentas {
+  position: relative;
+  > button {
+    font: inherit;
+    color: var(--bd-color-ink);
+    background: none;
+    border: 0;
+    padding: 0;
+    min-height: 44px;
+    cursor: pointer;
+    span {
+      font-size: 10px;
+      margin-left: 2px;
+    }
+    &:hover {
+      text-decoration: underline;
+    }
+    &:focus-visible {
+      outline: 2px solid var(--bd-color-primary);
+      outline-offset: 2px;
+    }
+  }
+  ul {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    z-index: 20;
+    min-width: 15rem;
+    background: var(--bd-color-canvas);
+    border: 1px solid var(--bd-color-hairline);
+    border-top: 2px solid var(--bd-color-ink);
+    padding: var(--bd-space-xxs) 0;
+  }
+  li a {
+    display: block;
+    padding: 10px var(--bd-space-md);
+    color: var(--bd-color-ink);
+    text-decoration: none;
+    &:hover,
+    &[aria-current="page"] {
+      background: var(--bd-color-surface-1);
+    }
   }
 }
 
@@ -120,6 +169,9 @@
     display: flex;
     gap: var(--bd-space-lg);
     white-space: nowrap;
+    @media (min-width: 1056px) {
+      gap: 20px;
+    }
   }
   a {
     position: relative;
@@ -327,6 +379,19 @@
   color: var(--bd-color-ink);
   font-variant-numeric: tabular-nums;
   margin: 0 0 var(--bd-space-md);
+}
+
+// Direção da variação (DESIGN.md, "variation"): tons neutros, sem leitura de bom ou ruim.
+.var_sobe {
+  color: var(--bd-color-primary) !important;
+}
+
+.var_cai {
+  color: var(--bd-color-ink-muted) !important;
+}
+
+.setaFina {
+  font-weight: 400;
 }
 
 .phrase {

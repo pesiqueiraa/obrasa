@@ -93,7 +93,7 @@ describe("variação na janela", () => {
     expect(v.direcao).toBe("cai");
     expect(v.diferenca).toBeCloseTo(5.67);
     expect(variationText(v, "5 anos", (n) => formatValue(n, "%"))).toBe(
-      "▼ cai 5,67 p.p. em 5 anos (set/2021: 10,25%)",
+      "↓ cai 5,67 p.p. em 5 anos (set/2021: 10,25%)",
     );
   });
   it("estável quando a diferença arredonda para zero", () => {

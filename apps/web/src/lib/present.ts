@@ -13,6 +13,8 @@ export type Presented = {
   variacao: string | null;
   /** null = período que a fonte não publicou; a minilinha se interrompe ali. */
   spark: (number | null)[];
+  /** Rótulo de cada ponto da minilinha ("set/2025: 5,17%"), para a leitura ao passar o dedo. */
+  sparkRotulos: (string | null)[];
   /** Regra 3: em série monetária, de que preços é o valor real. */
   baseReal: string | null;
 };
@@ -32,18 +34,21 @@ export function present(view: IndicatorView): Presented {
     janelaRotulo: janela.rotulo,
     windowObs,
     variacao: v ? variationText(v, janela.rotulo, fmt, series.frequencia) : null,
-    spark: comLacunas(pontos, PASSO_MESES[series.frequencia]),
+    spark: comLacunas(pontos, PASSO_MESES[series.frequencia]).map((o) => o?.value ?? null),
+    sparkRotulos: comLacunas(pontos, PASSO_MESES[series.frequencia]).map((o) =>
+      o ? `${formatRef(o.refDate, series.frequencia)}: ${fmt(o.value)}` : null,
+    ),
     baseReal: series.monetaria ? `valor real, a preços de ${formatRef(latest.refDate, series.frequencia)}` : null,
   };
 }
 
-function comLacunas(pontos: Obs[], passo: number | undefined): (number | null)[] {
-  const out: (number | null)[] = [];
+function comLacunas(pontos: Obs[], passo: number | undefined): (Obs | null)[] {
+  const out: (Obs | null)[] = [];
   pontos.forEach((o, i) => {
     if (passo && i > 0) {
       for (let r = addMonths(pontos[i - 1].refDate, passo); r < o.refDate; r = addMonths(r, passo)) out.push(null);
     }
-    out.push(o.value);
+    out.push(o);
   });
   return out;
 }

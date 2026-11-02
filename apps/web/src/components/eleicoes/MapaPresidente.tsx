@@ -3,7 +3,9 @@
 // Mapa por município (docs/08, D14): um tom só, a cor mostra a fatia dos votos válidos
 // do candidato escolhido em cada município. A escala é a mesma para todos os candidatos
 // (faixas fixas de 20 pontos) e não existe "cor do vencedor". Projeção cônica de áreas
-// iguais, para o tamanho na tela ser proporcional à área.
+// iguais, para o tamanho na tela ser proporcional à área. Ao trocar de turno ou de
+// candidato, as cores mudam numa varredura de oeste para leste (sem movimento com
+// prefers-reduced-motion).
 
 import { geoConicEqualArea, geoPath } from "d3-geo";
 import { useEffect, useMemo, useState } from "react";
@@ -60,7 +62,13 @@ export function MapaPresidente({ candidatos }: { candidatos: Record<1 | 2, Candi
     const path = geoPath(proj);
     const munFeat = feature(malha.municipios, mun);
     return {
-      municipios: munFeat.features.map((f) => ({ ibge: Number(f.properties?.codarea), d: path(f) ?? "" })),
+      municipios: munFeat.features.map((f) => ({
+        ibge: Number(f.properties?.codarea),
+        d: path(f) ?? "",
+        // Atraso da troca de cor, de oeste para leste (0 a 450 ms): a mudança entre turnos
+        // ou candidatos varre o mapa em vez de piscar.
+        atraso: Math.round((path.centroid(f)[0] / W) * 450),
+      })),
       divisas: path(mesh(malha.ufs, uf, (a, b) => a !== b)) ?? "",
       borda: path(mesh(malha.ufs, uf, (a, b) => a === b)) ?? "",
     };
@@ -153,7 +161,7 @@ export function MapaPresidente({ candidatos }: { candidatos: Record<1 | 2, Candi
               {desenho.municipios.map((m) => {
                 const v = porMunicipio.get(m.ibge);
                 const cls = v && v.val > 0 ? styles[`b${faixa(v.votos / v.val)}`] : styles.semDado;
-                return <path key={m.ibge} d={m.d} data-m={m.ibge} className={cls} />;
+                return <path key={m.ibge} d={m.d} data-m={m.ibge} className={cls} style={{ transitionDelay: `${m.atraso}ms` }} />;
               })}
             </g>
             <path d={desenho.divisas} className={styles.divisa} />

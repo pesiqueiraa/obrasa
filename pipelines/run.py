@@ -1,5 +1,5 @@
 """Ponto de entrada: `uv run python -m pipelines.run todos` (ou `ipca`, `series`, `eleicoes`,
-`noticias`).
+`noticias`, `agenda`, `regional`).
 
 Variáveis de ambiente:
   DATABASE_URL               conexão Postgres (obrigatória)
@@ -16,13 +16,17 @@ import logging
 import sys
 
 from pipelines import config, db, raw_store
-from pipelines.jobs import eleicoes, ipca, noticias, series
+from pipelines.jobs import agenda, eleicoes, ipca, noticias, regional, series
 from pipelines.jobs.report import Report
 
 
 def todos(conn, store, registry) -> Report:
     report = ipca.run(conn, store, registry).merge(series.run(conn, store, registry))
-    for nome, job in (("eleições", eleicoes.run), ("notícias", noticias.run)):
+    for nome, job in (
+        ("eleições", eleicoes.run),
+        ("notícias", noticias.run),
+        ("agenda", agenda.run),
+    ):
         try:
             report.merge(job(conn, store, registry))
         except Exception as exc:  # a falha de um job não apaga o relatório dos outros
@@ -36,6 +40,8 @@ JOBS = {
     "series": series.run,
     "eleicoes": eleicoes.run,
     "noticias": noticias.run,
+    "agenda": agenda.run,
+    "regional": regional.run,
     "todos": todos,
 }
 

@@ -1,0 +1,537 @@
+// Ferramentas (DESIGN.md): calculadora da inflação, comparador de datas e agenda.
+// Campos no padrão Carbon (fundo surface-1, filete inferior), linhas finas, sem caixas.
+
+$tablet: 672px;
+$desktop: 1056px;
+
+.palco {
+  margin-top: var(--bd-space-xl);
+}
+
+// ---- campos ----
+.seletor {
+  display: inline-flex;
+  gap: var(--bd-space-xxs);
+  select {
+    font: inherit;
+    font-size: 16px;
+    color: var(--bd-color-ink);
+    background: var(--bd-color-surface-1);
+    border: 0;
+    border-bottom: 1px solid var(--bd-color-ink-muted);
+    padding: 8px 28px 8px 12px;
+    min-height: 40px;
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+      linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position: calc(100% - 15px) 52%, calc(100% - 10px) 52%;
+    background-size: 5px 5px;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    &:focus-visible {
+      outline: 2px solid var(--bd-color-primary);
+      outline-offset: -2px;
+    }
+  }
+}
+
+.campoValor {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bd-color-surface-1);
+  border-bottom: 1px solid var(--bd-color-ink-muted);
+  padding: 0 12px;
+  min-height: 40px;
+  font-size: 16px;
+  color: var(--bd-color-ink-muted);
+  &:focus-within {
+    outline: 2px solid var(--bd-color-primary);
+    outline-offset: -2px;
+  }
+  input {
+    font: inherit;
+    font-size: 18px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--bd-color-ink);
+    background: none;
+    border: 0;
+    width: 8.5ch;
+    padding: 6px 0;
+    &:focus {
+      outline: none;
+    }
+    &[aria-invalid="true"] {
+      color: var(--bd-color-ink-muted);
+    }
+  }
+}
+
+%botao {
+  font: inherit;
+  font-size: 14px;
+  background: none;
+  border: 1px solid var(--bd-color-surface-2);
+  color: var(--bd-color-ink);
+  padding: 6px 12px;
+  min-height: 32px;
+  cursor: pointer;
+  &:hover {
+    border-color: var(--bd-color-ink);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--bd-color-primary);
+    outline-offset: 2px;
+  }
+}
+
+// ---- calculadora ----
+.calc {
+  max-width: 52rem;
+}
+
+.baseLinha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bd-space-sm);
+  padding-bottom: var(--bd-space-lg);
+  label {
+    font-size: 16px;
+  }
+}
+
+.linhas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 2px solid var(--bd-color-ink);
+}
+
+.linha {
+  display: grid;
+  gap: var(--bd-space-md);
+  padding: var(--bd-space-lg) 0;
+  border-bottom: 1px solid var(--bd-color-hairline);
+  @media (min-width: $desktop) {
+    grid-template-columns: auto 1fr;
+    gap: var(--bd-space-xl);
+    align-items: start;
+  }
+}
+
+.entrada {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bd-space-xs);
+}
+
+.em {
+  color: var(--bd-color-ink-muted);
+}
+
+.remover {
+  @extend %botao;
+  border: 0;
+  font-size: 22px;
+  line-height: 1;
+  width: 40px;
+  min-height: 40px;
+  color: var(--bd-color-ink-muted);
+  &:hover {
+    color: var(--bd-color-ink);
+  }
+}
+
+.resultado {
+  min-width: 0;
+  p {
+    margin: 0;
+  }
+}
+
+.equivale {
+  font-size: 16px;
+  color: var(--bd-color-ink-muted);
+  strong {
+    display: inline-block;
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--bd-color-ink);
+    font-variant-numeric: tabular-nums;
+    margin: 0 4px;
+  }
+}
+
+.barraFundo {
+  height: 6px;
+  background: var(--bd-color-surface-1);
+  margin: var(--bd-space-xs) 0;
+}
+
+.barra {
+  height: 100%;
+  background: var(--bd-color-primary);
+  transform-origin: left center;
+}
+
+.detalhe,
+.aviso {
+  font-size: 14px;
+  color: var(--bd-color-ink-muted);
+}
+
+.adicionar {
+  @extend %botao;
+  margin-top: var(--bd-space-md);
+}
+
+.comparacao {
+  margin: var(--bd-space-lg) 0 0;
+  padding-left: var(--bd-space-sm);
+  border-left: 3px solid var(--bd-color-primary);
+  font-size: 16px;
+  max-width: 44rem;
+}
+
+.fonte {
+  margin-top: var(--bd-space-lg);
+  p {
+    margin: 0 0 var(--bd-space-xxs);
+  }
+}
+
+.metodo {
+  font-size: 13px;
+  color: var(--bd-color-ink-muted);
+  max-width: 44rem;
+}
+
+// ---- comparador ----
+.datas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bd-space-lg) var(--bd-space-xl);
+  padding-bottom: var(--bd-space-lg);
+}
+
+.data {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-xs);
+}
+
+.dataRotulo {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.atalhos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bd-space-xs);
+  button {
+    @extend %botao;
+    font-size: 13px;
+    padding: 4px 10px;
+    min-height: 28px;
+  }
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+  thead th {
+    text-align: left;
+    font-size: 14px;
+    font-weight: 600;
+    padding: var(--bd-space-sm) var(--bd-space-sm) var(--bd-space-sm) 0;
+    border-bottom: 2px solid var(--bd-color-ink);
+  }
+  tbody th,
+  td {
+    text-align: left;
+    vertical-align: top;
+    padding: var(--bd-space-sm) var(--bd-space-sm) var(--bd-space-sm) 0;
+    border-bottom: 1px solid var(--bd-color-hairline);
+    font-weight: 400;
+  }
+  tbody th a {
+    color: var(--bd-color-ink);
+    font-weight: 600;
+  }
+  tbody th p {
+    margin: 2px 0 0;
+  }
+  @media (max-width: #{$tablet - 1px}) {
+    thead {
+      display: none;
+    }
+    tr {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      border-bottom: 1px solid var(--bd-color-hairline);
+      padding: var(--bd-space-sm) 0;
+    }
+    tbody th,
+    td {
+      border: 0;
+      padding: 0 var(--bd-space-xs) 0 0;
+    }
+    tbody th {
+      grid-column: 1 / -1;
+      margin-bottom: var(--bd-space-xs);
+    }
+    td::before {
+      content: attr(data-rotulo);
+      display: block;
+      font-size: 12px;
+      color: var(--bd-color-ink-muted);
+    }
+  }
+}
+
+.tema th {
+  font-family: var(--bd-type-news-headline-font-family);
+  font-size: 20px !important;
+  font-weight: 500 !important;
+  padding-top: var(--bd-space-lg) !important;
+}
+
+.valor {
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.ref {
+  display: block;
+  font-size: 12px;
+  color: var(--bd-color-ink-muted);
+}
+
+.dif {
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+// ---- agenda ----
+.agenda {
+  max-width: 64rem;
+  [data-orgao="ibge"] {
+    --cor-orgao: var(--bd-color-primary);
+  }
+  [data-orgao="bc"] {
+    --cor-orgao: var(--bd-color-ink);
+  }
+}
+
+.mesBarra {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-space-sm);
+  margin-bottom: var(--bd-space-md);
+  h2 {
+    font-family: var(--bd-type-news-headline-font-family);
+    font-weight: 500;
+    font-size: 24px;
+    margin: 0;
+    min-width: 12ch;
+    text-align: center;
+  }
+  button {
+    @extend %botao;
+    font-size: 20px;
+    width: 40px;
+    min-height: 40px;
+    padding: 0;
+    &:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+  }
+}
+
+.grade {
+  border-top: 2px solid var(--bd-color-ink);
+  overflow: hidden;
+}
+
+.semana,
+.dias {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.semana span {
+  font-size: 12px;
+  color: var(--bd-color-ink-muted);
+  padding: var(--bd-space-xs) 6px;
+}
+
+.vazio,
+.dia {
+  border-top: 1px solid var(--bd-color-hairline);
+  min-height: 52px;
+  @media (min-width: $tablet) {
+    min-height: 96px;
+  }
+}
+
+.dia {
+  font: inherit;
+  text-align: left;
+  background: none;
+  border-left: 0;
+  border-right: 0;
+  border-bottom: 0;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  color: var(--bd-color-ink);
+  cursor: pointer;
+  &:disabled {
+    cursor: default;
+  }
+  &:not(:disabled):hover {
+    background: var(--bd-color-surface-1);
+  }
+  &[aria-pressed="true"] {
+    background: var(--bd-color-surface-1);
+    box-shadow: inset 0 -3px 0 var(--bd-color-primary);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--bd-color-primary);
+    outline-offset: -2px;
+  }
+  &[data-passado] .diaN {
+    color: var(--bd-color-ink-muted);
+  }
+  &[data-passado] .marca {
+    opacity: 0.55;
+  }
+}
+
+.diaN {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  .dia[data-hoje] & {
+    display: inline-grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--bd-color-ink);
+    color: var(--bd-color-canvas) !important;
+    font-weight: 600;
+  }
+}
+
+// Celular: só uma barra colorida por evento; o texto fica na lista.
+.marca {
+  display: block;
+  height: 4px;
+  background: var(--cor-orgao);
+  font-size: 0;
+  @media (min-width: $tablet) {
+    height: auto;
+    background: none;
+    font-size: 12px;
+    line-height: 1.3;
+    padding-left: 6px;
+    border-left: 3px solid var(--cor-orgao);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.mais {
+  font-size: 11px;
+  color: var(--bd-color-ink-muted);
+}
+
+.legenda {
+  display: flex;
+  gap: var(--bd-space-md);
+  font-size: 12px;
+  color: var(--bd-color-ink-muted);
+  padding: var(--bd-space-sm) 0;
+  border-top: 1px solid var(--bd-color-hairline);
+  span::before {
+    content: "";
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-right: 6px;
+    background: var(--cor-orgao);
+    vertical-align: -1px;
+  }
+}
+
+.listaDia {
+  margin-top: var(--bd-space-lg);
+  h3 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--bd-space-sm);
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 var(--bd-space-sm);
+    button {
+      font: inherit;
+      font-size: 14px;
+      font-weight: 400;
+      background: none;
+      border: 0;
+      padding: 0;
+      color: var(--bd-color-link);
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  }
+  ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  li {
+    display: grid;
+    grid-template-columns: 6.5rem 1fr;
+    gap: var(--bd-space-sm);
+    padding: var(--bd-space-sm) 0;
+    border-top: 1px solid var(--bd-color-hairline);
+    &[data-passado] {
+      color: var(--bd-color-ink-muted);
+    }
+  }
+  p {
+    margin: 0;
+  }
+  a {
+    color: inherit;
+  }
+}
+
+.quando {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.oque {
+  font-size: 15px;
+}
+
+.orgao {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 1px 6px;
+  color: var(--bd-color-canvas);
+  background: var(--cor-orgao);
+}

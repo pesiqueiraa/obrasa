@@ -326,7 +326,7 @@ Herdados da IBM: `canvas`, `surface-1`, `surface-2`, `hairline`, `ink`, `ink-mut
 ### Status
 - **Dado atrasado:** `{colors.status-delay}` sobre `{colors.status-delay-bg}`, só no chip e no aviso de atraso.
 - **Erro de formulário:** `{colors.form-error}`, só em campos e mensagens de erro.
-- **Nunca** use verde/vermelho para dizer se um número "melhorou" ou "piorou". Inflação subir é ruim para quem compra e pode ser lido de outra forma por quem vende; a cor tomaria partido. Direção se mostra com seta e texto ("sobe 0,4 p.p. em 12 meses").
+- **Nunca** use verde/vermelho para dizer se um número "melhorou" ou "piorou". Inflação subir é ruim para quem compra e pode ser lido de outra forma por quem vende; a cor tomaria partido. Direção se mostra com seta fina e texto ("↑ sobe 0,4 p.p. em 12 meses"). A frase de variação ganha cor só pela direção, em tons neutros: sobe em `primary` (azul-tinta), cai em `ink-muted` (cinza-escuro), estável em `ink`. Nenhum dos dois tons quer dizer bom ou ruim (docs/08, D26).
 
 ### Gráficos
 - Uma série: `{colors.chart-1}`.
@@ -371,7 +371,7 @@ Herdado da IBM: cantos retos (`{rounded.none}`) em botões, cartões, campos e m
 O cartão do painel. De cima para baixo:
 1. Rótulo (`indicator-label`) e `frequency-chip`.
 2. Valor (`indicator-value`) com unidade.
-3. Variação na janela padrão, com seta ▲ ou ▼ em `ink` e texto. Sem cor de "bom" ou "ruim".
+3. Variação na janela padrão, com seta fina ↑ ou ↓ e texto; a frase em `primary` quando sobe e em `ink-muted` quando cai (componente `Variacao`). Sem cor de "bom" ou "ruim".
 4. Frase "o que significa" (`body-lg`), vinda de template.
 5. `source-line`.
 6. Próxima divulgação, em `caption`.
@@ -415,7 +415,7 @@ Usado em Quanto eu pago e no Simulador da reforma: "Estimativa. Veja a metodolog
 Aparece no topo de qualquer página cujo dado foi corrigido nos últimos 30 dias, com link para o registro de correções.
 
 ### `theme-nav`
-Navegação por temas no topo: Brasil hoje, Economia, Trabalho, Contas públicas (e os próximos temas, na ordem de `config/temas.yaml`). O item ativo tem texto `ink` 600 e sublinhado de 3px em `primary`, que desliza entre itens. No celular, os temas ficam numa segunda linha com rolagem horizontal; Metodologia fica à direita da marca.
+Navegação por temas no topo: Brasil hoje, Economia, Trabalho, Contas públicas (e os próximos temas, na ordem de `config/temas.yaml`). O item ativo tem texto `ink` 600 e sublinhado de 3px em `primary`, que desliza entre itens. No celular, os temas ficam numa segunda linha com rolagem horizontal; o menu "Ferramentas" (calculadora, comparador de datas, agenda) e Metodologia ficam à direita da marca. Ao trocar de tema, o cabeçalho fica parado e só o conteúdo desliza 32px para o lado do tema escolhido (tema à direita na lista entra pela direita), com fade, em 0,22s; sem deslocamento com `prefers-reduced-motion`.
 
 ### `brasil-hoje-board`
 A home é um quadro de instrumentos: uma linha por tema, abaixo de um filete de 2px em `ink`. Colunas no desktop: tema (nome, resumo, link para o tema) · indicador principal (rótulo, chip, valor de 56px, variação) · sparkline. A `source-line` curta fica embaixo do valor. Não é uma grade de cartões.
@@ -427,7 +427,7 @@ Linha do tempo das próximas divulgações, com as datas dos calendários coleta
 Versão compacta do `indicator-card` para a grade de cada tema: rótulo e chip, valor de 36px com sparkline ao lado, base do valor real quando monetário, variação e `source-line` curta. Grade de 1/2/3 colunas separada por filetes, sem frase. O tile inteiro é link (stretched link), e a linha de fonte continua clicável.
 
 ### `sparkline`
-Linha de 1,5px em `chart-1` com ponto no último valor, sem eixo. Período que a fonte não publicou interrompe a linha (vale também para o gráfico do `chart-panel`); série anual não tem a aba "12 meses". Sempre acompanhada do valor e da `source-line`; é decorativa para leitor de tela (`aria-hidden`). Série diária usa o último valor de cada mês.
+Linha de 1,5px em `chart-1` com ponto no último valor, sem eixo. Período que a fonte não publicou interrompe a linha (vale também para o gráfico do `chart-panel`); série anual não tem a aba "12 meses". Sempre acompanhada do valor e da `source-line`; é decorativa para leitor de tela (`aria-hidden`). Série diária usa o último valor de cada mês. Nos tiles, passar o mouse ou o dedo mostra o ponto mais próximo: fio vertical, ponto vazado e etiqueta escura com período e valor ("set/2025: 5,17%"). Parada, a minilinha não mostra nada além da linha.
 
 ### Bloco próprio de cada tema
 Cada página de tema abre com uma visualização diferente, para a navegação não ficar repetitiva. Todas têm título, subtítulo com unidade e período, descrição em texto para leitor de tela e uma `source-line` por série usada.
@@ -440,14 +440,26 @@ Cada página de tema abre com uma visualização diferente, para a navegação n
 Página própria (não usa a grade de tiles). Um só tom (`chart-1` e misturas dele com o fundo) para todos os candidatos e partidos; nenhuma cor de partido (docs/08, D14).
 - **`split-bar`**: 2º turno para presidente. Barra única em `chart-1`, os dois candidatos separados por um traço da cor do fundo, traço tracejado em 50% dos válidos. Nome, partido, percentual de 64px, votos e a situação com as palavras do TSE em caixa de frase. Na home, versão de 16px no lugar da sparkline.
 - **`candidate-bars`**: 1º turno, uma linha por candidato na ordem dos votos, barras na escala de 0 a 100% dos válidos (a mesma para todos).
-- **`choropleth-map`**: mapa por município, projeção cônica de áreas iguais. O leitor escolhe turno e candidato; a cor é a fatia dos válidos dele em 5 faixas fixas de 20 pontos, iguais para todos os candidatos. Divisas de UF em linha da cor do fundo. Dica no hover com município, percentual e votos. Alternativa em texto: tabelas por UF em `<details>`.
+- **`choropleth-map`**: mapa por município, projeção cônica de áreas iguais. O leitor escolhe turno e candidato; a cor é a fatia dos válidos dele em 5 faixas fixas de 20 pontos, iguais para todos os candidatos. Divisas de UF em linha da cor do fundo. Trocar de turno ou candidato muda as cores numa varredura de oeste para leste. Dica no hover com município, percentual e votos. Alternativa em texto: tabelas por UF em `<details>`.
 - **`turnout-bar`**: barra de 100% dos eleitores aptos por turno: válidos, brancos, nulos, abstenção e seções não instaladas, com legenda em lista de definições.
 - **`seat-grid`**: um quadrado por cadeira, agrupados por partido do maior para o menor (sem eixo esquerda–direita); grupos vizinhos alternam dois tons. Hover ou foco num partido apaga os demais.
 - Tabela de governadores e senadores eleitos por UF, com o turno em que o governador foi decidido.
 - `source-line` do TSE: "Fonte: TSE (25/10/2026)"; arquivo e datas de geração e conferência no `title` do link e em docs/05.
 
+### `mapa-uf`
+Mapa do Brasil por estado, no fim do bloco próprio de Trabalho e de Educação. Um tom só (`chart-1` misturado ao fundo em 5 faixas iguais entre o menor e o maior valor do período mostrado; a legenda muda com o período). **Divisas entre estados em traço de 2,6px na cor do fundo** e contorno do país em `ink-muted`, para cada UF se separar bem da vizinha. Estado em foco ganha contorno de 2,6px em `ink`. Ao lado (embaixo no celular), os 27 estados em ordem, com barra, valor e posição; a lista reordena com mola quando o período muda e destaca o estado em foco no mapa. Seletor de período por controle deslizante; seletor de indicador em botões segmentados quando o tema tem mais de um mapa. Nomes das UFs como o IBGE publica. `source-line` com o link da tabela no SIDRA e link para o número do Brasil.
+
+### Ferramentas
+Três páginas no menu "Ferramentas" do cabeçalho e no rodapé. Campos no padrão Carbon (fundo `surface-1`, filete inferior), sem caixas.
+- **Calculadora da inflação (`/calculadora`)**: linhas "R$ [valor] em [mês] [ano]", até seis, todas corrigidas para o mesmo mês de destino. Cada linha mostra o valor corrigido em 28px, uma barra em `primary` proporcional ao maior resultado e o IPCA acumulado no período. Com duas linhas ou mais, uma frase compara as duas primeiras. A conta e a fonte ficam escritas embaixo. O estado vai para o endereço (`?v=2000_2015-01,2000_2020-01&base=2026-09`) para a conta poder ser compartilhada.
+- **Comparar datas (`/comparar`)**: Data A e Data B (mês e ano), atalhos "1 ano antes", "5 anos antes", "10 anos antes". Tabela por tema: indicador com `source-line`, valor em cada data com o período de referência embaixo (e o nominal, se monetário), diferença com seta fina ↑↓ e a mesma cor por direção da frase de variação, em p.p. (taxas) ou % (níveis). Sem atalhos por governo. No celular, cada linha vira um bloco de três colunas com rótulos.
+- **Agenda (`/agenda`)**: calendário de um mês por vez, com setas; a troca de mês desliza 32px. Cada dia mostra um marcador por evento com filete colorido: `primary` para IBGE, `ink` para Banco Central. No celular, só as barras coloridas; o texto fica na lista. Clicar num dia filtra a lista; a lista do mês fica sempre embaixo, com data, órgão em etiqueta, o que sai (link para cada indicador), período de referência e link para o calendário do órgão. Datas passadas em `ink-muted`.
+
+### Imagem de compartilhamento
+Cada indicador tem imagem própria de 1200×630 (`/indicador/{slug}/opengraph-image`): faixa de 12px em `primary` no topo, logotipo, tema, título, valor em 100px, período (e a base do valor real), variação com seta fina desenhada e a cor por direção, minilinha de 10 anos e, embaixo de um filete, "Fonte: órgão (período)". Mesmos números da página, do banco.
+
 ### Movimento
-Biblioteca `motion`, com `MotionConfig reducedMotion="user"`: quem pede menos movimento vê tudo parado no estado final. Só quatro momentos: o sublinhado da navegação desliza; sparklines e linhas do bloco do tema se desenham uma vez ao entrar na tela; o waffle, a régua e a escada de instrução se preenchem uma vez; as barras do resultado eleitoral crescem uma vez. Nada se move em loop, nada anima no hover.
+Biblioteca `motion`, com `MotionConfig reducedMotion="user"`: quem pede menos movimento vê tudo parado no estado final. Momentos com movimento: o sublinhado da navegação desliza e o conteúdo do tema desliza para o lado do tema escolhido; sparklines e linhas do bloco do tema se desenham uma vez ao entrar na tela; o waffle, a régua e a escada de instrução se preenchem uma vez; as barras do resultado eleitoral crescem uma vez; no mapa da eleição, ao trocar de turno ou candidato, as cores mudam numa varredura de oeste para leste (0,35s por município, até 0,45s de atraso); no mapa por estado, as cores mudam em 0,45s e a lista reordena com mola; a barra da calculadora cresce até o novo valor. Nada se move em loop. No hover, só a leitura da minilinha e o destaque do estado no mapa, que respondem ao gesto da pessoa.
 
 ### Módulo de notícias (padrão WIRED)
 - **`news-story-row`**: linha com divisória fina, como a story-row da WIRED. Contém o `outlet-eyebrow` (nome do veículo), o título em Plex Serif, a hora e um mini `indicator-card` ao lado (empilhado embaixo no celular). O link vai para o site do veículo.

@@ -1,0 +1,41 @@
+# Mapas por estado (DESIGN.md, "mapa-uf"). Cada mapa lê uma variável do IBGE no nível
+# Unidade da Federação (N3), pelo job `regional` (pipelines/jobs/regional.py). Tabelas e
+# classificações testadas contra a API em 02/11/2026 (docs/05). `indicador` liga o mapa
+# ao número nacional do site; `faixa` recusa valores fora do plausível, como nas séries.
+
+mapas:
+  - id: desocupacao-uf
+    tema: trabalho
+    titulo: Desocupação por estado
+    indicador: desocupacao
+    tabela: 4099
+    variavel: 4099
+    frequencia: trimestral
+    periodos: "-20"
+    unidade: "%"
+    casas: 1
+    faixa: [0, 40]
+  - id: analfabetismo-uf
+    tema: educacao
+    titulo: Analfabetismo por estado, 15 anos ou mais
+    indicador: analfabetismo
+    tabela: 7113
+    variavel: 10267
+    classificacao: "2[6794]|58[2795]"
+    frequencia: anual
+    periodos: "-12"
+    unidade: "%"
+    casas: 1
+    faixa: [0, 40]
+  - id: anos-de-estudo-uf
+    tema: educacao
+    titulo: Anos de estudo por estado, 25 anos ou mais
+    indicador: anos-de-estudo
+    tabela: 7126
+    variavel: 3593
+    classificacao: "2[6794]|58[108866]"
+    frequencia: anual
+    periodos: "-12"
+    unidade: anos
+    casas: 1
+    faixa: [0, 20]

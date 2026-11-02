@@ -2,6 +2,7 @@
 
 Endpoints usados (testados em 01/11/2026):
   GET /api/v3/agregados/{tabela}/periodos/{periodos}/variaveis/{v1|v2}?localidades=N1[all]
+  GET /api/v3/agregados/{tabela}/periodos/{periodos}/variaveis/{v}?localidades=N3[all]  (02/11/2026)
   GET /api/v3/agregados/{tabela}/periodos
   GET /api/v3/calendario/{produto}?de=MM-DD-AAAA&ate=MM-DD-AAAA
 """
@@ -51,6 +52,105 @@ def fetch_variables(
             raise ValueError(f"classificação fora do formato id[categoria]: {classificacao!r}")
         params["classificacao"] = classificacao
     return http.get(SOURCE_ID, url, params=params)
+
+
+def fetch_uf(
+    tabela: int, variavel: int, periodos: str, classificacao: str | None = None
+) -> RawResponse:
+    """Uma variável da tabela para as 27 Unidades da Federação (N3)."""
+    url = f"{BASE}/agregados/{tabela}/periodos/{periodos}/variaveis/{variavel}"
+    params = {"localidades": "N3[all]"}
+    if classificacao:
+        if not _CLASSIFICACAO.match(classificacao):
+            raise ValueError(f"classificação fora do formato id[categoria]: {classificacao!r}")
+        params["classificacao"] = classificacao
+    return http.get(SOURCE_ID, url, params=params)
+
+
+@dataclass(frozen=True)
+class UfSerie:
+    nome: str
+    valores: dict[date, Decimal]
+
+
+UFS = {
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    31,
+    32,
+    33,
+    35,
+    41,
+    42,
+    43,
+    50,
+    51,
+    52,
+    53,
+}
+
+
+def parse_uf(
+    body: bytes,
+    variavel: int,
+    *,
+    classificacao: str | None = None,
+    tipo: TipoPeriodo = "mensal",
+) -> dict[int, UfSerie]:
+    """Resposta N3 → {código da UF: (nome da UF na fonte, {período: valor})}.
+
+    Falha se vier localidade que não é UF, se faltar alguma das 27 UFs ou se a
+    classificação não for a pedida. Valores ausentes ("...", "-") são omitidos.
+    """
+    try:
+        payload = json.loads(body)
+    except json.JSONDecodeError as exc:
+        raise ValidationError(f"resposta não é JSON: {exc}") from exc
+    if not isinstance(payload, list) or len(payload) != 1:
+        raise ValidationError("esperada uma variável na resposta")
+    var = payload[0]
+    if str(var.get("id")) != str(variavel):
+        raise ValidationError(f"variável {var.get('id')} no lugar de {variavel}")
+    resultados = var.get("resultados") or []
+    if len(resultados) != 1:
+        raise ValidationError(
+            f"variável {variavel}: esperado um resultado, vieram {len(resultados)}"
+        )
+    _check_classificacao(resultados[0], classificacao, variavel)
+    out: dict[int, UfSerie] = {}
+    for serie in resultados[0].get("series") or []:
+        loc = serie.get("localidade") or {}
+        if (loc.get("nivel") or {}).get("id") != "N3":
+            raise ValidationError(f"variável {variavel}: localidade que não é UF {loc}")
+        uf = int(loc["id"])
+        if uf not in UFS:
+            raise ValidationError(f"variável {variavel}: código de UF desconhecido {uf}")
+        valores = {}
+        for periodo, bruto in (serie.get("serie") or {}).items():
+            v = _parse_value(bruto, f"UF {uf}, {periodo}")
+            if v is not None:
+                valores[period_to_date(periodo, tipo)] = v
+        nome = loc.get("nome")
+        if not isinstance(nome, str) or not nome.strip():
+            raise ValidationError(f"variável {variavel}: UF {uf} sem nome")
+        out[uf] = UfSerie(nome.strip(), valores)
+    if set(out) != UFS:
+        raise ValidationError(f"variável {variavel}: faltam UFs {sorted(UFS - set(out))}")
+    return out
 
 
 def fetch_periods(tabela: int) -> RawResponse:

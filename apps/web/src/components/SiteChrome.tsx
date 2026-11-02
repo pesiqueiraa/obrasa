@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getTemas } from "@/lib/data";
 import { Logo } from "./Logo";
+import { MenuFerramentas } from "./MenuFerramentas";
 import { ThemeNav } from "./ThemeNav";
 import styles from "./ui.module.scss";
 
@@ -14,9 +15,10 @@ export async function SiteHeader() {
           <Logo />
         </Link>
         <ThemeNav items={items} />
-        <Link href="/metodologia" className={styles.navAside}>
-          Metodologia
-        </Link>
+        <div className={styles.navAside}>
+          <MenuFerramentas />
+          <Link href="/metodologia">Metodologia</Link>
+        </div>
       </div>
     </header>
   );
@@ -30,6 +32,15 @@ export function SiteFooter() {
         <ul>
           <li>
             <Link href="/metodologia">Metodologia</Link>
+          </li>
+          <li>
+            <Link href="/calculadora">Calculadora da inflação</Link>
+          </li>
+          <li>
+            <Link href="/comparar">Comparar datas</Link>
+          </li>
+          <li>
+            <Link href="/agenda">Agenda</Link>
           </li>
           <li>
             <Link href="/correcoes">Correções</Link>

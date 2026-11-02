@@ -86,7 +86,7 @@ export function variationText(
   // Janela "Tudo": o período é o da série inteira, não um prazo.
   const periodo = janelaRotulo === "Tudo" ? "desde o início da série" : `em ${janelaRotulo}`;
   if (v.direcao === "estavel") return `fica estável ${periodo} (${desde})`;
-  const seta = v.direcao === "sobe" ? "▲" : "▼";
+  const seta = v.direcao === "sobe" ? "↑" : "↓"; // seta fina (DESIGN.md, "variation")
   const dif = `${formatNumber(v.diferenca)}${v.unidadeDiferenca === "%" ? "%" : " p.p."}`;
   return `${seta} ${v.direcao} ${dif} ${periodo} (${desde})`;
 }

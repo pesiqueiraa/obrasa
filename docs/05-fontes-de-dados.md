@@ -62,6 +62,18 @@ Catálogo completo: https://www3.bcb.gov.br/sgspub/ (`confirmar`: respondeu HTTP
 
 Página de metodologia do IPCA no IBGE, citada em `config/indicators.yaml`: `confirmar` (HTTP 403 a clientes automáticos em 01/11/2026; conferir num navegador antes de exibir no site).
 
+## Banco Central · Calendário do Copom
+
+O Banco Central publica o calendário anual das reuniões do Copom só numa página montada no navegador, sem API (testado em 02/11/2026: `https://www.bcb.gov.br/controleinflacao/calendarioreunioescopom` devolve só o esqueleto da página; nenhum endpoint de calendário em `/api/servico/sitebcb/`). As datas ficam em `config/copom.yaml`, digitadas a partir dessa página, com a data em que o BC divulgou o calendário.
+
+Conferência automática (status `ok`, testado em 02/11/2026):
+```http
+GET https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados?quantidade={N}
+```
+Resposta: `{"conteudo":[{"nro_reuniao":281,"dataReferencia":"2026-09-16","titulo":"281ª reunião - ..."}]}`. O job `agenda` (`pipelines/jobs/agenda.py`) compara cada reunião que já aconteceu com o número e o dia da decisão desses comunicados; se alguma data divergir, nada é gravado. Reuniões futuras não têm como ser conferidas antes de acontecer. robots.txt do BC: `Allow: /`.
+
+- Calendário de 2026 (reuniões 276 a 283) divulgado pelo BC em 24/06/2025; as seis reuniões até setembro conferem com os comunicados. O de 2027 entra em `config/copom.yaml` quando o BC publicar (em geral, em junho); sem reunião futura, o job avisa.
+
 ## Banco Central · Focus (expectativas de mercado)
 
 ```http
@@ -117,7 +129,7 @@ Calendário de divulgações: https://www.ibge.gov.br/calendario-de-divulgacoes.
 ```http
 GET https://servicodados.ibge.gov.br/api/v3/calendario/{produto}?de=MM-DD-AAAA&ate=MM-DD-AAAA
 ```
-- Produtos usados: IPCA `9256`; PNAD Contínua mensal `9171` (referência = mês final do trimestre móvel); PNAD Contínua trimestral `9173` e Contas Nacionais Trimestrais `9300` (referência = 1º mês do trimestre). Testados em 01/11/2026.
+- O job `series` grava as datas de cada produto em `releases.proxima_divulgacao`; a página `/agenda` lê dali. Produtos usados: IPCA `9256`; PNAD Contínua mensal `9171` (referência = mês final do trimestre móvel); PNAD Contínua trimestral `9173` e Contas Nacionais Trimestrais `9300` (referência = 1º mês do trimestre). Testados em 01/11/2026.
 - IPCA é o produto `9256`. Cada item traz `data_divulgacao` (`dd/mm/aaaa hh:mm:ss`, horário de Brasília) e o mês de referência em `ano_referencia_inicio` e `mes_referencia_inicio`.
 
 **PNAD Contínua anual, módulo de educação** (testado em 02/11/2026, status `ok`). Tabelas anuais de 2016 a 2025; o código de período é só o ano (`2025`). Cada série filtra uma categoria de cada classificação, no formato `classificacao=2[6794]|58[2795]` (sexo = total e grupo de idade).
@@ -133,6 +145,14 @@ GET https://servicodados.ibge.gov.br/api/v3/calendario/{produto}?de=MM-DD-AAAA&a
 - Não há 2020 nem 2021: o IBGE não publicou o módulo anual de educação desses anos. As séries declaram essas lacunas em `config/sources.yaml` (`lacunas`); qualquer outro buraco faz a coleta falhar.
 - A divulgação de 2025 saiu em 19/06/2026 (campo `modificacao` da lista de períodos). Sem calendário coletado; o site considera atraso se o ano seguinte não sair até 14 de julho de dois anos depois do ano de referência.
 - A tabela 7269 com a variável errada (4106, que não existe nela) responde HTTP 500, não 400.
+
+**Por Unidade da Federação (mapas por estado, `config/regional.yaml`)** (testado em 02/11/2026, status `ok`). Mesmo endpoint, com `localidades=N3[all]`; a resposta traz as 27 UFs com `localidade.id` (código IBGE de 2 dígitos) e `localidade.nome`. O coletor (`pipelines/jobs/regional.py`) recusa resposta sem alguma das 27 UFs, com localidade que não é UF ou com valor fora da `faixa`.
+
+| Tabela | Variável | Categorias | Série | Período |
+|---|---|---|---|---|
+| 4099 | 4099 | — | Taxa de desocupação, PNAD Contínua trimestral (a 6381, de trimestre móvel, só tem Brasil) | AAAA0T, desde 2012; o job guarda os últimos 20 trimestres |
+| 7113 | 10267 | `2[6794]\|58[2795]` | Taxa de analfabetismo, 15 anos ou mais | anual, 2016 a 2025 |
+| 7126 | 3593 | `2[6794]\|58[108866]` | Média de anos de estudo, 25 anos ou mais | anual, 2016 a 2025 |
 
 **Malhas e localidades:**
 ```http

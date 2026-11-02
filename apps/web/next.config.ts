@@ -12,7 +12,9 @@ const nextConfig: NextConfig = {
   // Avisos de depreciação do Sass vêm do código do Carbon, não do nosso.
   sassOptions: { quietDeps: true, silenceDeprecations: ["if-function"] },
   outputFileTracingIncludes: {
-    "/**": ["../../config/templates/**"],
+    "/**": ["../../config/templates/**", "../../config/regional.yaml"],
+    // Fontes .woff da imagem de compartilhamento de cada indicador.
+    "/indicador/**": ["./assets/og/**"],
   },
 };
 
