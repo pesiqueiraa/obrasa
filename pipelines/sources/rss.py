@@ -10,6 +10,7 @@ from __future__ import annotations
 import html
 import re
 import urllib.robotparser
+from collections import Counter
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
@@ -31,7 +32,7 @@ _PATROCINADO = ("especial-publicitario", "publieditorial", "conteudo-patrocinado
 
 
 def permitido(url: str, client: httpx.Client | None = None) -> bool:
-    """O robots.txt do domínio permite que o agente do Brasilado leia `url`?"""
+    """O robots.txt do domínio permite que o agente do oBrasa leia `url`?"""
     parts = urlsplit(url)
     own = client is None
     client = client or httpx.Client(timeout=20, headers={"User-Agent": http.USER_AGENT})
@@ -57,6 +58,58 @@ class Item:
     titulo: str
     publicado_em: datetime
     trecho: str | None
+    imagem: str | None = None  # endereço da imagem de destaque dada pelo feed; nunca copiada
+
+
+_IMG_TAG = re.compile(r"<img\b[^>]*>", re.I)
+_IMG_SRC = re.compile(r"""src=["'](https?://[^"']+)["']""", re.I)
+_PIXEL = re.compile(r"""\b1px\b|(width|height)=["']?1["'\s>]""", re.I)
+_IMG_TEXTO = ("imagem-destaque", "image")  # elemento cujo texto é o endereço (Agência Brasil)
+_EXT_IMG = re.compile(r"\.(jpe?g|png|webp|gif|avif)(\?|$)", re.I)
+
+
+def _local(tag: str) -> str:
+    return tag.rsplit("}", 1)[-1]
+
+
+def imagens(elem: ET.Element, desc: str | None) -> list[str]:
+    """Imagem que o próprio feed associa à matéria: media:content / media:thumbnail (em
+    qualquer namespace, inclusive o declarado à força), enclosure de imagem, link
+    rel=enclosure (Atom) ou <img> da descrição. Só https, em ordem de preferência."""
+    candidatos: list[str] = []
+    for f in elem.iter():
+        nome = _local(f.tag) if isinstance(f.tag, str) else ""
+        if nome in _IMG_TEXTO and (f.text or "").strip().startswith("http"):
+            candidatos.append(f.text.strip())
+            continue
+        url = f.get("url") or (f.get("href") if nome == "link" else None)
+        if not url:
+            continue
+        tipo = (f.get("type") or f.get("medium") or "").lower()
+        if (
+            (
+                nome in ("content", "thumbnail")
+                and ("image" in tipo or (not tipo and _EXT_IMG.search(url)) or nome == "thumbnail")
+            )
+            or (nome == "enclosure" and ("image" in tipo or _EXT_IMG.search(url)))
+            or (nome == "link" and f.get("rel") == "enclosure" and "image" in tipo)
+        ):
+            candidatos.append(url)
+    if desc:
+        for tag in _IMG_TAG.findall(desc):
+            m = _IMG_SRC.search(tag)
+            if m and not _PIXEL.search(tag):  # pixel de contagem de acesso não é foto
+                candidatos.append(m.group(1))
+    out = []
+    for c in candidatos:
+        c = c.strip().replace("&amp;", "&")
+        if c.startswith("http://"):
+            c = "https://" + c[7:]
+        # BBC manda a miniatura de 240px; o mesmo servidor entrega 800px pelo caminho.
+        c = c.replace("/ace/ws/240/", "/ace/ws/800/")
+        if c.startswith("https://") and len(c) <= 1000 and "logo" not in c.lower() and c not in out:
+            out.append(c)
+    return out
 
 
 def limpa_url(url: str) -> str:
@@ -114,7 +167,7 @@ def _declara_prefixos(body: bytes) -> bytes:
     faltam = [p for p in sorted(usados) if f"xmlns:{p}=".encode() not in body]
     if not faltam:
         return body
-    decl = " ".join(f'xmlns:{p}="urn:brasilado:sem-declaracao:{p}"' for p in faltam)
+    decl = " ".join(f'xmlns:{p}="urn:obrasa:sem-declaracao:{p}"' for p in faltam)
     return re.sub(rb"<(rss|feed)\b", lambda m: m.group(0) + b" " + decl.encode(), body, count=1)
 
 
@@ -143,6 +196,7 @@ def parse(
                 i.findtext("link"),
                 i.findtext("pubDate") or i.findtext("{http://purl.org/dc/elements/1.1/}date"),
                 i.findtext("description"),
+                i,
             )
             for i in root.iter("item")
         ]
@@ -163,13 +217,18 @@ def parse(
                     link,
                     e.findtext(f"{_ATOM}published") or e.findtext(f"{_ATOM}updated"),
                     e.findtext(f"{_ATOM}summary"),
+                    e,
                 )
             )
     else:
         raise ValidationError(f"feed em formato desconhecido: <{root.tag}>")
 
+    # Imagem repetida em vários itens (logotipo do veículo) não é foto da matéria.
+    por_item = [imagens(b[4], b[3]) for b in brutos]
+    contagem = Counter(c for cs in por_item for c in cs)
+    repetidas = {c for c, k in contagem.items() if k >= 3}
     itens = []
-    for titulo, link, data, desc in brutos:
+    for (titulo, link, data, desc, _), cands in zip(brutos, por_item, strict=True):
         titulo_t = texto(titulo)
         quando = _data(data)
         if not titulo_t or not link or not quando:
@@ -184,7 +243,15 @@ def parse(
         resumo = texto(desc)
         if resumo.casefold() == titulo_t.casefold():
             resumo = ""
-        itens.append(Item(url, titulo_t, quando.astimezone(UTC), corta(resumo, trecho_max)))
+        itens.append(
+            Item(
+                url,
+                titulo_t,
+                quando.astimezone(UTC),
+                corta(resumo, trecho_max),
+                next((c for c in cands if c not in repetidas), None),
+            )
+        )
     if not itens:
         raise ValidationError(f"nenhum item válido do domínio {dominio} no feed")
     return itens

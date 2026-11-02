@@ -238,10 +238,11 @@ GET https://api.gdeltproject.org/api/v2/doc/doc?query=(inflação OR IPCA) sourc
 
 **RSS dos veículos** (`ok`, testado em 02/11/2026):
 - Lista em `config/noticias.yaml` com nome, domínio, endereço do feed e critério de inclusão. Coletor: `pipelines/sources/rss.py`; job: `pipelines/jobs/noticias.py`, a cada 30 minutos (`.github/workflows/noticias.yml`).
-- 16 veículos com feed respondendo 200 e permitido pelo `robots.txt` para o agente "Brasilado". O coletor confere o `robots.txt` antes de cada coleta e não segue redirecionamento.
+- 16 veículos com feed respondendo 200 e permitido pelo `robots.txt` para o agente "oBrasa". O coletor confere o `robots.txt` antes de cada coleta e não segue redirecionamento.
 - Fora da lista em 02/11/2026: CNN Brasil (o feed redireciona para `admin.cnnbrasil.com.br`, cujo `robots.txt` bloqueia tudo) e Correio Braziliense (o endereço do feed devolve HTML).
 - Formatos tratados: links de contagem de cliques da Folha (`redir.folha.com.br/...*https://...`, usa-se o destino), prefixos XML sem declaração (Revista Oeste), feed sem declaração XML em ISO-8859-1 (UOL, `rss.uol.com.br/feed/noticias.xml`; `economia.xml` devolve HTML e `politica.xml` dá 404), parâmetros de rastreamento (`utm_*`, `at_*`) e conteúdo publicitário (`especial-publicitario`), que fica de fora.
-- Guardar só título, link, data, veículo e trecho de até 200 caracteres da descrição do feed (regra 7). `content:encoded` nunca é lido.
+- Guardar só título, link, data, veículo, trecho de até 200 caracteres da descrição do feed e o endereço da imagem de destaque que o feed indica (regra 7). `content:encoded` nunca é lido.
+- Imagem: `media:content`/`media:thumbnail`, `enclosure` de imagem, `<imagem-destaque>` (Agência Brasil) ou `<img>` da descrição. Ficam de fora logotipos, pixels de contagem de 1px e a mesma imagem repetida em 3 ou mais itens. Em 02/11/2026, sem imagem no feed: Exame, Folha, Poder360 e UOL; Estadão só em parte. BBC manda 240px e o mesmo servidor entrega 800px (`/ace/ws/800/`).
 - Google Notícias por RSS só depois de conferir os termos de uso.
 
 **Google Fact Check Tools (checagens):**

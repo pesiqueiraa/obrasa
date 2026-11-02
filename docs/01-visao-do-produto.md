@@ -48,7 +48,7 @@ Juntar três coisas que hoje estão separadas: o **dado oficial**, a **notícia*
 
 ## Nome
 
-Nome de trabalho: **Brasilado**. Opções levantadas até agora:
+Nome escolhido em 02/11/2026: **oBrasa** (D1 em [08](08-decisoes-em-aberto.md)). Até então o nome de trabalho era Brasilado. Opções que foram levantadas:
 
 | Nome | Ideia | A favor | Contra |
 |---|---|---|---|
@@ -59,7 +59,7 @@ Nome de trabalho: **Brasilado**. Opções levantadas até agora:
 | Lastro | Todo número tem lastro numa fonte oficial | Transmite credibilidade | Termo financeiro, menos popular |
 | Fato Bruto | Dado sem tempero | Claro | Pode soar áspero |
 
-Antes de decidir: buscar a marca no INPI (provavelmente nas classes 35, 38, 41 e 42) e checar a disponibilidade do domínio `.com.br`. A decisão está registrada em [08](08-decisoes-em-aberto.md) como D1.
+Antes de decidir: buscar a marca no INPI (provavelmente nas classes 35, 38, 41 e 42) e checar a disponibilidade do domínio `.com.br`. A busca no INPI e o registro do domínio ainda estão pendentes.
 
 ## Como saber se está funcionando (MVP)
 

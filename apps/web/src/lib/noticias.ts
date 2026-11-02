@@ -12,6 +12,8 @@ export type Noticia = {
   trecho: string | null;
   temas: string[];
   veiculo: string;
+  /** Endereço da imagem dado pelo feed do veículo; exibida de lá, nunca copiada. */
+  imagem: string | null;
 };
 
 export type Veiculo = { id: string; nome: string; dominio: string };
@@ -38,7 +40,7 @@ export async function getNoticias(dias = 7): Promise<Noticia[]> {
   const desde = new Date(Date.now() - dias * 86_400_000).toISOString();
   const { data, error } = await client()
     .from("news_articles")
-    .select("url, titulo, publicado_em, trecho, temas, outlets(nome)")
+    .select("url, titulo, publicado_em, trecho, temas, imagem, outlets(nome)")
     .gte("publicado_em", desde)
     .order("publicado_em", { ascending: false })
     .limit(1000);
@@ -49,6 +51,7 @@ export async function getNoticias(dias = 7): Promise<Noticia[]> {
     publicadoEm: r.publicado_em,
     trecho: r.trecho,
     temas: r.temas,
+    imagem: r.imagem,
     veiculo: (r.outlets as unknown as { nome: string } | null)?.nome ?? "",
   }));
 }

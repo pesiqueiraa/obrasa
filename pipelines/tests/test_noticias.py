@@ -121,3 +121,43 @@ def test_config_noticias():
     assert ids == sorted(ids)
     with pytest.raises(ValueError, match="trecho curto"):
         config.Noticias(**{**CFG.model_dump(), "trecho_max": 1000})
+
+
+def test_imagem_do_feed_sem_logotipo_nem_pixel():
+    item = (
+        "<item><title>{t}</title><link>https://agenciabrasil.ebc.com.br/{t}</link>"
+        "<pubDate>Sun, 01 Nov 2026 10:00:00 -0300</pubDate>{extra}</item>"
+    )
+    pixel = (
+        '<description><![CDATA[<img src="https://x.com/logo.svg"> Texto'
+        '<img src="https://agenciabrasil.ebc.com.br/ebc.png?id=1" style="width:1px"/>]]>'
+        "</description>"
+    )
+    corpo = "".join(
+        [
+            item.format(
+                t="a",
+                extra="<imagem-destaque>https://imagens.ebc.com.br/a.jpg</imagem-destaque>" + pixel,
+            ),
+            item.format(t="b", extra='<enclosure url="http://img.com/b.jpg" type="image/jpeg"/>'),
+            item.format(
+                t="c",
+                extra='<media:content xmlns:media="http://search.yahoo.com/mrss/" url="https://i.com/rep.jpg" medium="image"/>',
+            ),
+            item.format(
+                t="d",
+                extra='<media:content xmlns:media="http://search.yahoo.com/mrss/" url="https://i.com/rep.jpg" medium="image"/>',
+            ),
+            item.format(
+                t="e",
+                extra='<media:content xmlns:media="http://search.yahoo.com/mrss/" url="https://i.com/rep.jpg" medium="image"/>',
+            ),
+            item.format(t="f", extra=pixel),
+        ]
+    )
+    feed = f"<rss><channel>{corpo}</channel></rss>".encode()
+    img = {i.titulo: i.imagem for i in rss.parse(feed, "agenciabrasil.ebc.com.br", 200)}
+    assert img["a"] == "https://imagens.ebc.com.br/a.jpg"
+    assert img["b"] == "https://img.com/b.jpg"  # sempre https
+    assert img["c"] is None  # a mesma imagem em 3 itens é logotipo, não foto
+    assert img["f"] is None  # logotipo e pixel de contagem ficam de fora

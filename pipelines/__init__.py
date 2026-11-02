@@ -1,1 +1,1 @@
-"""Coletores e transformações do Brasilado."""
+"""Coletores e transformações do oBrasa."""

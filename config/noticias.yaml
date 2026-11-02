@@ -9,7 +9,7 @@
 # "Reportar erro" e passam pelo mesmo critério.
 #
 # Feeds testados em 02/11/2026: todos responderam 200 com RSS e o robots.txt de cada
-# domínio permite o caminho do feed para o agente "Brasilado". Fora da lista por não
+# domínio permite o caminho do feed para o agente "oBrasa". Fora da lista por não
 # cumprirem o critério nessa data: CNN Brasil (o feed redireciona para um domínio cujo
 # robots.txt bloqueia tudo) e Correio Braziliense (o endereço do feed devolve HTML).
 

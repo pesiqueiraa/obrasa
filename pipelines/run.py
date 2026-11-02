@@ -41,7 +41,7 @@ JOBS = {
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Coletores do Brasilado")
+    parser = argparse.ArgumentParser(description="Coletores do oBrasa")
     parser.add_argument("job", choices=sorted(JOBS))
     args = parser.parse_args(argv)
 

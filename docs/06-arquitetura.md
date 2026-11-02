@@ -52,7 +52,7 @@ flowchart LR
 ```text
 /
 ├── AGENTS.md                 # regras do README de docs/, para o agente ler sempre
-├── DESIGN.md                 # design system do Brasilado
+├── DESIGN.md                 # design system do oBrasa
 ├── design/
 │   └── base/                 # bases fixas (IBM e WIRED), não editar
 ├── apps/

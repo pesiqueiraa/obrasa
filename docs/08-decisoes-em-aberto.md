@@ -6,7 +6,6 @@ Formato: cada decisão tem opções, uma recomendação provisória e o que depe
 
 | ID | Pergunta | Opções | Recomendação provisória | Bloqueia |
 |---|---|---|---|---|
-| D1 | Nome final | Brasilado, oBrasa, Prumo, Régua, Lastro, Fato Bruto ([01](01-visao-do-produto.md#nome)) | Decidir após busca no INPI e de domínio | Identidade visual, domínio |
 | D2 | Formato jurídico | Projeto pessoal, associação sem fins lucrativos, empresa | Começar como projeto pessoal open source; formalizar antes de receber dinheiro | D3 |
 | D3 | Financiamento | Doações de pessoas, editais e fundações, patrocínio institucional, serviços para empresas | Doações e editais, com tudo publicado na página "Quem financia" | Lançamento público |
 | D4 | Abrangência inicial | Só federal; federal + estados; tudo | Só federal no MVP | F4, fase 2 |
@@ -28,6 +27,8 @@ Formato: cada decisão tem opções, uma recomendação provisória e o que depe
 | D15 | Resultados de Eleições 2026 vêm do TSE (dados abertos), com malhas municipais do IBGE | 01/11/2026 | Fonte oficial; endpoints testados em 01/11/2026 (docs/05) |
 | D17 | Eleições: candidatos em ordem de votos, bancadas em ordem de tamanho (sem eixo ideológico), situação com as palavras do TSE, e cada arquivo do TSE só vira coleta nova se os números mudarem | 02/11/2026 | Evitar ordem ou classificação que sugira lado (docs/02); o TSE regenera os arquivos com frequência sem mudar os números |
 | D18 | Linha de fonte curta, "Fonte: órgão (referência)", em Plex Sans; atualização na página do indicador, código da série na metodologia, frequência no chip. Regra 2 reescrita | 02/11/2026 | Pedido do responsável pelo projeto: a linha longa, com separadores, pesava a leitura |
+| D1 | Nome: **oBrasa** (antes, nome de trabalho Brasilado). A cor da marca continua o azul-tinta; o nome não leva a interface para vermelho ou laranja | 02/11/2026 | Escolha do responsável pelo projeto. Ainda falta buscar a marca no INPI e registrar o domínio |
+| D21 | Notícias com foto: a regra 7 passa a permitir a imagem de destaque que o feed do veículo indica, exibida do endereço do veículo e nunca copiada | 02/11/2026 | Pedido do responsável pelo projeto. O feed é o canal que o veículo oferece para divulgar a matéria; a imagem leva ao site dele e nós não guardamos o arquivo |
 | D20 | Notícias: tema de cada matéria por lista pública de termos em `config/noticias.yaml` (título e trecho, sem acento, palavra inteira), sem IA. Colunas, opinião e notícias de outros países ficam de fora. Agrupamento da mesma notícia em vários veículos (F6) e checagens ficam para depois | 02/11/2026 | Regra auditável e reproduzível; o banco é reclassificado a cada coleta, então o que aparece segue sempre a regra publicada. No máximo duas matérias por veículo em cada lista, para um feed com 100 itens não cobrir os outros |
 | D19 | Educação usa a PNAD Contínua anual (IBGE). Períodos que a fonte não publicou ficam como lacuna declarada na configuração e aparecem vazios nos gráficos | 02/11/2026 | Mesma fonte e coletor de Trabalho; ligar 2019 a 2022 com uma reta sugeriria dados de 2020 e 2021 que não existem |
 | D16 | Ordem das próximas etapas: design por temas → Economia, Trabalho e Contas públicas → Eleições 2026 → Educação → Notícias por tema | 01/11/2026 | Aprovado pelo responsável pelo projeto |

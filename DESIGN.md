@@ -1,6 +1,6 @@
 ---
 version: alpha
-name: Brasilado
+name: oBrasa
 description: "Plataforma cívica de dados públicos do Brasil. Herda o Carbon da IBM (design/base/ibm.DESIGN.md): superfícies brancas, texto carvão, cantos retos, hierarquia por linhas finas e IBM Plex. Troca o IBM Blue por um azul-tinta próprio, acrescenta componentes de indicador, fonte e gráfico, e usa o ritmo editorial da WIRED (design/base/wired.DESIGN.md) só no módulo de notícias, com IBM Plex Serif no lugar das fontes proprietárias. Sem verde-amarelo, sem vermelho para dado e sem nada que se pareça com site oficial do governo."
 
 colors:
@@ -276,24 +276,24 @@ components:
 
 ## Overview
 
-O Brasilado precisa parecer o que é: um lugar sóbrio para conferir números, não um app de tecnologia nem um site de campanha. Por isso a base é o **Carbon**, o design system da IBM: superfícies brancas, texto carvão, cantos retos, hierarquia por linhas finas e troca de superfície, sem sombras. É um visual de rigor que o público associa a instituição séria, e o Carbon é open source (Apache 2.0), assim como a família IBM Plex (licença OFL). Usamos o sistema, não a marca IBM.
+O oBrasa precisa parecer o que é: um lugar sóbrio para conferir números, não um app de tecnologia nem um site de campanha. Por isso a base é o **Carbon**, o design system da IBM: superfícies brancas, texto carvão, cantos retos, hierarquia por linhas finas e troca de superfície, sem sombras. É um visual de rigor que o público associa a instituição séria, e o Carbon é open source (Apache 2.0), assim como a família IBM Plex (licença OFL). Usamos o sistema, não a marca IBM.
 
 O que é nosso: um **azul-tinta** como única cor de marca, componentes feitos para dado público (cartão de indicador, linha de fonte, chip de frequência, moldura de gráfico, faixa de mandato) e um módulo de notícias com o ritmo editorial da WIRED.
 
 ## Como este arquivo funciona
 
-Este arquivo **adapta e aponta**. Ele não repete as bases; define só o que o Brasilado muda ou acrescenta.
+Este arquivo **adapta e aponta**. Ele não repete as bases; define só o que o oBrasa muda ou acrescenta.
 
 **Ordem de precedência** (o primeiro que definir algo vence):
 
-1. **Este `DESIGN.md`**: tokens e componentes do Brasilado, e as regras de [docs/02-principios-de-neutralidade.md](docs/02-principios-de-neutralidade.md).
+1. **Este `DESIGN.md`**: tokens e componentes do oBrasa, e as regras de [docs/02-principios-de-neutralidade.md](docs/02-principios-de-neutralidade.md).
 2. **[design/base/ibm.DESIGN.md](design/base/ibm.DESIGN.md)**: tudo o que não está definido aqui (navegação, abas, campos, grid, breakpoints, alvos de toque, elevação, princípios de tipografia).
 3. **[design/base/wired.DESIGN.md](design/base/wired.DESIGN.md)**: **só** os padrões de layout do módulo de notícias (story-row, divisórias finas, eyebrow de categoria, ritmo de byline). Nunca as fontes proprietárias, o preto como cor primária ou o rodapé preto.
 4. **Documentação oficial do Carbon** (carbondesignsystem.com): componentes que nenhum dos arquivos cobre, como tabela de dados, dropdown, modal, notificação e seletor de conteúdo.
 
 **Origem das bases:** repositório [VoltAgent/awesome-design-md](https://github.com/VoltAgent/awesome-design-md), licença MIT, commit `fcc70284932276d085f01ef9f83edde90b1258cb` (28 out. 2026). As cópias ficam em `design/base/` para o agente ler sem depender da internet e sem mudar de versão sozinho. Para atualizar, troque os arquivos e o commit acima no mesmo PR.
 
-| Aspecto | Origem | Ajuste do Brasilado |
+| Aspecto | Origem | Ajuste do oBrasa |
 |---|---|---|
 | Superfícies, texto, linhas finas | IBM | Igual, exceto `ink-subtle` |
 | Cor de marca | IBM (`#0f62fe`) | **Trocada** por azul-tinta `#23408E` |
@@ -309,7 +309,7 @@ Este arquivo **adapta e aponta**. Ele não repete as bases; define só o que o B
 ### Marca
 - **Azul-tinta** (`{colors.primary}`, `#23408E`): única cor de marca. Links, botão primário, aba selecionada, foco e série principal dos gráficos. Contraste de 9,6:1 sobre branco.
 - Por que não o IBM Blue: com a cor exata da IBM, o site parece da IBM.
-- Por que não o azul do gov.br (`#1351B4`): o Brasilado **nunca pode parecer site oficial do governo**. Pelo mesmo motivo, nada de "barra do governo" no topo nem brasão.
+- Por que não o azul do gov.br (`#1351B4`): o oBrasa **nunca pode parecer site oficial do governo**. Pelo mesmo motivo, nada de "barra do governo" no topo nem brasão.
 
 ### Superfícies e texto
 Herdados da IBM: `canvas`, `surface-1`, `surface-2`, `hairline`, `ink`, `ink-muted` e o rodapé invertido.
@@ -443,13 +443,13 @@ Biblioteca `motion`, com `MotionConfig reducedMotion="user"`: quem pede menos mo
 
 ### Módulo de notícias (padrão WIRED)
 - **`news-story-row`**: linha com divisória fina, como a story-row da WIRED. Contém o `outlet-eyebrow` (nome do veículo), o título em Plex Serif, a hora e um mini `indicator-card` ao lado (empilhado embaixo no celular). O link vai para o site do veículo.
-- Na página `/noticias`, cada tema é uma seção com divisória de 2px: à esquerda (fixa ao rolar no desktop), o título do tema em `news-headline-lg`, a contagem de matérias e veículos e o mini `indicator-card` do indicador principal com a linha de fonte; à direita, as `news-story-row` com trecho. Hora sempre absoluta, no horário de Brasília ("01/11, 19h47"), porque a página fica em cache. Sem foto. No fim de cada página de tema, um bloco "Notícias sobre …" com até cinco linhas sem trecho. No máximo duas matérias por veículo em cada lista. Critério de inclusão e lista de veículos sempre visíveis no fim da página.
+- Na página `/noticias`: título em Plex Serif, filtros por tema com a contagem de matérias e, no topo, a matéria com foto mais recente (foto 16:9, manchete de 36px, trecho) ao lado de três outras com foto pequena, uma por veículo. Depois, cada tema é uma seção com divisória de 2px: título do tema em `news-headline-lg` com o mini `indicator-card` do indicador principal e a linha de fonte à direita, uma grade de até três matérias com foto 3:2 e, abaixo, as demais só com título, em duas colunas. Tema com uma só foto põe a foto à esquerda e a lista à direita. Hora sempre absoluta, no horário de Brasília ("01/11, 19h47"), porque a página fica em cache. No fim de cada página de tema, um bloco "Notícias sobre …" com até quatro matérias com foto e quatro só com título. No máximo duas matérias por veículo em cada lista. Critério de inclusão e lista de veículos sempre visíveis no fim da página.
 - **`news-cluster`**: título neutro do grupo em `news-headline-lg`, seguido de uma `news-story-row` por veículo e, se houver, das `fact-check-row`.
 - **`fact-check-row`**: nome da agência e a classificação **com as palavras da própria agência**, sem cor por classificação.
-- Sem fotos de matérias de terceiros (direito autoral). A WIRED é referência de ritmo e densidade, não de imagens.
+- Fotos só as que o próprio feed do veículo indica para a matéria, carregadas do endereço do veículo (sem `next/image`, que copiaria a imagem para o nosso servidor) e sempre dentro de um link para a matéria no site do veículo. Se o veículo recusar a imagem, o cartão fica só com o texto. Matéria sem foto entra na lista de títulos, nunca com imagem genérica no lugar.
 
 ### Componentes herdados sem mudança
-Botões, campos de texto, abas, navegação e rodapé seguem a base IBM. O rodapé invertido do Brasilado traz sempre os links Metodologia, Correções, Quem financia e Reportar erro.
+Botões, campos de texto, abas, navegação e rodapé seguem a base IBM. O rodapé invertido do oBrasa traz sempre os links Metodologia, Correções, Quem financia e Reportar erro.
 
 ## Do's and Don'ts
 

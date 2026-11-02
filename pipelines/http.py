@@ -9,7 +9,7 @@ import httpx
 
 from pipelines.models import RawResponse
 
-USER_AGENT = "Brasilado/0.1 (dados publicos; +https://github.com/)"
+USER_AGENT = "oBrasa/0.1 (dados publicos; +https://github.com/)"
 RETRY_STATUS = {429, 500, 502, 503, 504}
 
 

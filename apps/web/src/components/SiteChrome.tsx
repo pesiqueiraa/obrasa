@@ -11,7 +11,7 @@ export async function SiteHeader() {
       <div className={`container ${styles.topNavInner}`}>
         {/* Nome provisório em texto, Plex Sans 600, até a decisão D1 (docs/08). */}
         <Link href="/" className={styles.brand}>
-          Brasilado
+          oBrasa
         </Link>
         <ThemeNav items={items} />
         <Link href="/metodologia" className={styles.navAside}>

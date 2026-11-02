@@ -5,7 +5,7 @@ import "../styles/tokens.css";
 import "./globals.scss";
 
 export const metadata: Metadata = {
-  title: { default: "Brasilado", template: "%s · Brasilado" },
+  title: { default: "oBrasa", template: "%s · oBrasa" },
   description: "Dados oficiais do Brasil, com contexto e sem lado.",
 };
 

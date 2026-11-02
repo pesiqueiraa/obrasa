@@ -12,7 +12,7 @@ Copiadas de [docs/README.md](docs/README.md#regras-que-o-agente-nunca-pode-quebr
 4. **Textos seguem o guia de linguagem** de [02](docs/02-principios-de-neutralidade.md#4-linguagem-sem-adjetivo): sem adjetivos valorativos, sempre com unidade e período.
 5. **Nenhuma pesquisa eleitoral** é exibida sem o número de registro no TSE.
 6. **Códigos e endpoints marcados como `confirmar`** em [05](docs/05-fontes-de-dados.md) precisam ser testados contra a fonte antes do uso. Depois de testar, atualize o status no próprio arquivo.
-7. **Notícias de terceiros**: guardar e exibir só título, link, veículo, data e um trecho curto. Nunca republicar o texto da matéria.
+7. **Notícias de terceiros**: guardar e exibir só título, link, veículo, data, um trecho curto e, se o feed do veículo oferecer, a imagem de destaque, carregada do endereço do veículo e nunca copiada para o nosso servidor. Nunca republicar o texto da matéria.
 8. **Interface segue o [DESIGN.md](DESIGN.md)**, que tem precedência sobre as bases em `design/base/`. Os arquivos de `design/base/` nunca são editados.
 
 ## Como rodar

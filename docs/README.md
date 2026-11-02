@@ -1,6 +1,6 @@
-# Brasilado: documentação do produto
+# oBrasa: documentação do produto
 
-> **Brasilado** é o nome provisório. As opções em discussão estão em [01-visao-do-produto.md](01-visao-do-produto.md#nome).
+> O nome **oBrasa** foi escolhido em 02/11/2026 (antes, nome de trabalho oBrasa). Veja [01-visao-do-produto.md](01-visao-do-produto.md#nome).
 
 Esta pasta descreve o que estamos construindo, por quê e com quais regras. Ela foi escrita para duas audiências: as pessoas do projeto e os agentes de IA que vão escrever o código. Antes de começar qualquer tarefa, o agente deve ler este arquivo e os arquivos indicados para a tarefa.
 
@@ -24,7 +24,7 @@ Esta pasta descreve o que estamos construindo, por quê e com quais regras. Ela 
 
 ```text
 /
-├── DESIGN.md        # design system do Brasilado (adapta e aponta para as bases)
+├── DESIGN.md        # design system do oBrasa (adapta e aponta para as bases)
 ├── design/base/     # bases fixas: IBM (Carbon) e WIRED, com licença MIT
 └── docs/            # esta pasta
 ```
@@ -37,7 +37,7 @@ Esta pasta descreve o que estamos construindo, por quê e com quais regras. Ela 
 4. **Textos seguem o guia de linguagem** de [02](02-principios-de-neutralidade.md#4-linguagem-sem-adjetivo): sem adjetivos valorativos, sempre com unidade e período.
 5. **Nenhuma pesquisa eleitoral** é exibida sem o número de registro no TSE.
 6. **Códigos e endpoints marcados como `confirmar`** em [05](05-fontes-de-dados.md) precisam ser testados contra a fonte antes do uso. Depois de testar, atualize o status no próprio arquivo.
-7. **Notícias de terceiros**: guardar e exibir só título, link, veículo, data e um trecho curto. Nunca republicar o texto da matéria.
+7. **Notícias de terceiros**: guardar e exibir só título, link, veículo, data, um trecho curto e, se o feed do veículo oferecer, a imagem de destaque, carregada do endereço do veículo e nunca copiada para o nosso servidor. Nunca republicar o texto da matéria.
 8. **Interface segue o [DESIGN.md](../DESIGN.md)**, que tem precedência sobre as bases em `design/base/`. Os arquivos de `design/base/` nunca são editados.
 
 ## Como manter esta pasta

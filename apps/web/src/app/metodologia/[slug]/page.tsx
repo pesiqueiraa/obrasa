@@ -48,7 +48,7 @@ function SeriesFacts({ bundle, papel }: { bundle: SeriesBundle; papel: string })
             </td>
           </tr>
           <tr>
-            <th scope="row">Identificador no Brasilado</th>
+            <th scope="row">Identificador no oBrasa</th>
             <td>
               <code>{series.id}</code>
             </td>
@@ -119,7 +119,7 @@ async function MethodologyContent({ params }: Pick<PageProps<"/metodologia/[slug
         <h1 className="display">Metodologia: {indicator.titulo}</h1>
         <p className="body-lg">
           O número exibido é o valor publicado pelo {principal.source.orgao} na série &quot;{principal.series.nome}
-          &quot;. O Brasilado não calcula nem estima esse valor: guarda a resposta da fonte, confere e mostra.
+          &quot;. O oBrasa não calcula nem estima esse valor: guarda a resposta da fonte, confere e mostra.
         </p>
 
         <SeriesFacts bundle={principal} papel="Fonte principal" />

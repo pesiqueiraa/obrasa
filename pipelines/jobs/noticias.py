@@ -146,14 +146,15 @@ def run(
                     cur.execute(
                         """
                         insert into news_articles (outlet_id, url, titulo, publicado_em, trecho,
-                                                   temas, coletado_em, raw_object)
-                        values (%s, %s, %s, %s, %s, %s, %s, %s)
+                                                   temas, coletado_em, raw_object, imagem)
+                        values (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                         on conflict (url) do update set titulo = excluded.titulo,
-                          trecho = excluded.trecho, temas = excluded.temas
+                          trecho = excluded.trecho, temas = excluded.temas,
+                          imagem = coalesce(excluded.imagem, news_articles.imagem)
                         returning (xmax = 0)
                         """,
                         (dono_id, it.url, it.titulo, it.publicado_em, it.trecho, temas,
-                         raw.fetched_at, objeto),
+                         raw.fetched_at, objeto, it.imagem),
                     )  # fmt: skip
                     row = cur.fetchone()
                     if row and row[0]:
