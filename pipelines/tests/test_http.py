@@ -42,3 +42,40 @@ def test_server_error_retried():
     )
     raw = http.get("bcb_sgs", "https://example.test", client=client, sleep=lambda _: None)
     assert raw.body == JSON
+
+
+def test_ibge_pela_ponte_guarda_a_url_do_ibge(monkeypatch):
+    monkeypatch.setenv("IBGE_PONTE_URL", "https://obrasa.vercel.app/api/ponte-ibge")
+    monkeypatch.setenv("IBGE_PONTE_TOKEN", "t" * 40)
+    pedidos = []
+
+    def responde(request):
+        pedidos.append(request)
+        return httpx.Response(200, content=JSON, headers={"content-type": "application/json"})
+
+    client = httpx.Client(transport=httpx.MockTransport(responde))
+    raw = http.get(
+        "ibge_agregados",
+        "https://servicodados.ibge.gov.br/api/v3/agregados/1737/periodos/-1/variaveis/63",
+        params={"localidades": "N1[all]"},
+        client=client,
+    )
+    assert str(pedidos[0].url).startswith(
+        "https://obrasa.vercel.app/api/ponte-ibge/v3/agregados/1737/periodos/-1/variaveis/63?"
+    )
+    assert pedidos[0].headers["x-ponte-token"] == "t" * 40
+    assert raw.url.startswith("https://servicodados.ibge.gov.br/api/v3/agregados/1737/")
+    assert "ponte" not in raw.url and "localidades=" in raw.url
+    assert raw.body == JSON
+
+
+def test_outras_fontes_e_maquina_local_vao_direto(monkeypatch):
+    ponte = ("https://obrasa.vercel.app/api/ponte-ibge/", "t" * 40)
+    assert http.destino("https://api.bcb.gov.br/dados/serie/x", ponte) == (
+        "https://api.bcb.gov.br/dados/serie/x",
+        {},
+    )
+    monkeypatch.delenv("IBGE_PONTE_URL", raising=False)
+    monkeypatch.delenv("IBGE_PONTE_TOKEN", raising=False)
+    assert http.ponte_ibge() is None
+    assert http.destino("https://servicodados.ibge.gov.br/api/v3/x", None)[1] == {}

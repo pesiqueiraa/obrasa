@@ -223,6 +223,14 @@ A esteira roda sem ninguém olhando; duas peças dizem quando algo precisa de um
   diferentes: comenta. Voltou a funcionar: comenta e fecha. Um feed fora do ar a cada 30
   minutos vira uma issue, não 48 e-mails por dia.
 
+- **Ponte do IBGE (`/api/ponte-ibge`, `apps/web/src/lib/ponte.ts`):** a API do IBGE
+  (`servicodados.ibge.gov.br`) recusa conexões de fora do Brasil, e o GitHub Actions roda
+  nos EUA (diagnóstico de 02/11/2026: Banco Central, SIDRA, Tesouro e feeds respondem; essa
+  API não abre conexão). A coleta pede ao IBGE por uma função da Vercel em São Paulo
+  (`vercel.json`, região `gru1`), que repassa o corpo sem mudar; a resposta bruta guarda a
+  URL do IBGE. Fechada por padrão: só responde com o token `PONTE_IBGE_TOKEN`, só GET e só
+  para essa API. Sem `IBGE_PONTE_URL` e `IBGE_PONTE_TOKEN` (máquina local), a coleta vai
+  direto ao IBGE.
 - **Reportes de erro (`/reportar-erro`, migração `20261113000000_reportes.sql`):** o site
   só chama a função `registra_reporte`; não lê nem altera a tabela `reportes`. Não guarda
   nome, e-mail nem IP. Contra spam: campo isca e tempo mínimo no formulário, e no banco

@@ -44,18 +44,30 @@ Falta, no dia da produção:
 
 1. Cadastrar os segredos em Settings → Environments → `producao` (tabela abaixo). A chave
    vai direto no painel, nunca no chat ou no terminal.
-2. Rodar à mão, em Actions, na ordem: Coleta → Notícias → Auditoria → Atrasos. A primeira
-   coleta grava o histórico completo e pode levar alguns minutos.
-3. Conferir que nenhuma issue "Alerta" foi aberta. Se foi, ela diz o que falhou.
-4. Ligar os agendamentos: Settings → Secrets and variables → Actions → Variables →
+2. Primeira coleta completa a partir de uma máquina no Brasil (passo 3.1): o site só é
+   construído com todas as séries no banco, e a API do IBGE não aceita o GitHub sem a
+   ponte, que fica no próprio site.
+3. Depois do site no ar: criar o segredo `IBGE_PONTE_TOKEN` (o mesmo valor de
+   `PONTE_IBGE_TOKEN` da Vercel) e a variável `IBGE_PONTE_URL` =
+   `https://<endereço do site>/api/ponte-ibge`. Rodar **Coleta** à mão e conferir que fica
+   verde, depois **Notícias**, **Auditoria** e **Atrasos**.
+4. Conferir que nenhuma issue "Alerta" foi aberta. Se foi, ela diz o que falhou.
+5. Ligar os agendamentos: Settings → Secrets and variables → Actions → Variables →
    `PRODUCAO_ATIVA` = `true`.
 
 ## 3. Vercel (site)
 
-1. Importar o repositório, com a pasta `apps/web` como raiz do projeto.
-2. Variáveis de ambiente: `SUPABASE_URL`, `SUPABASE_ANON_KEY` e `SITE_URL`. A chave anônima só lê (RLS) e o site a usa no servidor.
-3. Fazer o deploy **depois** da primeira coleta: a construção lê os indicadores do banco.
-4. Abrir `https://<domínio>/saude`: precisa responder 200, com todos os jobs no prazo.
+1. Primeira coleta, uma vez, de uma máquina no Brasil: criar `.env.producao` na raiz do
+   repositório (fora do git) com `DATABASE_URL`, `SUPABASE_URL`,
+   `SUPABASE_SERVICE_ROLE_KEY` e `RAW_STORE=supabase`, e rodar
+   `set -a; . ./.env.producao; set +a; uv run python -m pipelines.run todos`.
+2. Importar o repositório, com a pasta `apps/web` como raiz do projeto.
+3. Variáveis de ambiente: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SITE_URL` e
+   `PONTE_IBGE_TOKEN` (gerar com `openssl rand -hex 32`, colar direto no painel). A chave
+   anônima só lê (RLS) e o site a usa no servidor.
+4. Fazer o deploy. As funções rodam em São Paulo (`apps/web/vercel.json`), perto do banco e
+   aceitas pelo IBGE.
+5. Abrir `https://<domínio>/saude`: precisa responder 200, com todos os jobs no prazo.
 
 ## 4. Cloudflare R2 (cópia de segurança)
 
@@ -102,3 +114,6 @@ O que fazer quando chegar o e-mail "Down": abrir `/saude` no navegador. O JSON d
 | `ANTHROPIC_API_KEY` | GitHub `producao` | Agentes (fase 4). Definir limite de gasto mensal no console da Anthropic |
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` | GitHub `producao` | Cópia de segurança |
 | `SITE_URL` | Vercel | Links das imagens de compartilhamento |
+| `PONTE_IBGE_TOKEN` | Vercel | Abre a ponte do IBGE (docs/06). Mesmo valor de `IBGE_PONTE_TOKEN` |
+| `IBGE_PONTE_TOKEN` | GitHub `producao` | A coleta usa a ponte do IBGE. Mesmo valor de `PONTE_IBGE_TOKEN` |
+| `IBGE_PONTE_URL` (variável, não segredo) | GitHub, Variables | `https://<endereço do site>/api/ponte-ibge` |

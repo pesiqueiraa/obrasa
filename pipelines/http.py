@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import time
 from datetime import UTC, datetime
 
@@ -11,6 +12,30 @@ from pipelines.models import RawResponse
 
 USER_AGENT = "oBrasa/0.1 (dados publicos; +https://github.com/)"
 RETRY_STATUS = {429, 500, 502, 503, 504}
+
+# A API do IBGE recusa conexões de fora do Brasil, e o GitHub Actions roda nos EUA. Com
+# IBGE_PONTE_URL e IBGE_PONTE_TOKEN definidas, os pedidos a ela passam pela ponte em São
+# Paulo (apps/web/src/lib/ponte.ts), que repassa o corpo sem mudar. A resposta bruta
+# guarda a URL do IBGE, nunca a da ponte. Sem as variáveis (máquina local), vai direto.
+ORIGEM_IBGE = "https://servicodados.ibge.gov.br/api/"
+
+
+def ponte_ibge() -> tuple[str, str] | None:
+    url, token = os.environ.get("IBGE_PONTE_URL", ""), os.environ.get("IBGE_PONTE_TOKEN", "")
+    return (url.rstrip("/") + "/", token) if url and token else None
+
+
+def destino(url: str, ponte: tuple[str, str] | None) -> tuple[str, dict[str, str]]:
+    """URL a pedir e cabeçalhos extras: pela ponte só quando a URL é da API do IBGE."""
+    if ponte and url.startswith(ORIGEM_IBGE):
+        return ponte[0] + url[len(ORIGEM_IBGE) :], {"x-ponte-token": ponte[1]}
+    return url, {}
+
+
+def url_de_origem(pedida: str, ponte: tuple[str, str] | None) -> str:
+    if ponte and pedida.startswith(ponte[0]):
+        return ORIGEM_IBGE + pedida[len(ponte[0]) :]
+    return pedida
 
 
 def get(
@@ -53,7 +78,15 @@ def request(
     chamador guarda a resposta bruta e o parser falha com ValidationError.
     """
     own_client = client is None
-    client = client or httpx.Client(timeout=timeout, headers={"User-Agent": USER_AGENT})
+    # Conexão que não abre em 15 s não vai abrir: falha logo em vez de esperar o timeout todo.
+    client = client or httpx.Client(
+        timeout=httpx.Timeout(timeout, connect=min(15.0, timeout)),
+        headers={"User-Agent": USER_AGENT},
+    )
+    ponte = ponte_ibge()
+    url, extras = destino(url, ponte)
+    if extras:
+        headers = {**(headers or {}), **extras}
     last_error: Exception | None = None
     try:
         for attempt in range(1, attempts + 1):
@@ -71,7 +104,7 @@ def request(
                     continue
                 return RawResponse(
                     source_id=source_id,
-                    url=str(response.url),
+                    url=url_de_origem(str(response.url), ponte),
                     body=response.content,
                     content_type=response.headers.get("content-type", "application/json"),
                     fetched_at=datetime.now(UTC),
