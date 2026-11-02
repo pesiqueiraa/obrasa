@@ -51,6 +51,9 @@ export function SiteFooter() {
           <li>
             <Link href="/reportar-erro">Reportar erro</Link>
           </li>
+          <li>
+            <Link href="/privacidade">Privacidade</Link>
+          </li>
         </ul>
         <p>Dados oficiais do Brasil, com contexto e sem lado. Todo número traz a fonte, a data e a frequência.</p>
       </div>
