@@ -4,11 +4,16 @@
 
 import Link from "next/link";
 import { Suspense } from "react";
+import { FonteTse } from "@/components/eleicoes/FonteTse";
+import { linhasDoTurno } from "@/components/eleicoes/Resultado";
+import { nomeProprio, pct } from "@/components/eleicoes/util";
 import { FrequencyChip } from "@/components/FrequencyChip";
 import { SourceLine } from "@/components/SourceLine";
 import { Sparkline } from "@/components/viz/Sparkline";
 import styles from "@/components/home.module.scss";
+import ui from "@/components/ui.module.scss";
 import { getTemas, getTemaViews, type IndicatorView } from "@/lib/data";
+import { getEleicao } from "@/lib/eleicoes";
 import { formatDate, formatRef, parseDay } from "@/lib/format";
 import { present } from "@/lib/present";
 
@@ -53,6 +58,48 @@ function Linha({ tema, titulo, resumo, views, i }: { tema: string; titulo: strin
           atualizadoEm={lead.atualizadoEm}
           curta
         />
+      </div>
+    </li>
+  );
+}
+
+// Linha da eleição no quadro: o resultado do 2º turno para presidente, com a barra
+// dividida em miniatura no lugar da sparkline.
+async function LinhaEleicao({ tema, titulo, resumo }: { tema: string; titulo: string; resumo: string }) {
+  const e = await getEleicao();
+  if (!e) return null;
+  const t2 = e.apuracao.find((a) => a.turno === 2 && a.uf === "BR");
+  if (!t2) return null;
+  const [a, b] = linhasDoTurno(e.candidatos, e.votos, 2);
+  return (
+    <li className={styles.linha}>
+      <div className={styles.tema}>
+        <h2>
+          <Link href={`/${tema}`}>{titulo}</Link>
+        </h2>
+        <p>{resumo}</p>
+        <Link href={`/${tema}`} className={styles.mais}>
+          Mapa, comparecimento e eleitos
+        </Link>
+      </div>
+      <div className={styles.numero}>
+        <p className={styles.rotulo}>
+          <Link href={`/${tema}`}>Presidente, 2º turno</Link>
+          <span className={ui.chip}>Por eleição</span>
+        </p>
+        <p className={styles.valor}>{pct(a.votos, t2.validos)}</p>
+        <p className={styles.variacao}>
+          dos votos válidos para {nomeProprio(a.c.nome)} ({a.c.partido}), {a.c.situacao[2]?.toLowerCase() ?? ""}{" "}
+          segundo o TSE. {nomeProprio(b.c.nome)} ({b.c.partido}): {pct(b.votos, t2.validos)}.
+        </p>
+      </div>
+      <div className={styles.tendencia} aria-hidden="true">
+        <div className={styles.miniDuelo}>
+          <span style={{ width: `${(a.votos / t2.validos) * 100}%` }} />
+        </div>
+      </div>
+      <div className={styles.fonte}>
+        <FonteTse arquivo={e.arquivos.votos_presidente} coleta={e.coletas.votos_presidente} referencia={formatDate(t2.data)} />
       </div>
     </li>
   );
@@ -119,6 +166,8 @@ async function Quadro() {
     }))
     .sort((a, b) => (a.data === b.data ? a.titulo.localeCompare(b.titulo) : a.data < b.data ? -1 : 1));
 
+  const temEleicao = porTema.some(({ t }) => t.slug === "eleicoes-2026") && (await getEleicao()) !== null;
+
   return (
     <>
       <div className="container">
@@ -126,13 +175,18 @@ async function Quadro() {
           <h1>Brasil hoje</h1>
           <p>
             {todas.length} indicadores oficiais, de {orgaos.join(" e ")}
-            {coletadoAte ? `, com dados coletados até ${formatDate(coletadoAte)}` : ""}.
+            {coletadoAte ? `, com dados coletados até ${formatDate(coletadoAte)}` : ""}
+            {temEleicao ? ", e o resultado das eleições de 2026, do TSE" : ""}.
           </p>
         </header>
         <ol className={styles.quadro}>
-          {porTema.map(({ t, views }, i) => (
-            <Linha key={t.slug} tema={t.slug} titulo={t.titulo} resumo={t.resumo} views={views} i={i} />
-          ))}
+          {porTema.map(({ t, views }, i) =>
+            t.slug === "eleicoes-2026" ? (
+              <LinhaEleicao key={t.slug} tema={t.slug} titulo={t.titulo} resumo={t.resumo} />
+            ) : (
+              <Linha key={t.slug} tema={t.slug} titulo={t.titulo} resumo={t.resumo} views={views} i={i} />
+            ),
+          )}
         </ol>
       </div>
       <div className="section section--surface">

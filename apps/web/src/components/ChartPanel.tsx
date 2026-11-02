@@ -21,7 +21,7 @@ import {
   Tabs,
 } from "@carbon/react";
 import dynamic from "next/dynamic";
-import { useId, useMemo, useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { formatNumber, formatRef, formatRefLong, formatValue, type FrequenciaRef } from "@/lib/format";
 import { JANELAS, lastOfMonth, sliceWindow, type Janela } from "@/lib/indicator";
 import styles from "./ui.module.scss";
@@ -55,16 +55,18 @@ export type ChartPanelProps = {
 
 export function ChartPanel(props: ChartPanelProps) {
   const { titulo, unidade, casas, frequencia, eixo, variantes, janelaPadrao, csvHref } = props;
-  const [selected, setSelected] = useState(JANELAS.findIndex((j) => j.id === janelaPadrao));
+  // Série anual: a janela de 12 meses teria um ponto só.
+  const janelas = frequencia === "anual" ? JANELAS.filter((j) => j.id !== "12m") : JANELAS;
+  const [selected, setSelected] = useState(Math.max(0, janelas.findIndex((j) => j.id === janelaPadrao)));
   const [varIdx, setVarIdx] = useState(0);
   const [showTable, setShowTable] = useState(false);
   const id = useId();
-  const janela = JANELAS[selected];
+  const janela = janelas[selected];
   const variante = variantes[varIdx];
-  const windowObs = useMemo(() => sliceWindow(variante.obs, janela.id), [variante.obs, janela.id]);
+  const windowObs = sliceWindow(variante.obs, janela.id); // o React Compiler memoiza
   // Série diária em janela longa: último valor de cada mês, para o gráfico e a tabela.
   const mensalizar = frequencia === "diaria" && janela.id !== "12m";
-  const pontos = useMemo(() => (mensalizar ? lastOfMonth(windowObs) : windowObs), [mensalizar, windowObs]);
+  const pontos = mensalizar ? lastOfMonth(windowObs) : windowObs;
   const refFreq: FrequenciaRef = mensalizar ? "mensal" : frequencia;
   const fmt = (n: number) => formatValue(n, unidade, casas);
 
@@ -102,12 +104,12 @@ export function ChartPanel(props: ChartPanelProps) {
       <div className={styles.tabsScroller}>
         <Tabs selectedIndex={selected} onChange={({ selectedIndex }) => setSelected(selectedIndex)}>
           <TabList aria-label="Janela de tempo">
-            {JANELAS.map((j) => (
+            {janelas.map((j) => (
               <Tab key={j.id}>{j.rotulo}</Tab>
             ))}
           </TabList>
           <TabPanels>
-            {JANELAS.map((j, i) => (
+            {janelas.map((j, i) => (
               <TabPanel key={j.id}>
                 {i === selected ? (
                   <>

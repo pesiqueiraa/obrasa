@@ -1,4 +1,4 @@
-"""Ponto de entrada: `uv run python -m pipelines.run todos` (ou `ipca`, `series`).
+"""Ponto de entrada: `uv run python -m pipelines.run todos` (ou `ipca`, `series`, `eleicoes`).
 
 Variáveis de ambiente:
   DATABASE_URL               conexão Postgres (obrigatória)
@@ -15,15 +15,21 @@ import logging
 import sys
 
 from pipelines import config, db, raw_store
-from pipelines.jobs import ipca, series
+from pipelines.jobs import eleicoes, ipca, series
 from pipelines.jobs.report import Report
 
 
 def todos(conn, store, registry) -> Report:
-    return ipca.run(conn, store, registry).merge(series.run(conn, store, registry))
+    report = ipca.run(conn, store, registry).merge(series.run(conn, store, registry))
+    try:
+        report.merge(eleicoes.run(conn, store, registry))
+    except Exception as exc:  # falha das eleições não apaga o relatório das séries
+        logging.getLogger(__name__).exception("eleições falhou")
+        report.errors.append(f"eleições: {exc}")
+    return report
 
 
-JOBS = {"ipca": ipca.run, "series": series.run, "todos": todos}
+JOBS = {"ipca": ipca.run, "series": series.run, "eleicoes": eleicoes.run, "todos": todos}
 
 
 def main(argv: list[str] | None = None) -> int:

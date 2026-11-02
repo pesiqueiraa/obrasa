@@ -21,7 +21,7 @@ export const FREQUENCIA_ROTULO: Record<Frequencia, string> = {
   trimestral_movel: "Mensal, trimestre móvel",
   trimestral: "Trimestral",
   anual: "Anual",
-  evento: "A cada reunião do Copom",
+  evento: "Por evento",
 };
 
 export type Obs = {
@@ -116,6 +116,9 @@ const FOLGA_SEM_CALENDARIO: Partial<Record<Frequencia, { meses: number; dias: nu
   mensal: { meses: 2, dias: 14 },
   trimestral_movel: { meses: 2, dias: 14 },
   trimestral: { meses: 6, dias: 14 },
+  // PNAD Contínua anual (educação): o ano N sai em junho de N+1. Do 1º dia do último ano
+  // publicado até o prazo do seguinte: 2025 → 14/07/2027.
+  anual: { meses: 30, dias: 14 },
 };
 
 // Distância, em meses, entre um período e o seguinte.

@@ -1,0 +1,56 @@
+# Eleições 2026 (docs/08, D14 e D15). Arquivos do Portal de Dados Abertos do TSE,
+# testados em 01/11/2026 (docs/05). Cada zip é lido por partes (HTTP Range): só o
+# arquivo indicado em `membro` é baixado.
+
+ano: 2026
+fonte: tse_dados_abertos
+
+turnos:
+  - turno: 1
+    data: 2026-10-04
+    cd_eleicao_federal: 6257
+  - turno: 2
+    data: 2026-10-25
+    cd_eleicao_federal: 6258
+
+arquivos:
+  apuracao:
+    zip: https://cdn.tse.jus.br/estatistica/sead/odsele/detalhe_votacao_munzona/detalhe_votacao_munzona_2026.zip
+    membro: detalhe_votacao_munzona_2026_BR.csv
+    pagina: https://dadosabertos.tse.jus.br/dataset/resultados-2026
+  votos_presidente:
+    zip: https://cdn.tse.jus.br/estatistica/sead/odsele/votacao_candidato_munzona/votacao_candidato_munzona_2026.zip
+    membro: votacao_candidato_munzona_2026_BR.csv
+    pagina: https://dadosabertos.tse.jus.br/dataset/resultados-2026
+  candidatos:
+    zip: https://cdn.tse.jus.br/estatistica/sead/odsele/consulta_cand/consulta_cand_2026.zip
+    membro: consulta_cand_2026_BRASIL.csv
+    pagina: https://dadosabertos.tse.jus.br/dataset/candidatos-2026
+
+# Cargos lidos do arquivo de candidaturas e número de vagas em 2026. A coleta é recusada
+# se o número de eleitos for diferente (Constituição, arts. 45 e 46: 513 deputados
+# federais; em 2026 o Senado renova 2/3, 54 vagas).
+vagas:
+  PRESIDENTE: 1
+  GOVERNADOR: 27
+  SENADOR: 54
+  DEPUTADO FEDERAL: 513
+
+# Municípios em que o nome no TSE difere do nome no IBGE. Conferido em 01/11/2026:
+# depois destas 13 exceções, o casamento é um para um, sempre na mesma UF, e os 13
+# municípios do IBGE que sobravam são exatamente estes.
+#   código TSE: código IBGE   # nome no TSE → nome no IBGE
+municipios_excecoes:
+  "03158": 1400605   # SÃO LUIZ (RR) → São Luiz do Anauá
+  "92690": 5203500   # BOM JESUS (GO) → Bom Jesus de Goiás
+  "71013": 3550001   # SÃO LUÍS DO PARAITINGA (SP) → São Luiz do Paraitinga
+  "91553": 5107800   # SANTO ANTÔNIO DO LEVERGER (MT) → Santo Antônio de Leverger
+  "17035": 2405306   # BOA SAÚDE (RN) → Januário Cicco
+  "44571": 3122900   # DONA EUSÉBIA (MG) → Dona Euzébia
+  "00256": 1100098   # ESPIGÃO DO OESTE (RO) → Espigão D'Oeste
+  "77119": 4116307   # MUNHOZ DE MELLO (PR) → Munhoz de Melo
+  "41092": 3105509   # BARÃO DE MONTE ALTO (MG) → Barão do Monte Alto
+  "53031": 3165206   # SÃO THOMÉ DAS LETRAS (MG) → São Tomé das Letras
+  "00337": 1100346   # ALVORADA DO OESTE (RO) → Alvorada D'Oeste
+  "31011": 2800100   # AMPARO DE SÃO FRANCISCO (SE) → Amparo do São Francisco
+  "04120": 1502954   # ELDORADO DOS CARAJÁS (PA) → Eldorado do Carajás

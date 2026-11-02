@@ -12,7 +12,8 @@ import { getTemas, getTemaViews } from "@/lib/data";
 
 export async function generateStaticParams() {
   const temas = await getTemas();
-  return temas.map((t) => ({ tema: t.slug }));
+  // Temas com rota própria (ex.: /eleicoes-2026) ficam de fora desta página genérica.
+  return temas.filter((t) => t.pagina !== "propria").map((t) => ({ tema: t.slug }));
 }
 
 export async function generateMetadata(props: PageProps<"/[tema]">): Promise<Metadata> {
@@ -23,7 +24,7 @@ export async function generateMetadata(props: PageProps<"/[tema]">): Promise<Met
 
 async function TemaContent({ params }: Pick<PageProps<"/[tema]">, "params">) {
   const { tema } = await params;
-  const t = (await getTemas()).find((x) => x.slug === tema);
+  const t = (await getTemas()).find((x) => x.slug === tema && x.pagina !== "propria");
   if (!t) notFound();
   const views = await getTemaViews(t.slug);
   return (

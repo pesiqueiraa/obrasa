@@ -173,3 +173,68 @@
   casas_decimais: 1
   frase_template: divida_liquida.pt.txt
   ordem: 2
+
+- slug: analfabetismo
+  titulo: Analfabetismo, 15 anos ou mais
+  tema: educacao
+  fonte_primaria: {orgao: IBGE, tipo: ibge_agregados, tabela: 7113, variavel: 10267, classificacao: "2[6794]|58[2795]", status: ok}
+  unidade: "%"
+  tipo_serie: taxa
+  frequencia: anual
+  janela_padrao: tudo
+  monetaria: false
+  casas_decimais: 1
+  frase_template: analfabetismo.pt.txt
+  ordem: 1
+
+- slug: anos-de-estudo
+  titulo: Anos de estudo, 25 anos ou mais
+  tema: educacao
+  fonte_primaria: {orgao: IBGE, tipo: ibge_agregados, tabela: 7126, variavel: 3593, classificacao: "2[6794]|58[108866]", status: ok}
+  unidade: "anos"
+  tipo_serie: nivel
+  frequencia: anual
+  janela_padrao: tudo
+  monetaria: false
+  casas_decimais: 1
+  frase_template: anos_estudo.pt.txt
+  ordem: 2
+
+- slug: frequencia-ensino-medio
+  titulo: Jovens de 15 a 17 anos no ensino médio
+  tema: educacao
+  fonte_primaria: {orgao: IBGE, tipo: ibge_agregados, tabela: 7141, variavel: 10282, classificacao: "2[6794]|871[47818]", status: ok}
+  unidade: "%"
+  tipo_serie: taxa
+  frequencia: anual
+  janela_padrao: tudo
+  monetaria: false
+  casas_decimais: 1
+  frase_template: frequencia_medio.pt.txt
+  ordem: 3
+
+- slug: frequencia-ensino-superior
+  titulo: Jovens de 18 a 24 anos no ensino superior
+  tema: educacao
+  fonte_primaria: {orgao: IBGE, tipo: ibge_agregados, tabela: 7141, variavel: 10282, classificacao: "2[6794]|871[47819]", status: ok}
+  unidade: "%"
+  tipo_serie: taxa
+  frequencia: anual
+  janela_padrao: tudo
+  monetaria: false
+  casas_decimais: 1
+  frase_template: frequencia_superior.pt.txt
+  ordem: 4
+
+- slug: creche
+  titulo: Crianças de 0 a 3 anos na creche
+  tema: educacao
+  fonte_primaria: {orgao: IBGE, tipo: ibge_agregados, tabela: 7138, variavel: 10276, classificacao: "2[6794]|58[99749]", status: ok}
+  unidade: "%"
+  tipo_serie: taxa
+  frequencia: anual
+  janela_padrao: tudo
+  monetaria: false
+  casas_decimais: 1
+  frase_template: creche.pt.txt
+  ordem: 5

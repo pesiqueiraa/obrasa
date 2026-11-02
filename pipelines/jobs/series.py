@@ -53,8 +53,15 @@ def validate(obs: list[Observation], s: Series, today: date) -> None:
     passo = PASSO_MESES.get(s.frequencia)
     if passo is None:
         return
+    lacunas = set(s.lacunas)
     for prev, cur in itertools.pairwise(obs):
-        if _months_between(prev.ref_date, cur.ref_date) != passo:
+        n = _months_between(prev.ref_date, cur.ref_date)
+        faltam = {
+            date(prev.ref_date.year + (prev.ref_date.month - 1 + k) // 12,
+                 (prev.ref_date.month - 1 + k) % 12 + 1, 1)
+            for k in range(passo, n, passo)
+        }  # fmt: skip
+        if n % passo or not faltam <= lacunas:
             raise ValidationError(f"{s.id}: buraco entre {prev.ref_date} e {cur.ref_date}")
 
 

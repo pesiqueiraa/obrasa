@@ -1,7 +1,7 @@
 // source-line (DESIGN.md): obrigatória sob todo número e todo gráfico.
-// Completa: "Fonte: IBGE · SIDRA, tabela 1737, variável 2265 · ref. set/2026 · atualizado em 09/10/2026"
-// Curta (cartões): "Fonte: IBGE · ref. set/2026 · atualizado em 09/10/2026"; o código da
-// série fica na página do indicador. O nome do órgão é link para a fonte.
+// Curta (cartões e gráficos): "Fonte: IBGE (set/2026)". Na página do indicador também a
+// data da última atualização: "Fonte: IBGE (set/2026), atualizado em 09/10/2026".
+// O nome do órgão é link para a série na fonte; o código da série fica na metodologia.
 
 import { formatDate, formatRef } from "@/lib/format";
 import { seriesUrl, type Series, type Source } from "@/lib/data";
@@ -36,9 +36,8 @@ export function SourceLine(props: {
   );
   return (
     <p className={styles.sourceLine}>
-      Fonte: {orgao}
-      {curta ? null : ` · ${seriesDescriptor(source, series)}`} · ref. {periodo ?? formatRef(refDate, series.frequencia)}
-      {atualizadoEm ? ` · atualizado em ${formatDate(atualizadoEm)}` : null}
+      Fonte: {orgao} ({periodo ?? formatRef(refDate, series.frequencia)})
+      {!curta && atualizadoEm ? `, atualizado em ${formatDate(atualizadoEm)}` : null}
     </p>
   );
 }

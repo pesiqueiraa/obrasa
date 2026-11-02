@@ -1,0 +1,479 @@
+// Página Eleições 2026. Uma cor só para todos os candidatos e partidos (docs/08, D14):
+// chart-1 e seus tons. Cantos retos, sem sombra.
+
+@use "sass:list";
+
+$tons: (12%, 30%, 50%, 74%, 100%);
+
+.secaoTitulo {
+  font-size: var(--bd-type-headline-font-size);
+  font-weight: 400;
+  line-height: 1.25;
+  margin: 0 0 var(--bd-space-xs);
+}
+
+.secaoSub {
+  font-size: var(--bd-type-body-sm-font-size);
+  color: var(--bd-color-ink-muted);
+  max-width: 44rem;
+  margin: 0 0 var(--bd-space-lg);
+}
+
+.partido {
+  font-size: var(--bd-type-caption-font-size);
+  font-weight: 600;
+  color: var(--bd-color-ink-muted);
+  letter-spacing: 0.2px;
+}
+
+.situacao {
+  display: inline-block;
+  font-size: var(--bd-type-caption-font-size);
+  border: 1px solid var(--bd-color-ink);
+  padding: 0 var(--bd-space-xxs);
+  margin-left: var(--bd-space-xxs);
+  font-weight: 600;
+}
+
+// ---- 2º turno: barra dividida ----
+.duelo {
+  display: grid;
+  gap: var(--bd-space-sm);
+}
+
+.dueloNomes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--bd-space-md);
+  p {
+    margin: 0;
+  }
+}
+
+.dueloDireita {
+  text-align: right;
+}
+
+.dueloNome {
+  font-size: var(--bd-type-body-lg-font-size);
+  font-weight: 600;
+}
+
+.dueloPct {
+  font-size: 44px;
+  font-weight: 300;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  @media (min-width: 672px) {
+    font-size: 64px;
+  }
+}
+
+.dueloVotos {
+  font-size: var(--bd-type-body-sm-font-size);
+  color: var(--bd-color-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.dueloBarra {
+  position: relative;
+  height: 40px;
+  background: var(--bd-color-chart-1);
+  display: flex;
+}
+
+.dueloA {
+  background: var(--bd-color-chart-1);
+  border-right: 4px solid var(--bd-color-canvas);
+  box-sizing: border-box;
+}
+
+.dueloMeio {
+  position: absolute;
+  left: 50%;
+  top: -8px;
+  bottom: -8px;
+  width: 0;
+  border-left: 1px dashed var(--bd-color-ink);
+}
+
+.legendaMeio {
+  margin: 0;
+  text-align: center;
+  font-size: var(--bd-type-caption-font-size);
+  color: var(--bd-color-ink-muted);
+}
+
+// ---- 1º turno: lista com barras ----
+.lista {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--bd-color-hairline);
+  margin-bottom: var(--bd-space-md);
+}
+
+.listaLinha {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "nome valor"
+    "trilho trilho";
+  gap: var(--bd-space-xxs) var(--bd-space-md);
+  padding: var(--bd-space-sm) 0;
+  border-bottom: 1px solid var(--bd-color-hairline);
+  @media (min-width: 1056px) {
+    grid-template-columns: 22rem 1fr 11rem;
+    grid-template-areas: "nome trilho valor";
+    align-items: center;
+  }
+  p {
+    margin: 0;
+  }
+}
+
+.listaNome {
+  grid-area: nome;
+}
+
+.listaTrilho {
+  grid-area: trilho;
+  height: 12px;
+  background: var(--bd-color-canvas);
+  border: 1px solid var(--bd-color-hairline);
+}
+
+.listaBarra {
+  background: var(--bd-color-chart-1);
+}
+
+.listaValor {
+  grid-area: valor;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  span {
+    display: block;
+    font-size: var(--bd-type-caption-font-size);
+    color: var(--bd-color-ink-muted);
+  }
+}
+
+// ---- mapa ----
+.mapa {
+  display: grid;
+  gap: var(--bd-space-sm);
+}
+
+.controles {
+  display: grid;
+  gap: var(--bd-space-md);
+  fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0;
+  }
+  legend {
+    font-size: var(--bd-type-caption-font-size);
+    color: var(--bd-color-ink-muted);
+    margin-bottom: var(--bd-space-xxs);
+  }
+  input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  label {
+    cursor: pointer;
+  }
+  label:has(input:focus-visible) {
+    outline: 2px solid var(--bd-color-focus, var(--bd-color-primary));
+    outline-offset: 2px;
+  }
+}
+
+.segmentos {
+  display: inline-flex;
+  border: 1px solid var(--bd-color-ink);
+  label {
+    padding: var(--bd-space-xs) var(--bd-space-md);
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+.segOn {
+  background: var(--bd-color-ink);
+  color: var(--bd-color-canvas);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bd-space-xs);
+  label {
+    border: 1px solid var(--bd-color-hairline-strong, var(--bd-color-ink-muted));
+    padding: var(--bd-space-xxs) var(--bd-space-sm);
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--bd-space-xxs);
+    font-size: var(--bd-type-body-sm-font-size);
+  }
+}
+
+.chipOn {
+  border-color: var(--bd-color-ink) !important;
+  box-shadow: inset 0 0 0 1px var(--bd-color-ink);
+  font-weight: 600;
+}
+
+.mapaTitulo {
+  font-weight: 600;
+  margin: var(--bd-space-sm) 0 0;
+}
+
+.escala {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bd-space-xs) var(--bd-space-md);
+  font-size: var(--bd-type-caption-font-size);
+  font-variant-numeric: tabular-nums;
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--bd-space-xxs);
+  }
+}
+
+.chave {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
+@each $t in $tons {
+  $i: list.index($tons, $t) - 1;
+  .b#{$i} {
+    fill: color-mix(in srgb, var(--bd-color-chart-1) #{$t}, var(--bd-color-canvas));
+    background: color-mix(in srgb, var(--bd-color-chart-1) #{$t}, var(--bd-color-canvas));
+  }
+}
+
+.semDado {
+  fill: var(--bd-color-surface-2);
+}
+
+.mapaCaixa {
+  position: relative;
+  max-width: 720px;
+  min-height: 320px;
+}
+
+.mapaSvg {
+  width: 100%;
+  height: auto;
+  display: block;
+  path {
+    stroke: none;
+  }
+}
+
+.divisa {
+  fill: none !important;
+  stroke: var(--bd-color-canvas) !important;
+  stroke-width: 1.2;
+  pointer-events: none;
+}
+
+.borda {
+  fill: none !important;
+  stroke: var(--bd-color-ink-muted) !important;
+  stroke-width: 0.8;
+  pointer-events: none;
+}
+
+.mapaCarregando,
+.mapaErro {
+  margin: 0;
+  padding: var(--bd-space-xl) 0;
+  color: var(--bd-color-ink-muted);
+}
+
+.dica {
+  position: absolute;
+  transform: translate(12px, 12px);
+  background: var(--bd-color-ink);
+  color: var(--bd-color-canvas);
+  padding: var(--bd-space-xs) var(--bd-space-sm);
+  font-size: var(--bd-type-caption-font-size);
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 2;
+}
+
+.nota {
+  font-size: var(--bd-type-caption-font-size);
+  color: var(--bd-color-ink-muted);
+  margin: 0;
+}
+
+.detalhes {
+  margin-top: var(--bd-space-md);
+  summary {
+    cursor: pointer;
+    color: var(--bd-color-primary);
+    text-decoration: underline;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+}
+
+.tabelaWrap {
+  overflow-x: auto;
+  margin: var(--bd-space-sm) 0 var(--bd-space-md);
+  abbr {
+    text-decoration: none;
+  }
+}
+
+.linhaTotal th,
+.linhaTotal td {
+  font-weight: 600;
+  border-top: 2px solid var(--bd-color-ink);
+}
+
+// ---- comparecimento ----
+.comp {
+  display: grid;
+  gap: var(--bd-space-xl);
+  margin-bottom: var(--bd-space-md);
+}
+
+.compTurno {
+  margin: 0;
+  figcaption {
+    margin-bottom: var(--bd-space-sm);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.compBarra {
+  display: flex;
+  height: 28px;
+  background: var(--bd-color-surface-2);
+  span {
+    height: 100%;
+  }
+}
+
+.segValidos {
+  background: var(--bd-color-chart-1);
+}
+.segBrancos {
+  background: color-mix(in srgb, var(--bd-color-chart-1) 55%, var(--bd-color-canvas));
+}
+.segNulos {
+  background: color-mix(in srgb, var(--bd-color-chart-1) 30%, var(--bd-color-canvas));
+}
+.segAbst {
+  background: var(--bd-color-ink-subtle, #8d8d8d);
+}
+.segNaoInst {
+  background: var(--bd-color-ink);
+}
+
+.compLegenda {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: var(--bd-space-sm) var(--bd-space-md);
+  margin: var(--bd-space-sm) 0 0;
+  font-size: var(--bd-type-body-sm-font-size);
+  dt {
+    display: flex;
+    align-items: center;
+    gap: var(--bd-space-xxs);
+    color: var(--bd-color-ink-muted);
+  }
+  dd {
+    margin: 0;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    span {
+      display: block;
+      font-weight: 400;
+      font-size: var(--bd-type-caption-font-size);
+      color: var(--bd-color-ink-muted);
+    }
+  }
+}
+
+// ---- bancadas ----
+.bancadas {
+  display: grid;
+  gap: var(--bd-space-xl);
+  margin-bottom: var(--bd-space-md);
+  @media (min-width: 1056px) {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+.bancada {
+  margin: 0;
+}
+
+.bancadaTitulo {
+  font-weight: 600;
+  margin-bottom: var(--bd-space-sm);
+}
+
+.cadeiras {
+  display: grid;
+  gap: 2px;
+  max-width: 560px;
+}
+
+.cadeira {
+  aspect-ratio: 1;
+  background: var(--bd-color-chart-1);
+}
+
+.tom1 {
+  background: var(--bd-color-chart-1);
+}
+
+.tom2 {
+  background: color-mix(in srgb, var(--bd-color-chart-1) 45%, var(--bd-color-canvas));
+}
+
+.apagada {
+  opacity: 0.15;
+}
+
+.partidos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bd-space-xxs) var(--bd-space-xs);
+  margin-top: var(--bd-space-sm);
+}
+
+.partidoBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bd-space-xxs);
+  min-height: 32px;
+  padding: 0 var(--bd-space-xs);
+  border: 1px solid var(--bd-color-hairline);
+  background: var(--bd-color-canvas);
+  color: var(--bd-color-ink);
+  font: inherit;
+  font-size: var(--bd-type-caption-font-size);
+  cursor: default;
+  font-variant-numeric: tabular-nums;
+  &:focus-visible {
+    outline: 2px solid var(--bd-color-primary);
+  }
+}

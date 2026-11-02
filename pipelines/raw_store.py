@@ -72,6 +72,11 @@ class SupabaseRawStore:
             content=body,
             headers={**self.headers, "Content-Type": content_type, "x-upsert": "false"},
         )
+        if response.status_code >= 400 and '"Duplicate"' in response.text:
+            # O caminho leva o horário (segundo) e o hash do conteúdo: se já existe, é o mesmo
+            # arquivo, gravado por outra coleta no mesmo segundo (ex.: períodos de uma tabela
+            # pedidos por dois grupos de séries). Nada a fazer.
+            return
         if response.status_code >= 400:
             raise RuntimeError(
                 f"falha ao gravar {path} no Storage: {response.status_code} {response.text}"

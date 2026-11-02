@@ -7,7 +7,7 @@ export function FrequencyChip({ frequencia, atraso }: { frequencia: Frequencia; 
   if (atraso.atrasado) {
     return (
       <span className={`${styles.chip} ${styles.chipDelayed}`}>
-        {FREQUENCIA_ROTULO[frequencia]} · {atraso.rotulo}
+        {FREQUENCIA_ROTULO[frequencia]}, {atraso.rotulo}
       </span>
     );
   }

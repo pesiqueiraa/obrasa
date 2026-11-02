@@ -95,7 +95,7 @@ typography:
     lineHeight: 1.33
     letterSpacing: 0.32px
   source-line:
-    fontFamily: IBM Plex Mono
+    fontFamily: IBM Plex Sans
     fontSize: 12px
     fontWeight: 400
     lineHeight: 1.50
@@ -334,7 +334,7 @@ Segue o tema Gray 100 do Carbon, com os tokens `dark-*`. A cor de marca no escur
 
 - **IBM Plex Sans** em toda a interface, com os princípios da base IBM: display em peso 300 e `letter-spacing: 0.16px` no corpo.
 - **Exceção, `{typography.indicator-value}`**: o número do indicador usa Plex Sans 600 com algarismos tabulares (`font-variant-numeric: tabular-nums`). O número é o protagonista da tela e precisa ser lido de relance no celular.
-- **IBM Plex Mono** (`{typography.source-line}`): só na linha de fonte e em códigos de série. Ela marca, visualmente, "isto é a origem do dado".
+- **IBM Plex Mono**: só em códigos de série e endpoints, na metodologia. A linha de fonte usa Plex Sans em 12px, cor `ink-muted`.
 - **IBM Plex Serif** (`news-headline`, `news-headline-lg`): só nos títulos do módulo de notícias, fazendo o papel editorial que a WIRED dá a fontes proprietárias.
 - **Corpo mínimo de 16px.** A frase "o que significa para você" usa `{typography.body-lg}` (18px).
 - Eyebrows em caixa normal (sentence case), como manda a base IBM.
@@ -371,9 +371,9 @@ O cartão do painel. De cima para baixo:
 O cartão inteiro é um link para a página do indicador. No hover, troca para `surface-1` com borda `hairline-strong`.
 
 ### `source-line`
-Obrigatória sob todo número e todo gráfico. Formato:
-`Fonte: IBGE · IPCA, tabela 1737 · ref. set/2026 · atualizado em 10/10/2026`
-O nome do órgão é link para a fonte; o resto é texto.
+Obrigatória sob todo número e todo gráfico. Formato curto, sem separadores:
+`Fonte: IBGE (set/2026)`
+O nome do órgão é link para a série na fonte; entre parênteses, a data de referência. Só a página do indicador acrescenta a data da última atualização: `Fonte: IBGE (set/2026), atualizado em 10/10/2026`. Código da série e endpoint ficam na metodologia; a frequência, no `frequency-chip`.
 
 ### `frequency-chip`
 "Diário", "Mensal", "Trimestral", "A cada reunião do Copom". Quando o dado passa do prazo esperado, vira `frequency-chip-delayed` com o texto "Atrasado desde dd/mm".
@@ -419,16 +419,27 @@ Linha do tempo das próximas divulgações, com as datas dos calendários coleta
 Versão compacta do `indicator-card` para a grade de cada tema: rótulo e chip, valor de 36px com sparkline ao lado, base do valor real quando monetário, variação e `source-line` curta. Grade de 1/2/3 colunas separada por filetes, sem frase. O tile inteiro é link (stretched link), e a linha de fonte continua clicável.
 
 ### `sparkline`
-Linha de 1,5px em `chart-1` com ponto no último valor, sem eixo. Sempre acompanhada do valor e da `source-line`; é decorativa para leitor de tela (`aria-hidden`). Série diária usa o último valor de cada mês.
+Linha de 1,5px em `chart-1` com ponto no último valor, sem eixo. Período que a fonte não publicou interrompe a linha (vale também para o gráfico do `chart-panel`); série anual não tem a aba "12 meses". Sempre acompanhada do valor e da `source-line`; é decorativa para leitor de tela (`aria-hidden`). Série diária usa o último valor de cada mês.
 
 ### Bloco próprio de cada tema
 Cada página de tema abre com uma visualização diferente, para a navegação não ficar repetitiva. Todas têm título, subtítulo com unidade e período, descrição em texto para leitor de tela e uma `source-line` por série usada.
 - **Economia, `dual-line`**: meta Selic e IPCA 12 meses no mesmo eixo, 10 anos, rótulo direto no fim de cada linha (`chart-1` e `chart-2`), sem legenda separada.
 - **Trabalho, `waffle`**: 100 quadrados, "de cada 100 pessoas na força de trabalho". O valor decimal preenche parte do último quadrado (nada é arredondado). Ao lado, o mesmo período um ano antes, em cinza. Abaixo, `proportion-bar` da informalidade (parte em `chart-1`, resto em cinza).
+- **Educação, `education-steps`**: uma barra de 100% por ano, pessoas de 25 anos ou mais por nível de instrução concluído, do menor (tom claro de `chart-1`) ao maior (`chart-1` puro). Percentuais escritos só na linha mais recente. Ano sem pesquisa vira linha tracejada com "sem dado publicado", e a nota abaixo diz o motivo. Nunca interpolar.
 - **Contas públicas, `pib-ruler`**: régua de 0 a 100% do PIB (estende se algum valor passar). Para cada dívida, faixa cinza do menor ao maior valor da série, com as datas escritas, e marcador em `primary` no valor atual.
 
+### Página Eleições 2026
+Página própria (não usa a grade de tiles). Um só tom (`chart-1` e misturas dele com o fundo) para todos os candidatos e partidos; nenhuma cor de partido (docs/08, D14).
+- **`split-bar`**: 2º turno para presidente. Barra única em `chart-1`, os dois candidatos separados por um traço da cor do fundo, traço tracejado em 50% dos válidos. Nome, partido, percentual de 64px, votos e a situação com as palavras do TSE em caixa de frase. Na home, versão de 16px no lugar da sparkline.
+- **`candidate-bars`**: 1º turno, uma linha por candidato na ordem dos votos, barras na escala de 0 a 100% dos válidos (a mesma para todos).
+- **`choropleth-map`**: mapa por município, projeção cônica de áreas iguais. O leitor escolhe turno e candidato; a cor é a fatia dos válidos dele em 5 faixas fixas de 20 pontos, iguais para todos os candidatos. Divisas de UF em linha da cor do fundo. Dica no hover com município, percentual e votos. Alternativa em texto: tabelas por UF em `<details>`.
+- **`turnout-bar`**: barra de 100% dos eleitores aptos por turno: válidos, brancos, nulos, abstenção e seções não instaladas, com legenda em lista de definições.
+- **`seat-grid`**: um quadrado por cadeira, agrupados por partido do maior para o menor (sem eixo esquerda–direita); grupos vizinhos alternam dois tons. Hover ou foco num partido apaga os demais.
+- Tabela de governadores e senadores eleitos por UF, com o turno em que o governador foi decidido.
+- `source-line` do TSE: "Fonte: TSE (25/10/2026)"; arquivo e datas de geração e conferência no `title` do link e em docs/05.
+
 ### Movimento
-Biblioteca `motion`, com `MotionConfig reducedMotion="user"`: quem pede menos movimento vê tudo parado no estado final. Só três momentos: o sublinhado da navegação desliza; sparklines e linhas do bloco do tema se desenham uma vez ao entrar na tela; o waffle e a régua se preenchem uma vez. Nada se move em loop, nada anima no hover.
+Biblioteca `motion`, com `MotionConfig reducedMotion="user"`: quem pede menos movimento vê tudo parado no estado final. Só quatro momentos: o sublinhado da navegação desliza; sparklines e linhas do bloco do tema se desenham uma vez ao entrar na tela; o waffle, a régua e a escada de instrução se preenchem uma vez; as barras do resultado eleitoral crescem uma vez. Nada se move em loop, nada anima no hover.
 
 ### Módulo de notícias (padrão WIRED)
 - **`news-story-row`**: linha com divisória fina, como a story-row da WIRED. Contém o `outlet-eyebrow` (nome do veículo), o título em Plex Serif, a hora e um mini `indicator-card` ao lado (empilhado embaixo no celular). O link vai para o site do veículo.

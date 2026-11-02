@@ -220,3 +220,88 @@
   color: var(--bd-color-ink-muted);
   font-variant-numeric: tabular-nums;
 }
+
+// ---- escada de instrução (Educação) ----
+// Tons ordenados de chart-1: do nível mais baixo (claro) ao mais alto (escuro).
+.escada {
+  margin: 0;
+}
+
+.escadaLegenda {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: var(--bd-space-xs) var(--bd-space-md);
+  font-size: var(--bd-type-caption-font-size);
+  margin-bottom: var(--bd-space-md);
+  li {
+    display: flex;
+    align-items: center;
+    gap: var(--bd-space-xs);
+  }
+}
+
+.escadaChave {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
+.escadaLinha {
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  align-items: center;
+  gap: var(--bd-space-sm);
+  height: 30px;
+  margin-bottom: 4px;
+}
+
+.escadaAno {
+  font-size: var(--bd-type-caption-font-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--bd-color-ink-muted);
+}
+
+.escadaBarra {
+  display: flex;
+  height: 100%;
+  span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    font-size: var(--bd-type-caption-font-size);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    border-right: 2px solid var(--bd-color-surface, var(--bd-color-canvas));
+    &:last-child {
+      border-right: 0;
+    }
+  }
+}
+
+.escadaVazia {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding-left: var(--bd-space-sm);
+  border: 1px dashed var(--bd-color-hairline);
+  font-size: var(--bd-type-caption-font-size);
+  color: var(--bd-color-ink-muted);
+}
+
+.nivel0 {
+  background: color-mix(in srgb, var(--bd-color-chart-1) 15%, var(--bd-color-canvas));
+  color: var(--bd-color-ink);
+}
+.nivel1 {
+  background: color-mix(in srgb, var(--bd-color-chart-1) 38%, var(--bd-color-canvas));
+  color: var(--bd-color-ink);
+}
+.nivel2 {
+  background: color-mix(in srgb, var(--bd-color-chart-1) 68%, var(--bd-color-canvas));
+  color: var(--bd-color-canvas);
+}
+.nivel3 {
+  background: var(--bd-color-chart-1);
+  color: var(--bd-color-canvas);
+}

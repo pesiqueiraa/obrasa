@@ -14,6 +14,7 @@ Regras gerais:
 | Banco Central · PTAX | Dólar oficial do dia | API OData (Olinda) | Nenhuma | Diária |
 | IBGE · Agregados v3 (SIDRA) | IPCA, desocupação, PIB, população | API REST JSON | Nenhuma | Mensal e trimestral |
 | IBGE · Malhas e Localidades | Mapas e códigos de UF e município | API REST | Nenhuma | Raramente muda |
+| TSE · Dados Abertos | Resultados das Eleições 2026 por município, candidaturas e eleitos | Zips no CDN do TSE, lidos por HTTP Range | Nenhuma | Por eleição |
 | Tesouro · Siconfi | Contas de estados e municípios (pós-MVP) | API REST (ORDS) | Nenhuma | Bimestral e quadrimestral |
 | Tesouro Transparente | Resultado do Tesouro, dívida | CKAN (planilhas e CSV) | Nenhuma | Mensal |
 | Receita Federal | Arrecadação federal | Relatórios e dados abertos | Nenhuma | Mensal |
@@ -119,12 +120,30 @@ GET https://servicodados.ibge.gov.br/api/v3/calendario/{produto}?de=MM-DD-AAAA&a
 - Produtos usados: IPCA `9256`; PNAD Contínua mensal `9171` (referência = mês final do trimestre móvel); PNAD Contínua trimestral `9173` e Contas Nacionais Trimestrais `9300` (referência = 1º mês do trimestre). Testados em 01/11/2026.
 - IPCA é o produto `9256`. Cada item traz `data_divulgacao` (`dd/mm/aaaa hh:mm:ss`, horário de Brasília) e o mês de referência em `ano_referencia_inicio` e `mes_referencia_inicio`.
 
+**PNAD Contínua anual, módulo de educação** (testado em 02/11/2026, status `ok`). Tabelas anuais de 2016 a 2025; o código de período é só o ano (`2025`). Cada série filtra uma categoria de cada classificação, no formato `classificacao=2[6794]|58[2795]` (sexo = total e grupo de idade).
+
+| Tabela | Variável | Categorias | Série |
+|---|---|---|---|
+| 7113 | 10267 | `2[6794]\|58[2795]` | Taxa de analfabetismo, 15 anos ou mais |
+| 7126 | 3593 | `2[6794]\|58[108866]` | Média de anos de estudo, 25 anos ou mais |
+| 7141 | 10282 | `2[6794]\|871[47818]` e `871[47819]` | Taxa ajustada de frequência escolar líquida: 15 a 17 anos no ensino médio; 18 a 24 anos no superior |
+| 7138 | 10276 | `2[6794]\|58[99749]` | Taxa de escolarização, 0 a 3 anos |
+| 7269 | 10270 | `2[6794]\|1568[11627, 48134, 48135, 99713]` | Distribuição das pessoas de 25 anos ou mais por nível de instrução (soma 100%, ±0,1 de arredondamento) |
+
+- Não há 2020 nem 2021: o IBGE não publicou o módulo anual de educação desses anos. As séries declaram essas lacunas em `config/sources.yaml` (`lacunas`); qualquer outro buraco faz a coleta falhar.
+- A divulgação de 2025 saiu em 19/06/2026 (campo `modificacao` da lista de períodos). Sem calendário coletado; o site considera atraso se o ano seguinte não sair até 14 de julho de dois anos depois do ano de referência.
+- A tabela 7269 com a variável errada (4106, que não existe nela) responde HTTP 500, não 400.
+
 **Malhas e localidades:**
 ```http
-GET https://servicodados.ibge.gov.br/api/v3/malhas/paises/BR?formato=application/vnd.geo+json&intrarregiao=UF
-GET https://servicodados.ibge.gov.br/api/v1/localidades/estados
+GET https://servicodados.ibge.gov.br/api/v1/localidades/municipios
+GET https://servicodados.ibge.gov.br/api/v3/malhas/paises/BR?formato=application/json&intrarregiao=municipio&qualidade=minima
+GET https://servicodados.ibge.gov.br/api/v3/malhas/paises/BR?formato=application/json&intrarregiao=UF&qualidade=minima
 ```
-Status: `confirmar`.
+Status: `ok` (testado em 01/11/2026).
+- `localidades/municipios` devolve 5.571 municípios (código IBGE de 7 dígitos, nome, UF).
+- `formato=application/json` devolve TopoJSON (objetos `BRMU` e `BRUF`, código em `properties.codarea`). Municípios em qualidade mínima: 1,4 MB.
+- A malha tem 5.570 polígonos: Boa Esperança do Norte (MT, 5101837) está na lista de municípios mas ainda não tem desenho. A página de eleições avisa isso abaixo do mapa.
 
 ## Tesouro Nacional · Siconfi (estados e municípios)
 
@@ -173,11 +192,31 @@ GET https://dadosabertos.camara.leg.br/api/v2/votacoes/{id}/orientacoes
 - Uma "votação da proposição X" costuma ser um conjunto de votações (parecer, emendas, destaques, redação final). Exiba isso com clareza.
 - Senado: https://legis.senado.leg.br/dadosabertos/ (`confirmar` endpoints).
 
+## TSE · Dados Abertos (Eleições 2026)
+
+Status: `ok` (testado em 01/11/2026). Configuração em `config/eleicoes.yaml`, job em `pipelines/jobs/eleicoes.py`.
+
+| Arquivo (dentro do zip) | Zip no CDN | Uso |
+|---|---|---|
+| `detalhe_votacao_munzona_2026_BR.csv` | `cdn.tse.jus.br/estatistica/sead/odsele/detalhe_votacao_munzona/detalhe_votacao_munzona_2026.zip` | Aptos, comparecimento, abstenção, válidos, brancos e nulos para presidente, por município e zona |
+| `votacao_candidato_munzona_2026_BR.csv` | `.../votacao_candidato_munzona/votacao_candidato_munzona_2026.zip` (454 MB) | Votos de cada candidato a presidente por município e zona |
+| `consulta_cand_2026_BRASIL.csv` | `.../consulta_cand/consulta_cand_2026.zip` | Candidaturas e situação no turno (eleitos de cada cargo) |
+
+Páginas: https://dadosabertos.tse.jus.br/dataset/resultados-2026 e https://dadosabertos.tse.jus.br/dataset/candidatos-2026.
+
+- O CDN aceita `Range: bytes=`; o job lê o diretório do zip e baixa só o arquivo pedido (cerca de 3 MB no total).
+- CSV em latin-1, separado por `;`. `DT_GERACAO`/`HH_GERACAO` dizem quando o TSE gerou o arquivo. Códigos de eleição: 6257 (presidente, 1º turno), 6258 (2º turno).
+- `CD_MUNICIPIO` é o código do TSE, não o do IBGE. O arquivo de votação por candidato escreve sem zeros à esquerda; o de detalhe, com 5 dígitos.
+- Conferências feitas a cada coleta (falha = nada gravado): aptos = comparecimento + abstenções + eleitores de seções não instaladas; comparecimento = válidos + brancos + nulos; soma dos votos por candidato = válidos, em cada município e turno; número de eleitos = vagas de cada cargo.
+- Casamento TSE → IBGE por UF e nome normalizado; 13 nomes diferentes ficam como exceção em `config/eleicoes.yaml`. O casamento tem de ser um para um e cobrir os 5.571 municípios.
+- Dos arquivos de candidaturas só são lidos campos públicos de exibição (número, nome de urna, partido, federação, situação). CPF, e-mail, título de eleitor e data de nascimento não são lidos.
+- O feed de resultados `resultados.tse.jus.br/oficial/.../dados-simplificados/...` respondeu 404 em 01/11/2026; não é usado.
+
 ## Outras fontes oficiais (pós-MVP)
 
 | Fonte | Uso | Acesso |
 |---|---|---|
-| TSE · Dados Abertos | Candidaturas, bens declarados, contas de campanha (eleições de 2028) | Portal CKAN em dadosabertos.tse.jus.br (`confirmar`) |
+| TSE · Dados Abertos | Bens declarados e contas de campanha (resultados de 2026 já em uso, ver acima) | Portal CKAN em dadosabertos.tse.jus.br (`confirmar` para estes conjuntos) |
 | IFI (Senado) | Projeções fiscais independentes | Relatórios e planilhas, sem API (`confirmar`) |
 | Prisma Fiscal (Ministério da Fazenda) | Expectativas fiscais de mercado | Planilhas mensais (`confirmar`) |
 

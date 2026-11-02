@@ -24,12 +24,14 @@ BASE = "https://servicodados.ibge.gov.br/api/v3"
 MISSING = {"...", "-", "..", "X", ""}
 TZ = ZoneInfo("America/Sao_Paulo")
 _PERIOD = re.compile(r"^(\d{4})(\d{2})$")
-_CLASSIFICACAO = re.compile(r"^(\d+)\[(\d+)\]$")
+_CLASSIFICACAO = re.compile(r"^\d+\[\d+\](\|\d+\[\d+\])*$")  # "2[6794]" ou "2[6794]|58[2795]"
+_ANO = re.compile(r"^(\d{4})$")
 
 # Como ler o código de período AAAANN de cada tabela:
 #   mensal e trimestral_movel: NN é o mês (no trimestre móvel, o mês final);
-#   trimestral: NN é o trimestre (01 a 04), guardado no 1º mês do trimestre.
-TipoPeriodo = Literal["mensal", "trimestral_movel", "trimestral"]
+#   trimestral: NN é o trimestre (01 a 04), guardado no 1º mês do trimestre;
+#   anual: o código é só o ano (AAAA), guardado em 1º de janeiro.
+TipoPeriodo = Literal["mensal", "trimestral_movel", "trimestral", "anual"]
 
 
 def fetch_variables(
@@ -38,8 +40,8 @@ def fetch_variables(
     """Busca as variáveis da tabela para o Brasil (N1).
 
     `periodos` aceita intervalo ("197912-202609"), lista ("202608|202609")
-    ou os últimos N períodos ("-N"). `classificacao` filtra uma categoria,
-    no formato da API: "11255[90707]".
+    ou os últimos N períodos ("-N"). `classificacao` filtra uma categoria de cada
+    classificação, no formato da API: "11255[90707]" ou "2[6794]|58[2795]".
     """
     vars_ = "|".join(str(v) for v in variaveis)
     url = f"{BASE}/agregados/{tabela}/periodos/{periodos}/variaveis/{vars_}"
@@ -61,6 +63,11 @@ def fetch_calendar(produto: int, de: date, ate: date) -> RawResponse:
 
 
 def period_to_date(period: str, tipo: TipoPeriodo = "mensal") -> date:
+    if tipo == "anual":
+        a = _ANO.match(period)
+        if not a:
+            raise ValidationError(f"período anual fora do formato AAAA: {period!r}")
+        return date(int(a.group(1)), 1, 1)
     m = _PERIOD.match(period)
     if not m:
         raise ValidationError(f"período fora do formato AAAANN: {period!r}")
@@ -75,6 +82,10 @@ def period_to_date(period: str, tipo: TipoPeriodo = "mensal") -> date:
 
 
 def date_to_period(d: date, tipo: TipoPeriodo = "mensal") -> str:
+    if tipo == "anual":
+        if (d.month, d.day) != (1, 1):
+            raise ValueError(f"data {d} não é 1º de janeiro")
+        return f"{d.year:04d}"
     if tipo == "trimestral":
         if d.day != 1 or (d.month - 1) % 3:
             raise ValueError(f"data {d} não é o 1º dia de um trimestre")
@@ -102,15 +113,14 @@ def _check_classificacao(resultado: dict, classificacao: str | None, var_id: int
         if got:
             raise ValidationError(f"variável {var_id}: classificação inesperada na resposta")
         return
-    m = _CLASSIFICACAO.match(classificacao)
-    if not m:
+    if not _CLASSIFICACAO.match(classificacao):
         raise ValueError(f"classificação fora do formato id[categoria]: {classificacao!r}")
-    cid, cat = m.groups()
-    if (
-        len(got) != 1
-        or str(got[0].get("id")) != cid
-        or list((got[0].get("categoria") or {}).keys()) != [cat]
-    ):
+    pedido = {}
+    for parte in classificacao.split("|"):
+        cid, cat = parte.rstrip("]").split("[")
+        pedido[cid] = [cat]
+    veio = {str(c.get("id")): list((c.get("categoria") or {}).keys()) for c in got}
+    if veio != pedido:
         raise ValidationError(f"variável {var_id}: esperada só a classificação {classificacao}")
 
 

@@ -22,7 +22,7 @@ import { parseTemplate, type Template } from "./template";
 
 const PAGE = 1000; // limite padrão de linhas por requisição do PostgREST
 
-function client(): SupabaseClient {
+export function client(): SupabaseClient {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_ANON_KEY;
   if (!url || !key) {
@@ -36,7 +36,7 @@ function client(): SupabaseClient {
   });
 }
 
-function configDir(): string {
+export function configDir(): string {
   return process.env.CONFIG_DIR ?? resolve(process.cwd(), "../../config");
 }
 
@@ -80,7 +80,14 @@ export type Indicator = {
   ordem: number | null;
 };
 
-export type Tema = { slug: string; titulo: string; resumo: string; ordem: number };
+export type Tema = {
+  slug: string;
+  titulo: string;
+  resumo: string;
+  ordem: number;
+  /** "propria": a página do tema tem rota própria (ex.: /eleicoes-2026). */
+  pagina?: "indicadores" | "propria";
+};
 
 export type Correction = {
   id: number;
@@ -152,6 +159,14 @@ async function fetchBundle(db: SupabaseClient, seriesId: string): Promise<Series
     proximaDivulgacao: r.proxima_divulgacao,
   }));
   return { series, source, obs: await fetchObservations(db, seriesId), releases };
+}
+
+/** Série avulsa (sem indicador), para os blocos de tema que mostram uma distribuição. */
+export async function getSeriesBundle(seriesId: string): Promise<SeriesBundle> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("indicadores", `serie:${seriesId}`);
+  return fetchBundle(client(), seriesId);
 }
 
 /** Temas do site, de config/temas.yaml (texto de navegação, não dado). */

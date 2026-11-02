@@ -29,6 +29,20 @@ sources:
     url_documentacao: null
     url_metodologia: null
     licenca: Dados abertos do Banco Central
+  - id: tse_dados_abertos
+    nome: Portal de Dados Abertos (resultados e candidaturas)
+    orgao: TSE
+    url_fonte: https://dadosabertos.tse.jus.br/dataset/resultados-2026
+    url_documentacao: https://dadosabertos.tse.jus.br/dataset/resultados-2026
+    url_metodologia: null
+    licenca: Dados abertos do TSE
+  - id: ibge_localidades
+    nome: API de Localidades e Malhas
+    orgao: IBGE
+    url_fonte: https://servicodados.ibge.gov.br/api/docs/malhas?versao=3
+    url_documentacao: https://servicodados.ibge.gov.br/api/docs/localidades
+    url_metodologia: null
+    licenca: Dados públicos do IBGE
 
 series:
   - id: ibge_agregados_1737_2265
@@ -205,6 +219,125 @@ series:
       familiares auxiliares, divididos pelo total de ocupados.
     faixa: [0, 100]
     calendario: 9173
+
+  # ---- Educação (PNAD Contínua anual, módulo de educação; testado em 02/11/2026) ----
+  - id: ibge_agregados_7113_10267_6794_2795
+    source_id: ibge_agregados
+    codigo_externo: "7113/10267"
+    classificacao: "2[6794]|58[2795]"
+    nome: Taxa de analfabetismo das pessoas de 15 anos ou mais (PNAD Contínua)
+    unidade: "%"
+    frequencia: anual
+    tipo: taxa
+    monetaria: false
+    nota_metodologia: >-
+      Tabela 7113, variável 10267, categorias 2[6794]|58[2795]. Pessoas de 15 anos ou mais que não sabem ler e escrever um bilhete simples, sobre o total da faixa. A PNAD Contínua não publicou o módulo anual de educação de 2020 e 2021 (coleta por telefone na pandemia).
+    faixa: [0, 40]
+    lacunas: [2020-01-01, 2021-01-01]
+  - id: ibge_agregados_7126_3593_6794_108866
+    source_id: ibge_agregados
+    codigo_externo: "7126/3593"
+    classificacao: "2[6794]|58[108866]"
+    nome: Número médio de anos de estudo das pessoas de 25 anos ou mais (PNAD Contínua)
+    unidade: "anos"
+    frequencia: anual
+    tipo: nivel
+    monetaria: false
+    nota_metodologia: >-
+      Tabela 7126, variável 3593, categorias 2[6794]|58[108866]. Média de anos de estudo concluídos das pessoas de 25 anos ou mais. A PNAD Contínua não publicou o módulo anual de educação de 2020 e 2021 (coleta por telefone na pandemia).
+    faixa: [3, 16]
+    lacunas: [2020-01-01, 2021-01-01]
+  - id: ibge_agregados_7141_10282_6794_47818
+    source_id: ibge_agregados
+    codigo_externo: "7141/10282"
+    classificacao: "2[6794]|871[47818]"
+    nome: Taxa ajustada de frequência escolar líquida, 15 a 17 anos no ensino médio (PNAD Contínua)
+    unidade: "%"
+    frequencia: anual
+    tipo: taxa
+    monetaria: false
+    nota_metodologia: >-
+      Tabela 7141, variável 10282, categorias 2[6794]|871[47818]. Pessoas de 15 a 17 anos que frequentam o ensino médio ou já o concluíram, sobre o total da faixa. A PNAD Contínua não publicou o módulo anual de educação de 2020 e 2021 (coleta por telefone na pandemia).
+    faixa: [30, 100]
+    lacunas: [2020-01-01, 2021-01-01]
+  - id: ibge_agregados_7141_10282_6794_47819
+    source_id: ibge_agregados
+    codigo_externo: "7141/10282"
+    classificacao: "2[6794]|871[47819]"
+    nome: Taxa ajustada de frequência escolar líquida, 18 a 24 anos no ensino superior (PNAD Contínua)
+    unidade: "%"
+    frequencia: anual
+    tipo: taxa
+    monetaria: false
+    nota_metodologia: >-
+      Tabela 7141, variável 10282, categorias 2[6794]|871[47819]. Pessoas de 18 a 24 anos que frequentam o ensino superior ou já o concluíram, sobre o total da faixa. A PNAD Contínua não publicou o módulo anual de educação de 2020 e 2021 (coleta por telefone na pandemia).
+    faixa: [5, 80]
+    lacunas: [2020-01-01, 2021-01-01]
+  - id: ibge_agregados_7138_10276_6794_99749
+    source_id: ibge_agregados
+    codigo_externo: "7138/10276"
+    classificacao: "2[6794]|58[99749]"
+    nome: Taxa de escolarização das crianças de 0 a 3 anos (PNAD Contínua)
+    unidade: "%"
+    frequencia: anual
+    tipo: taxa
+    monetaria: false
+    nota_metodologia: >-
+      Tabela 7138, variável 10276, categorias 2[6794]|58[99749]. Crianças de 0 a 3 anos que frequentam escola ou creche, sobre o total da faixa. A PNAD Contínua não publicou o módulo anual de educação de 2020 e 2021 (coleta por telefone na pandemia).
+    faixa: [5, 90]
+    lacunas: [2020-01-01, 2021-01-01]
+  - id: ibge_agregados_7269_10270_6794_11627
+    source_id: ibge_agregados
+    codigo_externo: "7269/10270"
+    classificacao: "2[6794]|1568[11627]"
+    nome: Pessoas de 25 anos ou mais com sem instrução ou fundamental incompleto, % do total (PNAD Contínua)
+    unidade: "%"
+    frequencia: anual
+    tipo: taxa
+    monetaria: false
+    nota_metodologia: >-
+      Tabela 7269, variável 10270, categorias 2[6794]|1568[11627]. Distribuição das pessoas de 25 anos ou mais por nível de instrução: sem instrução ou fundamental incompleto. A PNAD Contínua não publicou o módulo anual de educação de 2020 e 2021 (coleta por telefone na pandemia).
+    faixa: [0, 100]
+    lacunas: [2020-01-01, 2021-01-01]
+  - id: ibge_agregados_7269_10270_6794_48134
+    source_id: ibge_agregados
+    codigo_externo: "7269/10270"
+    classificacao: "2[6794]|1568[48134]"
+    nome: Pessoas de 25 anos ou mais com fundamental completo e médio incompleto, % do total (PNAD Contínua)
+    unidade: "%"
+    frequencia: anual
+    tipo: taxa
+    monetaria: false
+    nota_metodologia: >-
+      Tabela 7269, variável 10270, categorias 2[6794]|1568[48134]. Distribuição das pessoas de 25 anos ou mais por nível de instrução: fundamental completo e médio incompleto. A PNAD Contínua não publicou o módulo anual de educação de 2020 e 2021 (coleta por telefone na pandemia).
+    faixa: [0, 100]
+    lacunas: [2020-01-01, 2021-01-01]
+  - id: ibge_agregados_7269_10270_6794_48135
+    source_id: ibge_agregados
+    codigo_externo: "7269/10270"
+    classificacao: "2[6794]|1568[48135]"
+    nome: Pessoas de 25 anos ou mais com médio completo e superior incompleto, % do total (PNAD Contínua)
+    unidade: "%"
+    frequencia: anual
+    tipo: taxa
+    monetaria: false
+    nota_metodologia: >-
+      Tabela 7269, variável 10270, categorias 2[6794]|1568[48135]. Distribuição das pessoas de 25 anos ou mais por nível de instrução: médio completo e superior incompleto. A PNAD Contínua não publicou o módulo anual de educação de 2020 e 2021 (coleta por telefone na pandemia).
+    faixa: [0, 100]
+    lacunas: [2020-01-01, 2021-01-01]
+  - id: ibge_agregados_7269_10270_6794_99713
+    source_id: ibge_agregados
+    codigo_externo: "7269/10270"
+    classificacao: "2[6794]|1568[99713]"
+    nome: Pessoas de 25 anos ou mais com superior completo, % do total (PNAD Contínua)
+    unidade: "%"
+    frequencia: anual
+    tipo: taxa
+    monetaria: false
+    nota_metodologia: >-
+      Tabela 7269, variável 10270, categorias 2[6794]|1568[99713]. Distribuição das pessoas de 25 anos ou mais por nível de instrução: superior completo. A PNAD Contínua não publicou o módulo anual de educação de 2020 e 2021 (coleta por telefone na pandemia).
+    faixa: [0, 100]
+    lacunas: [2020-01-01, 2021-01-01]
 
   # ---- Contas públicas ----
   - id: bcb_sgs_13762

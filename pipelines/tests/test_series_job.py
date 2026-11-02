@@ -149,3 +149,74 @@ def test_registry_rules_for_new_fields():
             monetaria=True,
             frase_template="selic.pt.txt",
         )
+
+
+# --- séries anuais com duas classificações (Educação, PNAD Contínua anual) ---
+
+
+def _resposta_anual(classificacoes: list[tuple[str, str]], serie: dict[str, str]) -> bytes:
+    import json
+
+    return json.dumps(
+        [
+            {
+                "id": "10267",
+                "resultados": [
+                    {
+                        "classificacoes": [
+                            {"id": c, "nome": "x", "categoria": {k: "x"}} for c, k in classificacoes
+                        ],
+                        "series": [
+                            {"localidade": {"id": "1", "nivel": {"id": "N1"}}, "serie": serie}
+                        ],
+                    }
+                ],
+            }
+        ]
+    ).encode()
+
+
+def test_ibge_anual_com_duas_classificacoes():
+    # valores reais da tabela 7113 (analfabetismo, 15 anos ou mais), sem 2020 e 2021
+    serie = {"2019": "6.1", "2022": "5.6", "2025": "4.9"}
+    body = _resposta_anual([("2", "6794"), ("58", "2795")], serie)
+    out = ibge_agregados.parse_variables(
+        body, [10267], classificacao="2[6794]|58[2795]", tipo="anual"
+    )
+    assert [(o.ref_date, o.value) for o in out[10267]] == [
+        (date(2019, 1, 1), Decimal("6.1")),
+        (date(2022, 1, 1), Decimal("5.6")),
+        (date(2025, 1, 1), Decimal("4.9")),
+    ]
+    assert ibge_agregados.date_to_period(date(2025, 1, 1), "anual") == "2025"
+    # categoria diferente da pedida é recusada
+    outra = _resposta_anual([("2", "4"), ("58", "2795")], serie)
+    with pytest.raises(ValidationError, match="classificação"):
+        ibge_agregados.parse_variables(
+            outra, [10267], classificacao="2[6794]|58[2795]", tipo="anual"
+        )
+    with pytest.raises(ValidationError, match="AAAA"):
+        ibge_agregados.period_to_date("202501", "anual")
+
+
+def test_buraco_so_aceito_se_declarado():
+    today = date(2026, 11, 1)
+    obs = _obs(("2019-01-01", "6.1"), ("2022-01-01", "5.6"), ("2023-01-01", "5.4"))
+    sem = _series(frequencia="anual")
+    with pytest.raises(ValidationError, match="buraco"):
+        validate(obs, sem, today)
+    com = _series(frequencia="anual", lacunas=[date(2020, 1, 1), date(2021, 1, 1)])
+    validate(obs, com, today)
+    # só 2020 declarado: falta 2021 sem explicação
+    parcial = _series(frequencia="anual", lacunas=[date(2020, 1, 1)])
+    with pytest.raises(ValidationError, match="buraco"):
+        validate(obs, parcial, today)
+
+
+def test_id_da_serie_com_categorias():
+    assert config.sufixo_classificacao("2[6794]|58[2795]") == "_6794_2795"
+    ref = config.FonteRef(
+        orgao="IBGE", tipo="ibge_agregados", tabela=7113, variavel=10267,
+        classificacao="2[6794]|58[2795]", status="ok",
+    )  # fmt: skip
+    assert ref.series_id == "ibge_agregados_7113_10267_6794_2795"

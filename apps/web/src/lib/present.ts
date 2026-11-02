@@ -1,8 +1,8 @@
 // O que um cartão ou uma página mostra de um indicador, calculado uma vez a partir
 // das linhas do banco. Nenhum valor novo: só seleção, janela e diferença.
 
-import { formatRef, formatValue } from "./format";
-import { JANELAS, lastOfMonth, sliceWindow, variation, variationText, type Obs } from "./indicator";
+import { addMonths, formatRef, formatValue } from "./format";
+import { JANELAS, PASSO_MESES, lastOfMonth, sliceWindow, variation, variationText, type Obs } from "./indicator";
 import type { IndicatorView } from "./data";
 
 export type Presented = {
@@ -11,7 +11,8 @@ export type Presented = {
   janelaRotulo: string;
   windowObs: Obs[];
   variacao: string | null;
-  spark: number[];
+  /** null = período que a fonte não publicou; a minilinha se interrompe ali. */
+  spark: (number | null)[];
   /** Regra 3: em série monetária, de que preços é o valor real. */
   baseReal: string | null;
 };
@@ -31,7 +32,18 @@ export function present(view: IndicatorView): Presented {
     janelaRotulo: janela.rotulo,
     windowObs,
     variacao: v ? variationText(v, janela.rotulo, fmt, series.frequencia) : null,
-    spark: pontos.map((o) => o.value),
+    spark: comLacunas(pontos, PASSO_MESES[series.frequencia]),
     baseReal: series.monetaria ? `valor real, a preços de ${formatRef(latest.refDate, series.frequencia)}` : null,
   };
+}
+
+function comLacunas(pontos: Obs[], passo: number | undefined): (number | null)[] {
+  const out: (number | null)[] = [];
+  pontos.forEach((o, i) => {
+    if (passo && i > 0) {
+      for (let r = addMonths(pontos[i - 1].refDate, passo); r < o.refDate; r = addMonths(r, passo)) out.push(null);
+    }
+    out.push(o.value);
+  });
+  return out;
 }

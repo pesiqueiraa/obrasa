@@ -32,7 +32,7 @@ Esta pasta descreve o que estamos construindo, por quê e com quais regras. Ela 
 ## Regras que o agente nunca pode quebrar
 
 1. **Todo número exibido vem do banco de dados**, e todo dado do banco vem de uma fonte registrada em [05](05-fontes-de-dados.md). Nenhum número é gerado, estimado ou completado por um modelo de linguagem.
-2. **Todo indicador mostra** fonte (com link), data de referência, data da última atualização e frequência de divulgação.
+2. **Todo número mostra a fonte com link e a data de referência**, no formato curto "Fonte: IBGE (set/2026)". A frequência de divulgação aparece no chip do indicador; a data da última atualização, na página do indicador; o código da série, na metodologia.
 3. **Série monetária tem versão nominal e real** (corrigida pelo IPCA), com o mês-base escrito na tela.
 4. **Textos seguem o guia de linguagem** de [02](02-principios-de-neutralidade.md#4-linguagem-sem-adjetivo): sem adjetivos valorativos, sempre com unidade e período.
 5. **Nenhuma pesquisa eleitoral** é exibida sem o número de registro no TSE.

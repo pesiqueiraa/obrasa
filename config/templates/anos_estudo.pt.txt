@@ -1,0 +1,9 @@
+# Frase "o que significa para você" do indicador anos-de-estudo.
+# Versão 1 (02/11/2026). Linhas com "#" são comentários.
+# Variáveis (todas calculadas a partir de valores do banco, apps/web/src/lib/template.ts):
+#   {x}        valor com unidade, formato pt-BR (nas variantes sobe/cai, sem sinal)
+#   {x_num}    só o número (ex.: 5,6)
+#   {periodo}  período de referência por extenso (ex.: 2025)
+
+[padrao]
+Em {periodo}, as pessoas de 25 anos ou mais tinham, em média, {x_num} anos de estudo concluídos.

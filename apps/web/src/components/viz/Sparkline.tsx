@@ -11,21 +11,27 @@ export function Sparkline({
   height = 36,
   delay = 0,
 }: {
-  values: number[];
+  values: (number | null)[];
   width?: number;
   height?: number;
   delay?: number;
 }) {
-  if (values.length < 2) return null;
+  const nums = values.filter((v): v is number => v !== null);
+  if (nums.length < 2) return null;
   const pad = 3;
-  const min = Math.min(...values);
-  const max = Math.max(...values);
+  const min = Math.min(...nums);
+  const max = Math.max(...nums);
   const span = max - min || 1;
   const x = (i: number) => pad + (i / (values.length - 1)) * (width - pad * 2);
   const y = (v: number) => pad + (1 - (v - min) / span) * (height - pad * 2);
-  const d = values.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+  // período sem dado (null) interrompe a linha: o ponto seguinte recomeça com "M"
+  const d = values
+    .map((v, i) =>
+      v === null ? "" : `${i && values[i - 1] !== null ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`,
+    )
+    .join(" ");
   const lastX = x(values.length - 1);
-  const lastY = y(values[values.length - 1]);
+  const lastY = y(nums[nums.length - 1]);
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden="true" focusable="false">
       <motion.path
