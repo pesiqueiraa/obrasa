@@ -113,6 +113,25 @@ class NaFonte(_Strict):
 FONTES_COM_DESCRICAO = {"bcb_sgs", "ibge_agregados"}
 
 
+class Referencia(_Strict):
+    """Período antigo e o valor que a fonte publicava para ele (pipelines/referencia.py)."""
+
+    periodo: date | None = None
+    valor: Decimal | None = None
+    lido_em: date | None = None  # dia em que o valor foi lido da fonte
+    sem_valor_fixo: str | None = None  # motivo, quando a fonte revisa a série inteira
+
+    @model_validator(mode="after")
+    def _completa(self) -> Referencia:
+        fixo = (self.periodo, self.valor, self.lido_em)
+        if self.sem_valor_fixo:
+            if any(x is not None for x in fixo):
+                raise ValueError("referencia: use periodo/valor/lido_em ou sem_valor_fixo")
+        elif any(x is None for x in fixo):
+            raise ValueError("referencia: informe periodo, valor e lido_em")
+        return self
+
+
 class ConferirCom(_Strict):
     """Segunda fonte da série (pipelines/segunda_fonte.py)."""
 
@@ -139,6 +158,7 @@ class Series(_Strict):
     desde: date | None = None  # início do histórico buscado
     calendario: int | None = None  # produto no calendário do IBGE
     na_fonte: NaFonte | None = None  # obrigatório no BCB e no IBGE
+    referencia: Referencia | None = None  # obrigatório: valor conhecido da fonte
     conferir_com: ConferirCom | None = None  # segunda fonte
     # Prazo de divulgação quando a fonte não tem calendário: [meses, dias] contados do 1º
     # dia do último período. Sem isso vale o padrão da frequência (pipelines/jobs/atrasos.py).
@@ -155,6 +175,8 @@ class Series(_Strict):
             raise ValueError(f"série {self.id}: faixa invertida")
         if self.source_id in FONTES_COM_DESCRICAO and self.na_fonte is None:
             raise ValueError(f"série {self.id}: informe `na_fonte` (descrição na fonte)")
+        if self.referencia is None:
+            raise ValueError(f"série {self.id}: informe `referencia` (valor conhecido da fonte)")
         return self
 
 

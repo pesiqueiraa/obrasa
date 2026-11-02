@@ -17,6 +17,11 @@
 #                padrão da frequência (mensal: [2, 14]). Passou do prazo, o site mostra
 #                "Atrasado desde" e o job `atrasos` falha.
 #   classificacao  filtro de categoria do IBGE, ex.: 11255[90707]
+#   referencia   período antigo e o valor que a fonte publicava para ele, lido da API pelo
+#                mesmo parser da coleta (pipelines/referencia.py). `pytest -m network`, antes
+#                de cada coleta, exige o mesmo valor. Se falhar, a fonte revisou um período
+#                fechado ou a série mudou de significado: confira antes de trocar o valor.
+#                Série revisada inteira a cada divulgação usa sem_valor_fixo, com o motivo.
 # Códigos testados contra a fonte em 01/11/2026 (docs/05).
 
 sources:
@@ -66,6 +71,7 @@ series:
     coletor: ipca
     source_id: ibge_agregados
     codigo_externo: "1737/2265"
+    referencia: {periodo: 2019-12-01, valor: "4.31", lido_em: 2026-11-02}
     na_fonte:
       nome: "IPCA - Variação acumulada em 12 meses"
       unidade: "%"
@@ -80,6 +86,7 @@ series:
     coletor: ipca
     source_id: ibge_agregados
     codigo_externo: "1737/63"
+    referencia: {periodo: 2019-12-01, valor: "1.15", lido_em: 2026-11-02}
     na_fonte:
       nome: "IPCA - Variação mensal"
       unidade: "%"
@@ -94,6 +101,7 @@ series:
     coletor: ipca
     source_id: ibge_agregados
     codigo_externo: "1737/2266"
+    referencia: {periodo: 2019-12-01, valor: "5320.25", lido_em: 2026-11-02}
     na_fonte:
       nome: "IPCA - Número-índice (base: dezembro de 1993 = 100)"
       unidade: "Número-índice"
@@ -108,6 +116,7 @@ series:
     coletor: ipca
     source_id: bcb_sgs
     codigo_externo: "13522"
+    referencia: {periodo: 2019-12-01, valor: "4.31", lido_em: 2026-11-02}
     na_fonte:
       nome: "Índice nacional de preços ao consumidor - amplo (IPCA) - em 12 meses"
       unidade: "%"
@@ -122,6 +131,7 @@ series:
     coletor: ipca
     source_id: bcb_sgs
     codigo_externo: "433"
+    referencia: {periodo: 2019-12-01, valor: "1.15", lido_em: 2026-11-02}
     na_fonte:
       nome: "Índice nacional de preços ao consumidor-amplo (IPCA)"
       unidade: "Var. % mensal"
@@ -137,6 +147,7 @@ series:
   - id: bcb_sgs_432
     source_id: bcb_sgs
     codigo_externo: "432"
+    referencia: {periodo: 2019-12-30, valor: "4.50", lido_em: 2026-11-02}
     na_fonte:
       nome: "Taxa de juros - Meta Selic definida pelo Copom"
       unidade: "% a.a."
@@ -155,6 +166,7 @@ series:
   - id: bcb_sgs_1
     source_id: bcb_sgs
     codigo_externo: "1"
+    referencia: {periodo: 2019-12-30, valor: "4.0307", lido_em: 2026-11-02}
     na_fonte:
       nome: "Taxa de câmbio - Livre - Dólar americano (venda) - diário"
       unidade: "u.m.c./US$"
@@ -173,6 +185,7 @@ series:
   - id: bcb_sgs_24363
     source_id: bcb_sgs
     codigo_externo: "24363"
+    referencia: {periodo: 2019-12-01, valor: "96.42287", lido_em: 2026-11-02}
     na_fonte:
       nome: "Índice de Atividade Econômica do Banco Central - IBC-Br"
       unidade: "Índice"
@@ -190,6 +203,7 @@ series:
   - id: ibge_agregados_5932_6562
     source_id: ibge_agregados
     codigo_externo: "5932/6562"
+    referencia: {periodo: 2019-10-01, valor: "1.2", lido_em: 2026-11-02}
     na_fonte:
       nome: "Taxa acumulada em quatro trimestres (em relação ao mesmo período do ano anterior)"
       unidade: "%"
@@ -210,6 +224,7 @@ series:
   - id: ibge_agregados_5932_6564
     source_id: ibge_agregados
     codigo_externo: "5932/6564"
+    referencia: {sem_valor_fixo: "com ajuste sazonal; o IBGE recalcula toda a série a cada divulgação"}
     na_fonte:
       nome: "Taxa trimestre contra trimestre imediatamente anterior"
       unidade: "%"
@@ -232,6 +247,7 @@ series:
   - id: ibge_agregados_6381_4099
     source_id: ibge_agregados
     codigo_externo: "6381/4099"
+    referencia: {periodo: 2019-12-01, valor: "11.1", lido_em: 2026-11-02}
     na_fonte:
       nome: "Taxa de desocupação, na semana de referência, das pessoas de 14 anos ou mais de idade"
       unidade: "%"
@@ -251,6 +267,7 @@ series:
   - id: ibge_agregados_6390_5933
     source_id: ibge_agregados
     codigo_externo: "6390/5933"
+    referencia: {sem_valor_fixo: "valores reais a preços do trimestre mais recente; a série inteira muda a cada divulgação"}
     na_fonte:
       nome: "Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos"
       unidade: "Reais"
@@ -269,6 +286,7 @@ series:
   - id: ibge_agregados_6390_5929
     source_id: ibge_agregados
     codigo_externo: "6390/5929"
+    referencia: {periodo: 2019-12-01, valor: "2319", lido_em: 2026-11-02}
     na_fonte:
       nome: "Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos"
       unidade: "Reais"
@@ -284,6 +302,7 @@ series:
   - id: ibge_agregados_8529_12466
     source_id: ibge_agregados
     codigo_externo: "8529/12466"
+    referencia: {periodo: 2019-10-01, valor: "40.7", lido_em: 2026-11-02}
     na_fonte:
       nome: "Taxa de informalidade das pessoas de 14 anos ou mais de idade ocupadas na semana de referência"
       unidade: "%"
@@ -304,6 +323,7 @@ series:
   - id: ibge_agregados_7113_10267_6794_2795
     source_id: ibge_agregados
     codigo_externo: "7113/10267"
+    referencia: {periodo: 2019-01-01, valor: "6.1", lido_em: 2026-11-02}
     na_fonte:
       nome: "Taxa de analfabetismo das pessoas de 15 anos ou mais de idade"
       unidade: "%"
@@ -322,6 +342,7 @@ series:
   - id: ibge_agregados_7126_3593_6794_108866
     source_id: ibge_agregados
     codigo_externo: "7126/3593"
+    referencia: {periodo: 2019-01-01, valor: "9.5", lido_em: 2026-11-02}
     na_fonte:
       nome: "Número médio de anos de estudo das pessoas de 15 anos ou mais de idade"
       unidade: "Anos"
@@ -340,6 +361,7 @@ series:
   - id: ibge_agregados_7141_10282_6794_47818
     source_id: ibge_agregados
     codigo_externo: "7141/10282"
+    referencia: {periodo: 2019-01-01, valor: "71.4", lido_em: 2026-11-02}
     na_fonte:
       nome: "Taxa ajustada de frequência escolar líquida"
       unidade: "%"
@@ -358,6 +380,7 @@ series:
   - id: ibge_agregados_7141_10282_6794_47819
     source_id: ibge_agregados
     codigo_externo: "7141/10282"
+    referencia: {periodo: 2019-01-01, valor: "24.7", lido_em: 2026-11-02}
     na_fonte:
       nome: "Taxa ajustada de frequência escolar líquida"
       unidade: "%"
@@ -376,6 +399,7 @@ series:
   - id: ibge_agregados_7138_10276_6794_99749
     source_id: ibge_agregados
     codigo_externo: "7138/10276"
+    referencia: {periodo: 2019-01-01, valor: "35.5", lido_em: 2026-11-02}
     na_fonte:
       nome: "Taxa de escolarização"
       unidade: "%"
@@ -394,6 +418,7 @@ series:
   - id: ibge_agregados_7269_10270_6794_11627
     source_id: ibge_agregados
     codigo_externo: "7269/10270"
+    referencia: {periodo: 2019-01-01, valor: "37.4", lido_em: 2026-11-02}
     na_fonte:
       nome: "Distribuição percentual das pessoas de 25 anos ou mais de idade"
       unidade: "%"
@@ -412,6 +437,7 @@ series:
   - id: ibge_agregados_7269_10270_6794_48134
     source_id: ibge_agregados
     codigo_externo: "7269/10270"
+    referencia: {periodo: 2019-01-01, valor: "12.8", lido_em: 2026-11-02}
     na_fonte:
       nome: "Distribuição percentual das pessoas de 25 anos ou mais de idade"
       unidade: "%"
@@ -430,6 +456,7 @@ series:
   - id: ibge_agregados_7269_10270_6794_48135
     source_id: ibge_agregados
     codigo_externo: "7269/10270"
+    referencia: {periodo: 2019-01-01, valor: "32.4", lido_em: 2026-11-02}
     na_fonte:
       nome: "Distribuição percentual das pessoas de 25 anos ou mais de idade"
       unidade: "%"
@@ -448,6 +475,7 @@ series:
   - id: ibge_agregados_7269_10270_6794_99713
     source_id: ibge_agregados
     codigo_externo: "7269/10270"
+    referencia: {periodo: 2019-01-01, valor: "17.4", lido_em: 2026-11-02}
     na_fonte:
       nome: "Distribuição percentual das pessoas de 25 anos ou mais de idade"
       unidade: "%"
@@ -468,6 +496,7 @@ series:
   - id: bcb_sgs_13762
     source_id: bcb_sgs
     codigo_externo: "13762"
+    referencia: {periodo: 2019-12-01, valor: "74.44", lido_em: 2026-11-02}
     na_fonte:
       nome: "Dívida bruta do governo geral (% PIB) - Metodologia utilizada a partir de 2008"
       unidade: "%"
@@ -485,6 +514,7 @@ series:
   - id: bcb_sgs_4513
     source_id: bcb_sgs
     codigo_externo: "4513"
+    referencia: {periodo: 2019-12-01, valor: "54.70", lido_em: 2026-11-02}
     na_fonte:
       nome: "Dívida Líquida do Setor Público (% PIB) - Total - Setor público consolidado"
       unidade: "%"
@@ -506,6 +536,7 @@ series:
   - id: bcb_sgs_24369
     source_id: bcb_sgs
     codigo_externo: "24369"
+    referencia: {periodo: 2019-12-01, valor: "11.1", lido_em: 2026-11-02}
     na_fonte:
       nome: "Taxa de desocupação - PNADC"
       unidade: "%"
@@ -523,6 +554,7 @@ series:
   - id: bcb_sgs_22099
     source_id: bcb_sgs
     codigo_externo: "22099"
+    referencia: {periodo: 2019-07-01, valor: "173.64", lido_em: 2026-11-02}
     na_fonte:
       nome: "PIB trimestral - Dados observados - Produto Interno Bruto a preços de mercado"
       unidade: "Índice"
@@ -540,6 +572,7 @@ series:
   - id: bcb_sgs_22109
     source_id: bcb_sgs
     codigo_externo: "22109"
+    referencia: {sem_valor_fixo: "índice dessazonalizado; o IBGE recalcula toda a série a cada divulgação"}
     na_fonte:
       nome: "PIB trimestral - Dados dessazonalizados - Produto Interno Bruto a preços de mercado"
       unidade: "Índice"

@@ -28,6 +28,7 @@ def _series(**kw) -> Series:
         monetaria=False,
         faixa=(Decimal(0), Decimal(10)),
         na_fonte={"nome": "x", "unidade": "%", "periodicidade": "M"},
+        referencia={"sem_valor_fixo": "teste"},
     )
     return Series(**{**base, **kw})
 
