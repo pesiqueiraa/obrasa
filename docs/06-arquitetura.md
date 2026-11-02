@@ -181,6 +181,7 @@ create table fact_checks (
 - **Falhas:** coletor que não consegue validar a resposta falha com alerta. Nunca grava dado parcial ou com layout diferente do esperado.
 - **Descrição na fonte:** antes de baixar os dados, o coletor confere nome, unidade, periodicidade e categorias da série no webservice SGS ou em `/metadados` do IBGE contra `na_fonte` no config. Qualquer diferença para a coleta: a fonte pode ter mudado o significado do código sem mudar o formato (`pipelines/metadados.py`).
 - **Salto:** período novo ou revisado que varia mais do que a maior variação da série nos 10 anos anteriores (p.p. em taxa, % em nível) para a coleta daquela série. O site continua com o último valor válido até um humano conferir na fonte e registrar o valor exato, com link de evidência, em `config/aprovacoes.yaml`. Série com menos de 12 variações na janela (as anuais da PNAD) não é conferida e gera aviso (`pipelines/saltos.py`). No histórico de 2016 a 2026 a regra segurou 6 de 3.780 períodos, todos corretos e excepcionais (IPCA de mar e jul/2022, dólar em 26/10/2026), ou seja, sem alarme em mês comum.
+- **Auditoria do bruto:** `pipelines.run auditar` relê cada resposta bruta citada no banco, confere o SHA-256 gravado na coleta e reprocessa com o mesmo parser: todo valor do banco precisa sair igual do bruto (em 02/11/2026: 30 respostas, 23.680 linhas, nenhuma divergência).
 
 ## Agendamento inicial
 

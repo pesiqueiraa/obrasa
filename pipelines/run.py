@@ -1,8 +1,9 @@
 """Ponto de entrada: `uv run python -m pipelines.run todos` (ou `ipca`, `series`, `eleicoes`,
-`noticias`, `agenda`, `regional`, `atrasos`).
+`noticias`, `agenda`, `regional`, `atrasos`, `auditar`).
 
 `atrasos` não coleta nada: confere se algum indicador ou mapa passou do prazo de
 divulgação e sai com erro se passou (workflow .github/workflows/atrasos.yml).
+`auditar` relê as respostas brutas e confere hash e valor de cada linha do banco.
 
 Variáveis de ambiente:
   DATABASE_URL               conexão Postgres (obrigatória)
@@ -19,7 +20,7 @@ import logging
 import sys
 
 from pipelines import config, db, raw_store
-from pipelines.jobs import agenda, atrasos, eleicoes, ipca, noticias, regional, series
+from pipelines.jobs import agenda, atrasos, auditar, eleicoes, ipca, noticias, regional, series
 from pipelines.jobs.report import Report
 
 
@@ -47,6 +48,7 @@ JOBS = {
     "agenda": agenda.run,
     "regional": regional.run,
     "atrasos": atrasos.run,
+    "auditar": auditar.run,
     "todos": todos,
 }
 

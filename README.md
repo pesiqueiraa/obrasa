@@ -48,6 +48,7 @@ uv run pytest                          # pipelines (sem rede)
 uv run pytest -m network               # endpoints oficiais, ao vivo
 DATABASE_URL="$DB_URL" uv run pytest -m db   # banco recusa alterar dado gravado
 DATABASE_URL="$DB_URL" uv run python -m pipelines.run atrasos   # algum indicador passou do prazo?
+DATABASE_URL="$DB_URL" uv run python -m pipelines.run auditar   # banco igual às respostas brutas?
 uv run ruff check pipelines scripts
 uv run python scripts/check_terms.py   # termos proibidos (docs/02)
 pnpm lint && pnpm typecheck && pnpm test
@@ -57,6 +58,7 @@ pnpm --filter @brasilado/web tokens --check   # tokens CSS em dia com o DESIGN.m
 ## Produção
 
 - **Coleta:** `.github/workflows/coleta.yml`, todo dia às 10h de Brasília (séries, eleições, notícias, agenda e mapas por estado). Segredos no ambiente `producao` do GitHub: `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`. O `DATABASE_URL` precisa ser a conexão direta ou o pooler em modo sessão (porta 5432): o pipeline troca para o papel `coletor` no início da sessão e recusa rodar se a troca não valer.
+- **Auditoria:** `.github/workflows/auditoria.yml`, todo dia às 21h de Brasília. Falha se algum valor do banco não sair igual da resposta bruta ou se um arquivo bruto foi trocado.
 - **Atrasos:** `.github/workflows/atrasos.yml`, todo dia às 20h de Brasília. Falha (e o GitHub manda e-mail) se algum indicador ou mapa passou do prazo de divulgação sem o período novo no banco.
 - **Salto fora do histórico:** a coleta da série para e o erro diz o período. Confira o valor na publicação oficial; se estiver certo, registre em `config/aprovacoes.yaml` (série, período, valor, quem, quando, link) e rode a coleta de novo.
 - **Integridade:** o banco só aceita INSERT em `observations`, `observacoes_uf` e nas tabelas de votos (`supabase/migrations/20261109000000_integridade.sql`). Corrigir um dado é gravar uma revisão nova.

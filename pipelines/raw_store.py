@@ -24,6 +24,10 @@ from pipelines.models import RawResponse
 class RawStore(Protocol):
     def save(self, raw: RawResponse, name: str) -> str: ...
 
+    def read(self, ref: str) -> bytes:
+        """Conteúdo de um objeto pelo endereço que `save` devolveu (auditoria)."""
+        ...
+
 
 def object_path(raw: RawResponse, name: str) -> tuple[str, str]:
     digest = hashlib.sha256(raw.body).hexdigest()
@@ -59,6 +63,11 @@ class LocalRawStore:
         target.with_name(target.name + ".meta.json").write_bytes(_meta(raw, digest))
         return f"local://{path}"
 
+    def read(self, ref: str) -> bytes:
+        if not ref.startswith("local://"):
+            raise RuntimeError(f"objeto em outro armazenamento: {ref}")
+        return (self.root / ref.removeprefix("local://")).read_bytes()
+
 
 class SupabaseRawStore:
     def __init__(self, url: str, service_key: str, bucket: str = "raw") -> None:
@@ -88,6 +97,19 @@ class SupabaseRawStore:
             self._upload(client, path, raw.body, raw.content_type)
             self._upload(client, path + ".meta.json", _meta(raw, digest), "application/json")
         return f"storage://{self.bucket}/{path}"
+
+    def read(self, ref: str) -> bytes:
+        prefixo = f"storage://{self.bucket}/"
+        if not ref.startswith(prefixo):
+            raise RuntimeError(f"objeto em outro armazenamento: {ref}")
+        with httpx.Client(timeout=60) as client:
+            response = client.get(
+                f"{self.base}/storage/v1/object/{self.bucket}/{ref.removeprefix(prefixo)}",
+                headers=self.headers,
+            )
+        if response.status_code >= 400:
+            raise RuntimeError(f"falha ao ler {ref}: {response.status_code} {response.text}")
+        return response.content
 
 
 def from_env() -> RawStore:
