@@ -1,0 +1,26 @@
+# 08 · Decisões em aberto
+
+Formato: cada decisão tem opções, uma recomendação provisória e o que depende dela. Quando for tomada, mova para a seção "Decididas", com data e motivo.
+
+## Abertas
+
+| ID | Pergunta | Opções | Recomendação provisória | Bloqueia |
+|---|---|---|---|---|
+| D1 | Nome final | Brasilado, oBrasa, Prumo, Régua, Lastro, Fato Bruto ([01](01-visao-do-produto.md#nome)) | Decidir após busca no INPI e de domínio | Identidade visual, domínio |
+| D2 | Formato jurídico | Projeto pessoal, associação sem fins lucrativos, empresa | Começar como projeto pessoal open source; formalizar antes de receber dinheiro | D3 |
+| D3 | Financiamento | Doações de pessoas, editais e fundações, patrocínio institucional, serviços para empresas | Doações e editais, com tudo publicado na página "Quem financia" | Lançamento público |
+| D4 | Abrangência inicial | Só federal; federal + estados; tudo | Só federal no MVP | F4, fase 2 |
+| D5 | Primeiro canal | Web, app, bot de WhatsApp | Web responsiva primeiro; WhatsApp na fase 3 | Arquitetura de front |
+| D6 | Revisão editorial | Uma segunda pessoa; conselho plural; checklist automático | Checklist automático no MVP; conselho plural depois do lançamento | Publicação de textos |
+| D7 | Data de lançamento | Antes de janeiro de 2027; depois | Lançar uma versão mínima (F0 + F1) antes de janeiro de 2027, aproveitando a posse dos novos mandatos e a CBS plena | Planejamento |
+| D8 | Licenças | Código: MIT ou AGPL. Conteúdo próprio: CC BY 4.0 | Código MIT; conteúdo CC BY 4.0; dados seguem a licença de cada fonte | Repositório público |
+| D9 | Metodologia dos impostos indiretos em F2 | Carga média sobre consumo (relatório "Carga Tributária no Brasil", da Receita) aplicada ao consumo por faixa de renda (POF/IBGE); alíquotas legais por categoria; tabela do IBPT | Carga média oficial + POF, rotulada como estimativa | F2 |
+| D10 | Classificar viés de veículos em F6 | Não classificar; usar classificação externa; criar a própria | Não classificar no MVP | F6 |
+| D11 | Métricas de uso | Ferramenta sem cookies (Plausible, Umami); Google Analytics | Ferramenta sem cookies | Lançamento |
+| D12 | Modelo de IA e de embeddings | Escolher por custo, qualidade em português e dimensão do vetor | Testar 2 opções com 200 notícias rotuladas à mão | F5, F6 |
+
+## Decididas
+
+| ID | Decisão | Data | Motivo |
+|---|---|---|---|
+| — | — | — | — |
