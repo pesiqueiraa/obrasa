@@ -1,6 +1,6 @@
-// Brasil hoje (home). O quadro mostra o indicador principal de cada tema, alinhado
-// como num painel de instrumentos; os demais ficam na página do tema. Depois, a
-// agenda das próximas divulgações oficiais.
+// Brasil hoje (home). Um número por tema, com a variação curta ("↓ 0,59 p.p. em 12
+// meses"); a comparação completa aparece ao passar o mouse ou focar a linha, e a
+// minilinha mostra cada período ao passar o dedo. Embaixo, as próximas datas da agenda.
 
 import Link from "next/link";
 import { Suspense } from "react";
@@ -9,6 +9,7 @@ import { linhasDoTurno } from "@/components/eleicoes/Resultado";
 import { nomeProprio, pct } from "@/components/eleicoes/util";
 import { FrequencyChip } from "@/components/FrequencyChip";
 import { SourceLine } from "@/components/SourceLine";
+import { Variacao } from "@/components/Variacao";
 import { Sparkline } from "@/components/viz/Sparkline";
 import styles from "@/components/home.module.scss";
 import ui from "@/components/ui.module.scss";
@@ -17,24 +18,28 @@ import { getEleicao } from "@/lib/eleicoes";
 import { formatDate, formatRef, parseDay } from "@/lib/format";
 import { present } from "@/lib/present";
 
+/** "↓ cai 0,59 p.p. em 12 meses (set/2025: 5,17%)" → curta "↓ 0,59 p.p. em 12 meses" e a base. */
+function partes(variacao: string): { curta: string; base: string | null } {
+  const m = /^(↑|↓) (?:sobe|cai) (.+?) \((.+)\)$/.exec(variacao);
+  if (m) return { curta: `${m[1]} ${m[2]}`, base: m[3] };
+  const e = /^fica estável (.+?) \((.+)\)$/.exec(variacao);
+  if (e) return { curta: `= estável ${e[1]}`, base: e[2] };
+  return { curta: variacao, base: null };
+}
+
 const MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
 
-function Linha({ tema, titulo, resumo, views, i }: { tema: string; titulo: string; resumo: string; views: IndicatorView[]; i: number }) {
+function Linha({ tema, titulo, views, i }: { tema: string; titulo: string; views: IndicatorView[]; i: number }) {
   const lead = views[0];
   if (!lead) return null;
   const p = present(lead);
   const s = lead.exibida.series;
+  const v = p.variacao ? partes(p.variacao) : null;
   return (
     <li className={styles.linha}>
-      <div className={styles.tema}>
-        <h2>
-          <Link href={`/${tema}`}>{titulo}</Link>
-        </h2>
-        <p>{resumo}</p>
-        <Link href={`/${tema}`} className={styles.mais}>
-          {views.length} {views.length === 1 ? "indicador" : "indicadores"}
-        </Link>
-      </div>
+      <h2 className={styles.tema}>
+        <Link href={`/${tema}`}>{titulo}</Link>
+      </h2>
       <div className={styles.numero}>
         <p className={styles.rotulo}>
           <Link href={`/indicador/${lead.indicator.slug}`}>{lead.indicator.titulo}</Link>
@@ -42,13 +47,17 @@ function Linha({ tema, titulo, resumo, views, i }: { tema: string; titulo: strin
         </p>
         <p className={styles.valor}>
           {p.fmt(p.latest.value)}
-          <span className="visually-hidden"> em {formatRef(p.latest.refDate, s.frequencia)}</span>
+          <span className={styles.ref}>{formatRef(p.latest.refDate, s.frequencia)}</span>
         </p>
+        {v ? (
+          <Variacao texto={v.curta} className={styles.variacao}>
+            {v.base ? <span className={styles.detalhe}> (antes: {v.base})</span> : null}
+          </Variacao>
+        ) : null}
         {p.baseReal ? <p className={styles.nota}>{p.baseReal}</p> : null}
-        {p.variacao ? <p className={styles.variacao}>{p.variacao}</p> : null}
       </div>
       <div className={styles.tendencia}>
-        <Sparkline values={p.spark} width={220} height={64} delay={0.15 + i * 0.12} />
+        <Sparkline values={p.spark} rotulos={p.sparkRotulos} width={220} height={56} delay={0.15 + i * 0.12} />
       </div>
       <div className={styles.fonte}>
         <SourceLine
@@ -65,7 +74,7 @@ function Linha({ tema, titulo, resumo, views, i }: { tema: string; titulo: strin
 
 // Linha da eleição no quadro: o resultado do 2º turno para presidente, com a barra
 // dividida em miniatura no lugar da sparkline.
-async function LinhaEleicao({ tema, titulo, resumo }: { tema: string; titulo: string; resumo: string }) {
+async function LinhaEleicao({ tema, titulo }: { tema: string; titulo: string }) {
   const e = await getEleicao();
   if (!e) return null;
   const t2 = e.apuracao.find((a) => a.turno === 2 && a.uf === "BR");
@@ -73,15 +82,9 @@ async function LinhaEleicao({ tema, titulo, resumo }: { tema: string; titulo: st
   const [a, b] = linhasDoTurno(e.candidatos, e.votos, 2);
   return (
     <li className={styles.linha}>
-      <div className={styles.tema}>
-        <h2>
-          <Link href={`/${tema}`}>{titulo}</Link>
-        </h2>
-        <p>{resumo}</p>
-        <Link href={`/${tema}`} className={styles.mais}>
-          Mapa, comparecimento e eleitos
-        </Link>
-      </div>
+      <h2 className={styles.tema}>
+        <Link href={`/${tema}`}>{titulo}</Link>
+      </h2>
       <div className={styles.numero}>
         <p className={styles.rotulo}>
           <Link href={`/${tema}`}>Presidente, 2º turno</Link>
@@ -89,8 +92,11 @@ async function LinhaEleicao({ tema, titulo, resumo }: { tema: string; titulo: st
         </p>
         <p className={styles.valor}>{pct(a.votos, t2.validos)}</p>
         <p className={styles.variacao}>
-          dos votos válidos para {nomeProprio(a.c.nome)} ({a.c.partido}), {a.c.situacao[2]?.toLowerCase() ?? ""}{" "}
-          segundo o TSE. {nomeProprio(b.c.nome)} ({b.c.partido}): {pct(b.votos, t2.validos)}.
+          {nomeProprio(a.c.nome)} ({a.c.partido}), {a.c.situacao[2]?.toLowerCase() ?? ""}
+          <span className={styles.detalhe}>
+            {" "}
+            ; {nomeProprio(b.c.nome)} ({b.c.partido}): {pct(b.votos, t2.validos)}
+          </span>
         </p>
       </div>
       <div className={styles.tendencia} aria-hidden="true">
@@ -116,9 +122,8 @@ function Agenda({ itens }: { itens: Item[] }) {
       <h2 id="agenda" className={styles.agendaTitulo}>
         Próximas divulgações
       </h2>
-      <p className={styles.agendaSub}>Datas dos calendários oficiais coletados. Os números entram aqui no dia em que saem.</p>
       <ol>
-        {[...porData.entries()].map(([data, grupo]) => {
+        {[...porData.entries()].slice(0, 4).map(([data, grupo]) => {
           const [y, m, d] = parseDay(data);
           return (
             <li key={data} className={styles.dia}>
@@ -142,6 +147,9 @@ function Agenda({ itens }: { itens: Item[] }) {
           );
         })}
       </ol>
+      <Link href="/agenda" className={styles.agendaMais}>
+        Agenda completa, com as reuniões do Copom
+      </Link>
     </section>
   );
 }
@@ -174,17 +182,17 @@ async function Quadro() {
         <header className={styles.topo}>
           <h1>Brasil hoje</h1>
           <p>
-            {todas.length} indicadores oficiais, de {orgaos.join(" e ")}
-            {coletadoAte ? `, com dados coletados até ${formatDate(coletadoAte)}` : ""}
-            {temEleicao ? ", e o resultado das eleições de 2026, do TSE" : ""}.
+            Um número por tema, de {orgaos.join(", ")}
+            {temEleicao ? " e TSE" : ""}
+            {coletadoAte ? `. Coleta até ${formatDate(coletadoAte)}` : ""}.
           </p>
         </header>
         <ol className={styles.quadro}>
           {porTema.map(({ t, views }, i) =>
             t.slug === "eleicoes-2026" ? (
-              <LinhaEleicao key={t.slug} tema={t.slug} titulo={t.titulo} resumo={t.resumo} />
+              <LinhaEleicao key={t.slug} tema={t.slug} titulo={t.titulo} />
             ) : (
-              <Linha key={t.slug} tema={t.slug} titulo={t.titulo} resumo={t.resumo} views={views} i={i} />
+              <Linha key={t.slug} tema={t.slug} titulo={t.titulo} views={views} i={i} />
             ),
           )}
         </ol>

@@ -28,60 +28,43 @@
 
 .linha {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr auto;
   grid-template-areas:
-    "tema"
-    "numero"
-    "tendencia"
-    "fonte";
-  gap: var(--bd-space-sm);
+    "tema tema"
+    "numero tendencia"
+    "fonte fonte";
+  gap: var(--bd-space-xs) var(--bd-space-md);
   padding: var(--bd-space-lg) 0;
   border-bottom: 1px solid var(--bd-color-hairline);
-  @media (min-width: 672px) {
-    grid-template-columns: 1fr 1.3fr;
-    grid-template-areas:
-      "tema numero"
-      "tema tendencia"
-      "fonte fonte";
-    column-gap: var(--bd-space-xl);
-  }
   @media (min-width: 1056px) {
-    grid-template-columns: 15rem 1fr 240px;
+    grid-template-columns: 13rem 1fr 240px;
     grid-template-areas:
       "tema numero tendencia"
       "tema fonte fonte";
+    column-gap: var(--bd-space-xl);
     align-items: start;
   }
 }
 
 .tema {
   grid-area: tema;
-  h2 {
-    font-size: 24px;
-    font-weight: 400;
-    line-height: 1.2;
-    margin: 0 0 var(--bd-space-xxs);
-    a {
-      color: var(--bd-color-ink);
-      text-decoration: none;
-    }
-    a:hover {
-      text-decoration: underline;
-    }
+  font-family: var(--bd-type-news-headline-font-family);
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.2;
+  margin: 0;
+  a {
+    color: var(--bd-color-ink);
+    text-decoration: none;
   }
-  p {
-    font-size: var(--bd-type-body-sm-font-size);
-    color: var(--bd-color-ink-muted);
-    margin: 0 0 var(--bd-space-xs);
+  a:hover {
+    text-decoration: underline;
   }
-}
-
-.mais {
-  font-size: var(--bd-type-body-sm-font-size);
 }
 
 .numero {
   grid-area: numero;
+  min-width: 0;
 }
 
 .rotulo {
@@ -89,23 +72,35 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--bd-space-xs);
-  font-weight: 600;
+  font-size: var(--bd-type-body-sm-font-size);
   margin: 0 0 var(--bd-space-xxs);
   a {
-    color: var(--bd-color-ink);
+    color: var(--bd-color-ink-muted);
   }
 }
 
 .valor {
-  font-size: 48px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--bd-space-sm);
+  font-size: 44px;
   font-weight: 600;
   line-height: 1.05;
   letter-spacing: -0.5px;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
   margin: 0;
   @media (min-width: 1056px) {
-    font-size: 56px;
+    font-size: 52px;
   }
+}
+
+.ref {
+  font-size: var(--bd-type-body-sm-font-size);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--bd-color-ink-muted);
 }
 
 .nota {
@@ -117,7 +112,22 @@
 .variacao {
   font-size: var(--bd-type-body-sm-font-size);
   font-variant-numeric: tabular-nums;
-  margin: var(--bd-space-xs) 0 0;
+  margin: var(--bd-space-xxs) 0 0;
+}
+
+// Detalhe da comparação: aparece ao passar o mouse ou focar a linha (leitores de tela
+// sempre o leem). No toque, a minilinha mostra cada período.
+.detalhe {
+  color: var(--bd-color-ink-muted);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  .linha:hover &,
+  .linha:focus-within & {
+    opacity: 1;
+  }
+  @media (hover: none) {
+    opacity: 1;
+  }
 }
 
 .tendencia {
@@ -126,6 +136,11 @@
   svg {
     max-width: 100%;
     height: auto;
+  }
+  @media (max-width: 1055px) {
+    svg {
+      width: 120px;
+    }
   }
 }
 
@@ -147,10 +162,10 @@
   margin: 0 0 var(--bd-space-xs);
 }
 
-.agendaSub {
+.agendaMais {
+  display: inline-block;
+  margin-top: var(--bd-space-md);
   font-size: var(--bd-type-body-sm-font-size);
-  color: var(--bd-color-ink-muted);
-  margin: 0;
 }
 
 .dia {
