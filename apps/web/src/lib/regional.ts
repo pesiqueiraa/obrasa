@@ -76,7 +76,7 @@ export async function getMapasUf(tema: string): Promise<MapaUfDados[]> {
   const out: MapaUfDados[] = [];
   for (const m of cfg) {
     const { data, error } = await db
-      .from("observacoes_uf")
+      .from("observacoes_uf_atual") // revisão mais recente de cada valor
       .select("uf, uf_nome, ref_date, value, sources(orgao)")
       .eq("mapa_id", m.id)
       .order("ref_date")

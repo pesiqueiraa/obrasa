@@ -46,6 +46,8 @@ Sem Supabase Storage, use `RAW_STORE=local` para gravar as respostas brutas em `
 ```bash
 uv run pytest                          # pipelines (sem rede)
 uv run pytest -m network               # endpoints oficiais, ao vivo
+DATABASE_URL="$DB_URL" uv run pytest -m db   # banco recusa alterar dado gravado
+DATABASE_URL="$DB_URL" uv run python -m pipelines.run atrasos   # algum indicador passou do prazo?
 uv run ruff check pipelines scripts
 uv run python scripts/check_terms.py   # termos proibidos (docs/02)
 pnpm lint && pnpm typecheck && pnpm test
@@ -54,6 +56,8 @@ pnpm --filter @brasilado/web tokens --check   # tokens CSS em dia com o DESIGN.m
 
 ## Produção
 
-- **Coleta:** `.github/workflows/coleta.yml`, todo dia às 10h de Brasília. Segredos no ambiente `producao` do GitHub: `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`.
+- **Coleta:** `.github/workflows/coleta.yml`, todo dia às 10h de Brasília (séries, eleições, notícias, agenda e mapas por estado). Segredos no ambiente `producao` do GitHub: `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`. O `DATABASE_URL` precisa ser a conexão direta ou o pooler em modo sessão (porta 5432): o pipeline troca para o papel `coletor` no início da sessão e recusa rodar se a troca não valer.
+- **Atrasos:** `.github/workflows/atrasos.yml`, todo dia às 20h de Brasília. Falha (e o GitHub manda e-mail) se algum indicador ou mapa passou do prazo de divulgação sem o período novo no banco.
+- **Integridade:** o banco só aceita INSERT em `observations`, `observacoes_uf` e nas tabelas de votos (`supabase/migrations/20261109000000_integridade.sql`). Corrigir um dado é gravar uma revisão nova.
 - **Web:** variáveis `SUPABASE_URL` e `SUPABASE_ANON_KEY`. As páginas são estáticas e revalidam a cada hora.
 - **CI:** `.github/workflows/ci.yml` (lint, testes, termos proibidos, migrações).

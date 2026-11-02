@@ -110,7 +110,9 @@ export function nextRelease(releases: Release[], latestRef: string): Release | n
 }
 
 // Prazo usado quando a fonte não publica calendário: o 1º dia do período de referência
-// mais esta folga. Séries diárias: 5 dias corridos (fim de semana e feriado).
+// mais esta folga. Séries diárias: 5 dias corridos (fim de semana e feriado). Uma série
+// pode declarar a própria folga (`prazo` em config/sources.yaml). A mesma regra está em
+// pipelines/jobs/atrasos.py, que alerta o time: mudou aqui, mude lá.
 const FOLGA_SEM_CALENDARIO: Partial<Record<Frequencia, { meses: number; dias: number }>> = {
   diaria: { meses: 0, dias: 5 },
   mensal: { meses: 2, dias: 14 },
@@ -140,6 +142,7 @@ export function delayStatus(args: {
   frequencia: Frequencia;
   proxima: Release | null;
   hoje: string;
+  folga?: { meses: number; dias: number };
 }): Atraso {
   const { latestRef, frequencia, proxima, hoje } = args;
   let prazo: string | null = null;
@@ -147,7 +150,7 @@ export function delayStatus(args: {
   if (proxima?.proximaDivulgacao && passo && proxima.refDate === addMonths(latestRef, passo)) {
     prazo = proxima.proximaDivulgacao;
   } else {
-    const folga = FOLGA_SEM_CALENDARIO[frequencia];
+    const folga = args.folga ?? FOLGA_SEM_CALENDARIO[frequencia];
     if (folga) {
       const base = frequencia === "diaria" ? latestRef : addMonths(latestRef, folga.meses);
       prazo = addDays(base, folga.dias - 1);

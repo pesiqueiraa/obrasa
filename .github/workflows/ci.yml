@@ -72,3 +72,11 @@ jobs:
         run: supabase db start
       - name: Lint do schema
         run: supabase db lint --level warning
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - run: uv sync --locked
+      - name: Banco recusa alterar dado gravado (triggers e papel coletor)
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:55322/postgres
+        run: uv run pytest -m db

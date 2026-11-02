@@ -209,6 +209,14 @@ describe("séries de outras frequências", () => {
     expect(delayStatus({ ...base, hoje: "2026-11-04" }).atrasado).toBe(true);
   });
 
+  it("prazo da série substitui o padrão da frequência (IBC-Br)", () => {
+    const base = { latestRef: "2026-08-01", frequencia: "mensal" as const, proxima: null };
+    expect(delayStatus({ ...base, hoje: "2026-10-15" }).atrasado).toBe(true);
+    const folga = { meses: 3, dias: 30 };
+    expect(delayStatus({ ...base, folga, hoje: "2026-11-30" }).atrasado).toBe(false);
+    expect(delayStatus({ ...base, folga, hoje: "2026-12-01" }).atrasado).toBe(true);
+  });
+
   it("trimestral usa o calendário do trimestre seguinte", () => {
     const proxima = { refDate: "2026-07-01", divulgadoEm: null, proximaDivulgacao: "2026-12-02" };
     const args = { latestRef: "2026-04-01", frequencia: "trimestral" as const, proxima };

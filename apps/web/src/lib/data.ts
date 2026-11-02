@@ -62,6 +62,9 @@ export type Series = {
   inicio: string | null;
   nota_metodologia: string | null;
   classificacao: string | null;
+  // Prazo de divulgação sem calendário (config/sources.yaml, `prazo`).
+  prazo_meses: number | null;
+  prazo_dias: number | null;
 };
 
 export type Indicator = {
@@ -225,6 +228,10 @@ export async function getIndicatorView(slug: string): Promise<IndicatorView | nu
   const atraso = delayStatus({
     latestRef: latest.refDate,
     frequencia: escolhida.series.frequencia,
+    folga:
+      escolhida.series.prazo_meses != null && escolhida.series.prazo_dias != null
+        ? { meses: escolhida.series.prazo_meses, dias: escolhida.series.prazo_dias }
+        : undefined,
     proxima,
     hoje: todayInBrazil(),
   });

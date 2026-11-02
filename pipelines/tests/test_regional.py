@@ -64,3 +64,21 @@ def test_faixa():
     m = next(m for m in load_regional().mapas if m.id == "desocupacao-uf")
     with pytest.raises(ValidationError, match="faixa"):
         valida_faixa(m, {35: UfSerie("São Paulo", {date(2026, 4, 1): Decimal("55")})})
+
+
+def test_planeja_revisoes_por_uf():
+    from pipelines.jobs.regional import planeja
+
+    atual = {
+        (35, date(2026, 4, 1)): (Decimal("7.5"), 0),
+        (33, date(2026, 4, 1)): (Decimal("8.1"), 2),
+    }
+    novos = {
+        (35, date(2026, 4, 1)): Decimal("7.5"),  # igual: nada
+        (33, date(2026, 4, 1)): Decimal("8.0"),  # revisado: revisão 3, a linha antiga fica
+        (35, date(2026, 7, 1)): Decimal("7.2"),  # período novo: revisão 0
+    }
+    assert planeja(atual, novos) == [
+        (33, date(2026, 4, 1), Decimal("8.0"), 3),
+        (35, date(2026, 7, 1), Decimal("7.2"), 0),
+    ]

@@ -7,6 +7,10 @@
 #   faixa        [mínimo, máximo] plausíveis; valor fora disso faz a coleta ser recusada
 #   desde        início do histórico buscado
 #   calendario   produto no calendário do IBGE (próxima divulgação)
+#   prazo        [meses, dias] para a divulgação do período seguinte, contados do 1º dia
+#                do último período, quando a fonte não tem calendário. Sem ele vale o
+#                padrão da frequência (mensal: [2, 14]). Passou do prazo, o site mostra
+#                "Atrasado desde" e o job `atrasos` falha.
 #   classificacao  filtro de categoria do IBGE, ex.: 11255[90707]
 # Códigos testados contra a fonte em 01/11/2026 (docs/05).
 
@@ -144,6 +148,8 @@ series:
     nota_metodologia: Série 24363 do SGS, sem ajuste sazonal.
     faixa: [30, 300]
     desde: 2003-01-01
+    # Sai uns 45 dias depois do mês (ago/2026 publicado em out/2026).
+    prazo: [3, 30]
   - id: ibge_agregados_5932_6562
     source_id: ibge_agregados
     codigo_externo: "5932/6562"
@@ -359,6 +365,8 @@ series:
     nota_metodologia: Série 13762 do SGS, metodologia a partir de 2008, desde dez/2006.
     faixa: [10, 200]
     desde: 2006-12-01
+    # Estatísticas fiscais do BC: o mês sai no fim do mês seguinte (set/2026 até 02/11/2026).
+    prazo: [3, 14]
   - id: bcb_sgs_4513
     source_id: bcb_sgs
     codigo_externo: "4513"
@@ -372,3 +380,5 @@ series:
       os créditos que eles têm a receber (como reservas internacionais).
     faixa: [-50, 200]
     desde: 2001-12-01
+    # Mesma divulgação da dívida bruta (estatísticas fiscais do BC).
+    prazo: [3, 14]

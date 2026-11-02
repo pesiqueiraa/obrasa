@@ -12,6 +12,10 @@ mapas:
     variavel: 4099
     frequencia: trimestral
     periodos: "-20"
+    # PNAD Contínua trimestral por UF: o trimestre sai uns 45 dias depois de terminar
+    # (2º tri/2026 disponível em 02/11/2026; o 3º, em novembro). [meses, dias] do 1º dia
+    # do último trimestre, como `prazo` em config/sources.yaml.
+    prazo: [7, 30]
     unidade: "%"
     casas: 1
     faixa: [0, 40]

@@ -117,6 +117,9 @@ class Series(_Strict):
     faixa: tuple[Decimal, Decimal] | None = None  # valores plausíveis; fora disso, recusa
     desde: date | None = None  # início do histórico buscado
     calendario: int | None = None  # produto no calendário do IBGE
+    # Prazo de divulgação quando a fonte não tem calendário: [meses, dias] contados do 1º
+    # dia do último período. Sem isso vale o padrão da frequência (pipelines/jobs/atrasos.py).
+    prazo: tuple[int, int] | None = None
     # Períodos que a fonte não publicou, com o motivo em nota_metodologia (ex.: PNAD
     # Contínua anual sem 2020 e 2021). Só estes buracos são aceitos na validação.
     lacunas: list[date] = []
@@ -315,6 +318,7 @@ class MapaUf(_Strict):
     unidade: str
     casas: int
     faixa: tuple[Decimal, Decimal]
+    prazo: tuple[int, int] | None = None  # como em Series.prazo
 
 
 class Regional(_Strict):

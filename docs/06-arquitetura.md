@@ -177,7 +177,7 @@ create table fact_checks (
 - **Números:** `numeric` no banco, nunca `float`, para valores monetários.
 - **Unidade sempre explícita** na série e na tela.
 - **Deflator padrão:** número-índice do IPCA (IBGE, tabela 1737, variável 2266), com base no mês mais recente disponível.
-- **Revisões:** nunca sobrescrever. Revisão da fonte vira nova linha com `revision + 1`; a tela usa a mais recente e a página de metodologia mostra o histórico.
+- **Revisões:** nunca sobrescrever. Revisão da fonte vira nova linha com `revision + 1`; a tela usa a mais recente e a página de metodologia mostra o histórico. O banco garante a regra: `observations`, `observacoes_uf` e as tabelas de votos recusam UPDATE, DELETE e TRUNCATE (triggers `so_insert`), e o pipeline roda com o papel `coletor`, sem permissão de mudar o schema (migração `20261109000000_integridade.sql`).
 - **Falhas:** coletor que não consegue validar a resposta falha com alerta. Nunca grava dado parcial ou com layout diferente do esperado.
 
 ## Agendamento inicial
@@ -193,7 +193,7 @@ create table fact_checks (
 | Notícias (RSS) | A cada 15 min | |
 | Notícias (GDELT) | A cada 15 min | Respeitar 1 requisição a cada 5 s |
 | Agrupamento e checagens | A cada hora | |
-| Verificação de atraso | Diariamente, 20h | Alerta se algum indicador passou do prazo |
+| Verificação de atraso | Diariamente, 20h | Alerta se algum indicador ou mapa por estado passou do prazo (`atrasos.yml`). Sem calendário da fonte, vale o `prazo` da série em `config/sources.yaml` ou o padrão da frequência |
 
 ## Regras de uso de IA
 

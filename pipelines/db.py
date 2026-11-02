@@ -22,7 +22,21 @@ def connect() -> psycopg.Connection:
         )
     # autocommit: cada `with conn.transaction()` é uma transação própria, então a falha
     # de uma fonte não desfaz o que outra já gravou.
-    return psycopg.connect(url, autocommit=True)
+    conn = psycopg.connect(url, autocommit=True)
+    # Papel sem poder de mudar o schema nem de alterar as tabelas de dado
+    # (supabase/migrations/20261109000000_integridade.sql). Vale para a sessão inteira.
+    conn.execute(f"set role {ROLE}")
+    # Com o pooler em modo transação (porta 6543 do Supabase) o `set role` não vale para
+    # os comandos seguintes. Use a conexão direta ou o pooler em modo sessão (porta 5432).
+    if conn.execute("select current_user").fetchone()[0] != ROLE:
+        conn.close()
+        raise RuntimeError(
+            f"a conexão não ficou com o papel {ROLE}: use DATABASE_URL sem pooler de transação"
+        )
+    return conn
+
+
+ROLE = "coletor"
 
 
 @dataclass(frozen=True)
@@ -77,12 +91,14 @@ def sync_registry(conn: psycopg.Connection, registry: Registry) -> None:
             cur.execute(
                 """
                 insert into series (id, source_id, codigo_externo, nome, unidade, frequencia, tipo,
-                                    monetaria, nota_metodologia, classificacao)
-                values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                    monetaria, nota_metodologia, classificacao, prazo_meses,
+                                    prazo_dias)
+                values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 on conflict (id) do update set nome = excluded.nome, unidade = excluded.unidade,
                   frequencia = excluded.frequencia, tipo = excluded.tipo,
                   monetaria = excluded.monetaria, nota_metodologia = excluded.nota_metodologia,
-                  classificacao = excluded.classificacao
+                  classificacao = excluded.classificacao, prazo_meses = excluded.prazo_meses,
+                  prazo_dias = excluded.prazo_dias
                 """,
                 (
                     s.id,
@@ -95,6 +111,8 @@ def sync_registry(conn: psycopg.Connection, registry: Registry) -> None:
                     s.monetaria,
                     s.nota_metodologia,
                     s.classificacao,
+                    s.prazo[0] if s.prazo else None,
+                    s.prazo[1] if s.prazo else None,
                 ),
             )
         for i in registry.indicators:

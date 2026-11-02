@@ -2,11 +2,17 @@
 
 Cada mapa é buscado, validado (27 UFs, classificação pedida, faixa plausível) e
 gravado em observacoes_uf. Falha de um mapa não impede os outros.
+
+Como em observations, nada é sobrescrito: valor revisado pelo IBGE vira linha nova com
+revision + 1 (o banco recusa UPDATE nessa tabela) e o site lê observacoes_uf_atual.
 """
 
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
+from datetime import date
+from decimal import Decimal
 
 import psycopg
 
@@ -28,48 +34,87 @@ def valida_faixa(m: MapaUf, dados: dict) -> None:
                 raise ValidationError(f"{m.id}: UF {uf} em {ref} = {v}, fora da faixa {lo}–{hi}")
 
 
-def coleta(conn: psycopg.Connection, store: RawStore, m: MapaUf) -> int:
+Chave = tuple[int, date]  # (código da UF, período)
+
+
+def planeja(
+    atual: dict[Chave, tuple[Decimal, int]], novos: dict[Chave, Decimal]
+) -> list[tuple[int, date, Decimal, int]]:
+    """O que inserir: período novo com revisão 0, valor diferente com revisão + 1."""
+    out = []
+    for (uf, ref), v in sorted(novos.items()):
+        vigente = atual.get((uf, ref))
+        if vigente is None:
+            out.append((uf, ref, v, 0))
+        elif vigente[0] != v:
+            out.append((uf, ref, v, vigente[1] + 1))
+    return out
+
+
+@dataclass(frozen=True)
+class Gravacao:
+    novos: int
+    revisados: int
+    iguais: int
+
+
+def coleta(conn: psycopg.Connection, store: RawStore, m: MapaUf) -> Gravacao:
     raw = ibge_agregados.fetch_uf(m.tabela, m.variavel, m.periodos, m.classificacao)
     objeto = store.save(raw, f"uf_{m.id}")
     dados = ibge_agregados.parse_uf(
         raw.body, m.variavel, classificacao=m.classificacao, tipo=m.frequencia
     )
     valida_faixa(m, dados)
-    linhas = [
-        (
-            m.id,
-            ibge_agregados.SOURCE_ID,
-            f"{m.tabela}/{m.variavel}",
-            m.classificacao,
-            uf,
-            s.nome,
-            ref,
-            v,
-        )
-        for uf, s in dados.items()
-        for ref, v in s.valores.items()
-    ]
+    novos = {(uf, ref): v for uf, s in dados.items() for ref, v in s.valores.items()}
+    nomes = {uf: s.nome for uf, s in dados.items()}
     with conn.transaction(), conn.cursor() as cur:
+        cur.execute(
+            "select uf, ref_date, value, revision from observacoes_uf_atual where mapa_id = %s",
+            (m.id,),
+        )
+        atual = {(r[0], r[1]): (r[2], r[3]) for r in cur.fetchall()}
+        plano = planeja(atual, novos)
         cur.executemany(
             """
             insert into observacoes_uf (mapa_id, source_id, codigo_externo, classificacao, uf,
-                                        uf_nome, ref_date, value, collected_at, raw_object)
-            values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            on conflict (mapa_id, uf, ref_date) do update set value = excluded.value,
-              uf_nome = excluded.uf_nome,
-              collected_at = excluded.collected_at, raw_object = excluded.raw_object
+                                        uf_nome, ref_date, value, revision, collected_at,
+                                        raw_object)
+            values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
-            [(*linha, raw.fetched_at, objeto) for linha in linhas],
+            [
+                (
+                    m.id,
+                    ibge_agregados.SOURCE_ID,
+                    f"{m.tabela}/{m.variavel}",
+                    m.classificacao,
+                    uf,
+                    nomes[uf],
+                    ref,
+                    v,
+                    rev,
+                    raw.fetched_at,
+                    objeto,
+                )
+                for uf, ref, v, rev in plano
+            ],
         )
-    return len(linhas)
+    return Gravacao(
+        novos=sum(1 for p in plano if p[3] == 0),
+        revisados=sum(1 for p in plano if p[3] > 0),
+        iguais=len(novos) - len(plano),
+    )
 
 
 def run(conn: psycopg.Connection, store: RawStore, registry: Registry) -> Report:
     report = Report()
     for m in config.load_regional(registry=registry).mapas:
         try:
-            n = coleta(conn, store, m)
-            log.info("%s: %d valores por UF", m.id, n)
+            g = coleta(conn, store, m)
+            log.info(
+                "%s: %d novos, %d revisados, %d sem mudança", m.id, g.novos, g.revisados, g.iguais
+            )
+            if g.revisados:
+                report.warnings.append(f"mapa {m.id}: {g.revisados} valores revisados pela fonte")
         except Exception as exc:
             log.exception("mapa %s falhou", m.id)
             report.errors.append(f"mapa {m.id}: {exc}")
