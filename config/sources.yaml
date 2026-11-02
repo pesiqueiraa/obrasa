@@ -1,0 +1,70 @@
+# Fontes e séries registradas. Toda fonte aqui precisa estar descrita em
+# docs/05-fontes-de-dados.md antes de entrar neste arquivo.
+# O id da série segue o padrão {source_id}_{codigo com "/" trocado por "_"}.
+
+sources:
+  - id: ibge_agregados
+    nome: API de Agregados v3 (SIDRA)
+    orgao: IBGE
+    url_fonte: https://sidra.ibge.gov.br/tabela/1737
+    url_documentacao: https://servicodados.ibge.gov.br/api/docs/agregados?versao=3
+    # Metodologia do IPCA no site do IBGE: status `confirmar` em docs/05 (403 para clientes
+    # automáticos em 01/11/2026). Só entra aqui depois de conferida num navegador:
+    # https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9256-indice-nacional-de-precos-ao-consumidor-amplo.html
+    url_metodologia: null
+    licenca: Dados públicos do IBGE
+  - id: bcb_sgs
+    nome: Sistema Gerenciador de Séries Temporais (SGS)
+    orgao: Banco Central
+    url_fonte: https://api.bcb.gov.br/dados/serie/bcdata.sgs.13522/dados?formato=json
+    # Catálogo https://www3.bcb.gov.br/sgspub/ respondeu HTTP 502 em 01/11/2026; conferir antes de exibir.
+    url_documentacao: null
+    url_metodologia: null
+    licenca: Dados abertos do Banco Central
+
+series:
+  - id: ibge_agregados_1737_2265
+    source_id: ibge_agregados
+    codigo_externo: "1737/2265"
+    nome: IPCA, variação acumulada em 12 meses
+    unidade: "%"
+    frequencia: mensal
+    tipo: taxa
+    monetaria: false
+    nota_metodologia: Publicada pelo IBGE na tabela 1737, variável 2265. Brasil (N1).
+  - id: ibge_agregados_1737_63
+    source_id: ibge_agregados
+    codigo_externo: "1737/63"
+    nome: IPCA, variação mensal
+    unidade: "%"
+    frequencia: mensal
+    tipo: taxa
+    monetaria: false
+    nota_metodologia: Publicada pelo IBGE na tabela 1737, variável 63. Brasil (N1).
+  - id: ibge_agregados_1737_2266
+    source_id: ibge_agregados
+    codigo_externo: "1737/2266"
+    nome: IPCA, número-índice (base dez/1993 = 100)
+    unidade: número-índice
+    frequencia: mensal
+    tipo: nivel
+    monetaria: false
+    nota_metodologia: Publicada pelo IBGE na tabela 1737, variável 2266. Deflator padrão (docs/06).
+  - id: bcb_sgs_13522
+    source_id: bcb_sgs
+    codigo_externo: "13522"
+    nome: IPCA, acumulado em 12 meses
+    unidade: "%"
+    frequencia: mensal
+    tipo: taxa
+    monetaria: false
+    nota_metodologia: Série 13522 do SGS, republicação do IBGE 1737/2265. Usada como reserva.
+  - id: bcb_sgs_433
+    source_id: bcb_sgs
+    codigo_externo: "433"
+    nome: IPCA, variação mensal
+    unidade: "%"
+    frequencia: mensal
+    tipo: taxa
+    monetaria: false
+    nota_metodologia: Série 433 do SGS, republicação do IBGE 1737/63. Usada como reserva.

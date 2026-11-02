@@ -1,0 +1,39 @@
+name: Coleta
+
+# Agendamento de docs/06: IBGE e BCB SGS (mensais) diariamente às 10h de Brasília
+# (13h UTC). Pega a divulgação no dia em que sai. Uma falha de coleta ou de
+# validação faz o job falhar, e o GitHub avisa por e-mail quem acompanha o repositório.
+
+on:
+  schedule:
+    - cron: "0 13 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: coleta
+  cancel-in-progress: false
+
+jobs:
+  ipca:
+    name: IPCA (IBGE 1737; reserva BCB SGS 433 e 13522)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: producao
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - run: uv sync --locked
+      - name: Confere os endpoints contra a fonte
+        run: uv run pytest -m network
+      - name: Coleta, valida e grava
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RAW_STORE: supabase
+        run: uv run python -m pipelines.run ipca

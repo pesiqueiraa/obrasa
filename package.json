@@ -1,0 +1,12 @@
+{
+  "name": "brasilado",
+  "private": true,
+  "packageManager": "pnpm@11.13.0",
+  "scripts": {
+    "dev": "pnpm --filter @brasilado/web dev",
+    "build": "pnpm --filter @brasilado/web build",
+    "lint": "pnpm --filter @brasilado/web lint",
+    "typecheck": "pnpm --filter @brasilado/web typecheck",
+    "test": "pnpm --filter @brasilado/web test"
+  }
+}

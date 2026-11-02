@@ -1,51 +1,59 @@
-# Brasilado: documentação do produto
+# Brasilado
 
-> **Brasilado** é o nome provisório. As opções em discussão estão em [01-visao-do-produto.md](01-visao-do-produto.md#nome).
+> Nome provisório. Dados oficiais do Brasil, com contexto e sem lado.
 
-Esta pasta descreve o que estamos construindo, por quê e com quais regras. Ela foi escrita para duas audiências: as pessoas do projeto e os agentes de IA que vão escrever o código. Antes de começar qualquer tarefa, o agente deve ler este arquivo e os arquivos indicados para a tarefa.
+A documentação do produto (visão, regras de neutralidade, fontes, arquitetura) está em [docs/README.md](docs/README.md). O design system está em [DESIGN.md](DESIGN.md). Agentes de IA seguem [AGENTS.md](AGENTS.md).
 
-## Ordem de leitura
-
-| # | Arquivo | Para que serve | Ler antes de… |
-|---|---|---|---|
-| 01 | [Visão do produto](01-visao-do-produto.md) | Problema, público, o que a plataforma é e não é, opções de nome | Qualquer tarefa |
-| 02 | [Princípios de neutralidade](02-principios-de-neutralidade.md) | Regras editoriais que viram critério de aceite de código e conteúdo | Qualquer tarefa que exiba dado ou texto |
-| 03 | [Panorama do que já existe](03-panorama-existente.md) | Referências, concorrentes e a lacuna que vamos ocupar | Decisões de produto |
-| 04 | [Escopo do MVP](04-mvp.md) | Features da primeira versão, com critérios de aceite | Implementar features |
-| 05 | [Fontes de dados](05-fontes-de-dados.md) | APIs oficiais, endpoints, códigos de séries e armadilhas | Escrever coletores |
-| 06 | [Arquitetura e stack](06-arquitetura.md) | Componentes, modelo de dados, agendamento, regras de uso de IA | Estruturar o repositório |
-| 07 | [Riscos e cuidados](07-riscos-e-cuidados.md) | O que pode derrubar a credibilidade e como evitar | Revisões |
-| 08 | [Decisões em aberto](08-decisoes-em-aberto.md) | O que ainda não foi decidido, com recomendação provisória | Tarefas que dependem dessas decisões |
-| 09 | [Calendário e ganchos](09-calendario.md) | Datas e divulgações recorrentes que pautam o produto | Planejar conteúdo e jobs |
-| 10 | [Próximos passos pós-MVP](10-pos-mvp.md) | Roadmap de features depois da primeira versão | Planejar fases seguintes |
-| — | [DESIGN.md](../DESIGN.md) (raiz do repositório) | Design system: adapta o Carbon da IBM e aponta para as bases em `design/base/` | Qualquer tarefa de interface |
-
-## Estrutura no repositório
+## Estrutura
 
 ```text
-/
-├── DESIGN.md        # design system do Brasilado (adapta e aponta para as bases)
-├── design/base/     # bases fixas: IBM (Carbon) e WIRED, com licença MIT
-└── docs/            # esta pasta
+apps/web/            Next.js (App Router) + @carbon/react
+pipelines/           coletores (sources/), transformações (transforms/), jobs/ e testes
+config/              indicators.yaml, sources.yaml, templates/ das frases, forbidden_terms.yaml
+supabase/migrations/ modelo de dados (docs/06)
+scripts/             verificador de termos proibidos
+design/base/         bases fixas do design system (não editar)
+docs/                documentação do produto
 ```
 
-## Regras que o agente nunca pode quebrar
+Caminho de um número: fonte oficial → coletor → resposta bruta no Storage → validação → `observations` (com revisões) → página.
 
-1. **Todo número exibido vem do banco de dados**, e todo dado do banco vem de uma fonte registrada em [05](05-fontes-de-dados.md). Nenhum número é gerado, estimado ou completado por um modelo de linguagem.
-2. **Todo indicador mostra** fonte (com link), data de referência, data da última atualização e frequência de divulgação.
-3. **Série monetária tem versão nominal e real** (corrigida pelo IPCA), com o mês-base escrito na tela.
-4. **Textos seguem o guia de linguagem** de [02](02-principios-de-neutralidade.md#4-linguagem-sem-adjetivo): sem adjetivos valorativos, sempre com unidade e período.
-5. **Nenhuma pesquisa eleitoral** é exibida sem o número de registro no TSE.
-6. **Códigos e endpoints marcados como `confirmar`** em [05](05-fontes-de-dados.md) precisam ser testados contra a fonte antes do uso. Depois de testar, atualize o status no próprio arquivo.
-7. **Notícias de terceiros**: guardar e exibir só título, link, veículo, data e um trecho curto. Nunca republicar o texto da matéria.
-8. **Interface segue o [DESIGN.md](../DESIGN.md)**, que tem precedência sobre as bases em `design/base/`. Os arquivos de `design/base/` nunca são editados.
+## Desenvolvimento
 
-## Como manter esta pasta
+Requisitos: Docker, [Supabase CLI](https://supabase.com/docs/guides/local-development), [uv](https://docs.astral.sh/uv/), Node 24 e pnpm.
 
-- Uma decisão tomada sai de "aberta" e vai para "decidida" em [08](08-decisoes-em-aberto.md), com data e motivo.
-- Toda fonte nova entra em [05](05-fontes-de-dados.md) antes de entrar no código.
-- Feature nova do roadmap entra em [10](10-pos-mvp.md); quando for priorizada, ganha critérios de aceite no formato de [04](04-mvp.md).
-- Sugestão: copie a seção "Regras que o agente nunca pode quebrar" para um `AGENTS.md` ou `CLAUDE.md` na raiz do repositório, para que o agente leia as regras em toda sessão.
+```bash
+# 1. Banco local (portas 553xx; ver supabase/config.toml)
+supabase start
 
----
-Levantamento inicial: 1º de novembro de 2026.
+# 2. Dependências
+uv sync
+pnpm install
+
+# 3. Coleta do IPCA (IBGE + Banco Central) para o banco local
+eval "$(supabase status -o env | grep -E '^(API_URL|SERVICE_ROLE_KEY|DB_URL)=')"
+DATABASE_URL="$DB_URL" SUPABASE_URL="$API_URL" SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY" \
+  uv run python -m pipelines.run ipca
+
+# 4. Web (copie apps/web/.env.example para apps/web/.env.local e preencha com API_URL e ANON_KEY)
+pnpm dev   # http://localhost:3000/indicador/ipca-12-meses
+```
+
+Sem Supabase Storage, use `RAW_STORE=local` para gravar as respostas brutas em `data/raw/`.
+
+## Verificações
+
+```bash
+uv run pytest                          # pipelines (sem rede)
+uv run pytest -m network               # endpoints oficiais, ao vivo
+uv run ruff check pipelines scripts
+uv run python scripts/check_terms.py   # termos proibidos (docs/02)
+pnpm lint && pnpm typecheck && pnpm test
+pnpm --filter @brasilado/web tokens --check   # tokens CSS em dia com o DESIGN.md
+```
+
+## Produção
+
+- **Coleta:** `.github/workflows/coleta.yml`, todo dia às 10h de Brasília. Segredos no ambiente `producao` do GitHub: `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`.
+- **Web:** variáveis `SUPABASE_URL` e `SUPABASE_ANON_KEY`. As páginas são estáticas e revalidam a cada hora.
+- **CI:** `.github/workflows/ci.yml` (lint, testes, termos proibidos, migrações).

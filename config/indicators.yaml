@@ -1,0 +1,32 @@
+# Registro de indicadores. Formato definido em docs/05-fontes-de-dados.md
+# ("Modelo de registro de fonte"). As séries citadas aqui precisam existir em
+# config/sources.yaml.
+
+- slug: ipca-12-meses
+  titulo: Inflação em 12 meses (IPCA)
+  fonte_primaria:
+    orgao: IBGE
+    tipo: ibge_agregados
+    tabela: 1737
+    variavel: 2265
+    status: ok            # testado em 01/11/2026
+  fonte_reserva:
+    orgao: Banco Central
+    tipo: bcb_sgs
+    codigo: 13522
+    status: ok            # testado em 01/11/2026
+  unidade: "%"
+  tipo_serie: taxa          # nivel | taxa
+  frequencia: mensal
+  janela_padrao: 5a
+  monetaria: false
+  frase_template: ipca_12m.pt.txt
+  # A série exibida é o acumulado publicado pela fonte. O acumulado por
+  # encadeamento da variação mensal (pipelines/transforms/acumulados.py)
+  # confere o valor publicado a cada coleta.
+  transformacao: null
+  verificacao: acumulado_12m_encadeado
+  # confirmar (docs/05): www.ibge.gov.br respondeu 403 a clientes automáticos em 01/11/2026.
+  # url_metodologia: https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9256-indice-nacional-de-precos-ao-consumidor-amplo.html
+  url_metodologia: null
+  ordem: 1

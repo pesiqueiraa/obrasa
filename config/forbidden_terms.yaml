@@ -1,0 +1,42 @@
+# Termos proibidos em textos da interface, templates e resumos gerados.
+# Base: docs/02-principios-de-neutralidade.md, seção 4 ("Linguagem sem adjetivo").
+# Cada item é uma expressão regular (sem diferenciar maiúsculas) e a sugestão
+# do guia de linguagem.
+# Para liberar uma linha específica, termine-a com o comentário: termos-ok
+
+termos:
+  - padrao: '\bexplo(de|dem|diu|diram|são|sao|sões|sivo|siva)\b'
+    usar: "sobe X% em Y meses"
+  - padrao: '\bdispar(a|am|ou|aram|ada|adas)\b'
+    usar: "sobe X% em Y meses"
+  - padrao: '\bdespenc(a|am|ou|aram)\b'
+    usar: "cai X% em Y meses"
+  - padrao: '\bdesab(a|am|ou|aram)\b'
+    usar: "cai X% em Y meses"
+  - padrao: '\btomb(o|os)\b'
+    usar: "cai X% em Y meses"
+  - padrao: '\brombo(s)?\b'
+    usar: "déficit de R$ X bilhões"
+  - padrao: '\brecorde(s)?\b'
+    usar: "maior valor da série iniciada em AAAA"
+  - padrao: '\bgast(ou|aram|a) demais\b'
+    usar: "a despesa cresceu X% acima da inflação em 12 meses"
+  - padrao: '\b(alarmante|assustador(a)?|preocupante|catastr[oó]fic[oa]|escandalos[oa]|absurd[oa]|brutal|vertiginos[oa]|dram[aá]tic[oa])s?\b'
+    usar: "verbo neutro com número, unidade e período (sobe, cai, fica estável)"
+
+# Ponto de exclamação é proibido em textos sobre dados. Só é verificado nos
+# arquivos de texto (templates), onde não se confunde com operadores de código.
+exclamacao_em:
+  - "config/templates/**/*.txt"
+  - "config/templates/*.txt"
+
+verificar:
+  - "apps/web/src/**/*.ts"
+  - "apps/web/src/**/*.tsx"
+  - "config/templates/**/*.txt"
+  - "config/indicators.yaml"
+  - "config/sources.yaml"
+
+ignorar:
+  - "**/*.test.ts"
+  - "**/*.test.tsx"

@@ -1,0 +1,17 @@
+# Frase "o que significa para você" do indicador ipca-12-meses.
+# Versão 1 (01/11/2026). Linhas com "#" são comentários.
+# Variáveis (todas calculadas a partir de valores do banco):
+#   {x}               valor absoluto do acumulado em 12 meses, formato pt-BR (ex.: 4,58)
+#   {mes_ref}         mês de referência (ex.: setembro de 2026)
+#   {mes_base}        mesmo mês, um ano antes (ex.: setembro de 2025)
+#   {valor_corrigido} 100 × (1 + acumulado/100), em reais, formato pt-BR (ex.: 104,58)
+# A variante usada depende do sinal do acumulado: sobe (> 0), cai (< 0), estavel (= 0).
+
+[sobe]
+Em 12 meses até {mes_ref}, os preços subiram em média {x}%. Uma compra de R$ 100,00 em {mes_base} custaria R$ {valor_corrigido} em {mes_ref}.
+
+[cai]
+Em 12 meses até {mes_ref}, os preços caíram em média {x}%. Uma compra de R$ 100,00 em {mes_base} custaria R$ {valor_corrigido} em {mes_ref}.
+
+[estavel]
+Em 12 meses até {mes_ref}, os preços ficaram estáveis em média. Uma compra de R$ 100,00 em {mes_base} custaria os mesmos R$ 100,00 em {mes_ref}.

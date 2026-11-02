@@ -38,8 +38,8 @@ Resposta: `[{"data":"01/07/2026","valor":"0.07"}]`
 
 **Armadilhas:**
 - Datas no formato `dd/MM/aaaa` e valor como texto com ponto decimal. Converter na entrada.
-- Séries diárias exigem intervalo de datas e têm limite de período por requisição. Fatie a busca em janelas de no máximo 10 anos (`confirmar` o limite atual).
-- O modo `ultimos/N` tem teto baixo de registros (`confirmar`). Para históricos, use intervalo de datas.
+- Séries diárias exigem intervalo de datas e têm limite de período por requisição. Fatie a busca em janelas de no máximo 10 anos (`confirmar` o limite atual para séries diárias). Séries mensais (433, 13522) aceitam o histórico inteiro numa só requisição, com ou sem `dataInicial`/`dataFinal` (testado em 01/11/2026).
+- O modo `ultimos/N` aceita no máximo **20** registros; acima disso responde HTTP 400 ("A quantidade máxima de valores deve ser 20"). Testado em 01/11/2026. Para históricos, use intervalo de datas.
 - **Séries que já são variação (IPCA mensal, IGP-M) não se somam.** O acumulado é encadeado: `acum = Π(1 + x/100) − 1`.
 
 | Código | Série | Unidade | Frequência | Status |
@@ -47,8 +47,8 @@ Resposta: `[{"data":"01/07/2026","valor":"0.07"}]`
 | 432 | Meta Selic definida pelo Copom | % a.a. | Diária | ok |
 | 11 | Selic diária | % a.d. | Diária | ok |
 | 1178 | Selic anualizada base 252 | % a.a. | Diária | ok |
-| 433 | IPCA, variação mensal (reserva do IBGE) | % | Mensal | ok |
-| 13522 | IPCA acumulado em 12 meses | % | Mensal | confirmar |
+| 433 | IPCA, variação mensal (reserva do IBGE) | % | Mensal | ok (testado em 01/11/2026: desde jan/1980) |
+| 13522 | IPCA acumulado em 12 meses | % | Mensal | ok (testado em 01/11/2026: desde dez/1980, idêntico a IBGE 1737/2265 em todos os meses) |
 | 1 | Dólar comercial, venda (taxa livre) | R$/US$ | Diária | confirmar |
 | 10813 | Dólar comercial, compra (taxa livre) | R$/US$ | Diária | ok |
 | 13762 | Dívida bruta do governo geral (% do PIB), metodologia a partir de 2008 | % | Mensal | ok |
@@ -56,7 +56,9 @@ Resposta: `[{"data":"01/07/2026","valor":"0.07"}]`
 | 4513 | Dívida líquida do setor público consolidado (% do PIB) | % | Mensal | confirmar |
 | 24363 | IBC-Br | Índice | Mensal | confirmar |
 
-Catálogo completo: https://www3.bcb.gov.br/sgspub/
+Catálogo completo: https://www3.bcb.gov.br/sgspub/ (`confirmar`: respondeu HTTP 502 em 01/11/2026).
+
+Página de metodologia do IPCA no IBGE, citada em `config/indicators.yaml`: `confirmar` (HTTP 403 a clientes automáticos em 01/11/2026; conferir num navegador antes de exibir no site).
 
 ## Banco Central · Focus (expectativas de mercado)
 
@@ -88,21 +90,30 @@ GET https://servicodados.ibge.gov.br/api/v3/agregados/{tabela}/metadados
 ```
 
 - `N1[all]` é Brasil; `N3[all]` são as UFs.
-- Variáveis podem ser combinadas com `|`. Períodos aceitam intervalos e listas (`confirmar` a sintaxe de "últimos N").
+- Variáveis podem ser combinadas com `|`. Períodos aceitam intervalos (`197912-202609`), listas e **últimos N como `-N`** (ex.: `/periodos/-3/`; testado em 01/11/2026).
+- Com `curl`, use `-g` (os colchetes de `N1[all]` ativam o globbing do curl).
+- Valor ausente vem como texto: `"..."` (não disponível) ou `"-"`. O coletor trata esses casos como ausência, nunca como zero.
+- `GET /agregados/{tabela}/periodos` traz `modificacao` (dd/mm/aaaa) por período: é a data de divulgação/última alteração usada como "atualizado em".
 - Sempre leia `/metadados` antes de usar uma tabela nova.
 - O IBGE pode reorganizar tabelas; guarde o número da tabela e da variável junto com cada observação.
 
 | Tabela | Variável | Conteúdo | Status |
 |---|---|---|---|
-| 1737 | 63 | IPCA, variação mensal | confirmar |
-| 1737 | 2265 | IPCA, acumulado em 12 meses | confirmar |
-| 1737 | 2266 | IPCA, número-índice (usar como deflator) | ok |
+| 1737 | 63 | IPCA, variação mensal | ok (testado em 01/11/2026: dez/1979 a set/2026; dez/1979 vem `...`) |
+| 1737 | 2265 | IPCA, acumulado em 12 meses | ok (testado em 01/11/2026: valores a partir de dez/1980; antes vem `...`) |
+| 1737 | 2266 | IPCA, número-índice (base dez/1993 = 100; usar como deflator) | ok (testado em 01/11/2026) |
 | 7060 | 63 / 66 | IPCA por grupos e itens: variação / peso (classificação 315) | ok |
 | 6381 | 4099 | Taxa de desocupação, trimestre móvel (PNAD Contínua) | confirmar |
 | 5932 | — | PIB, taxas de variação trimestrais (Contas Nacionais Trimestrais) | confirmar |
 | 6579 | — | População residente estimada | confirmar |
 
-Calendário de divulgações: https://www.ibge.gov.br/calendario-de-divulgacoes.html (`confirmar` URL).
+Calendário de divulgações: https://www.ibge.gov.br/calendario-de-divulgacoes.html (`confirmar` URL: em 01/11/2026 o site `www.ibge.gov.br` respondeu HTTP 403 a clientes automáticos; conferir num navegador).
+
+**API do calendário (ok, testada em 01/11/2026):**
+```http
+GET https://servicodados.ibge.gov.br/api/v3/calendario/{produto}?de=MM-DD-AAAA&ate=MM-DD-AAAA
+```
+- IPCA é o produto `9256`. Cada item traz `data_divulgacao` (`dd/mm/aaaa hh:mm:ss`, horário de Brasília) e o mês de referência em `ano_referencia_inicio` e `mes_referencia_inicio`.
 
 **Malhas e localidades:**
 ```http
@@ -206,12 +217,12 @@ Todo indicador novo entra em `config/indicators.yaml` neste formato:
     tipo: ibge_agregados
     tabela: 1737
     variavel: 2265
-    status: confirmar
+    status: ok
   fonte_reserva:
     orgao: Banco Central
     tipo: bcb_sgs
     codigo: 13522
-    status: confirmar
+    status: ok
   unidade: "%"
   tipo_serie: taxa          # nivel | taxa
   frequencia: mensal

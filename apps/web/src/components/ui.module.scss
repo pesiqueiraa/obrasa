@@ -1,0 +1,247 @@
+// Componentes do DESIGN.md: top-nav, footer, indicator-card, source-line,
+// frequency-chip, chart-panel, correction-banner. Cantos retos, sem sombra.
+
+.topNav {
+  height: 48px;
+  border-bottom: 1px solid var(--bd-color-hairline);
+  background: var(--bd-color-canvas);
+  font-size: var(--bd-type-body-sm-font-size);
+  > div {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.brand {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--bd-color-ink);
+  text-decoration: none;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.navLinks {
+  display: flex;
+  gap: var(--bd-space-md);
+  a {
+    color: var(--bd-color-ink);
+    text-decoration: none;
+    min-height: 48px;
+    display: inline-flex;
+    align-items: center;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+}
+
+.footer {
+  background: var(--bd-color-inverse-canvas);
+  color: var(--bd-color-inverse-ink-muted);
+  font-size: var(--bd-type-body-sm-font-size);
+  padding: 64px 0;
+  a {
+    color: var(--bd-color-inverse-ink);
+  }
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--bd-space-xs) var(--bd-space-lg);
+    margin-bottom: var(--bd-space-lg);
+  }
+  li a {
+    min-height: 48px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+// indicator-card
+.card {
+  display: block;
+  background: var(--bd-color-canvas);
+  border: 1px solid var(--bd-color-hairline);
+  padding: var(--bd-space-lg);
+  color: var(--bd-color-ink);
+  text-decoration: none;
+}
+
+// Cartão clicável: o link é o título, e o ::after dele cobre o cartão inteiro.
+// Links internos (fonte) ficam acima dessa camada e continuam clicáveis.
+.cardLinked {
+  position: relative;
+
+  &:hover {
+    background: var(--bd-color-surface-1);
+    border-color: var(--bd-color-hairline-strong);
+  }
+
+  &:has(.cardLink:focus-visible) {
+    outline: 2px solid var(--bd-color-link);
+    outline-offset: 2px;
+  }
+
+  .sourceLine a {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.cardLink {
+  color: inherit;
+  text-decoration: none;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+}
+
+.cardHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bd-space-xs) var(--bd-space-sm);
+  margin-bottom: var(--bd-space-sm);
+}
+
+.label {
+  font-size: var(--bd-type-indicator-label-font-size);
+  font-weight: var(--bd-type-indicator-label-font-weight);
+  line-height: var(--bd-type-indicator-label-line-height);
+  letter-spacing: var(--bd-type-indicator-label-letter-spacing);
+  margin: 0;
+}
+
+.value {
+  font-size: 40px;
+  font-weight: var(--bd-type-indicator-value-font-weight);
+  line-height: var(--bd-type-indicator-value-line-height);
+  letter-spacing: var(--bd-type-indicator-value-letter-spacing);
+  font-variant-numeric: tabular-nums;
+  margin: 0 0 var(--bd-space-xs);
+  @media (min-width: 672px) {
+    font-size: var(--bd-type-indicator-value-font-size);
+  }
+}
+
+.variation {
+  font-size: var(--bd-type-body-sm-font-size);
+  color: var(--bd-color-ink);
+  font-variant-numeric: tabular-nums;
+  margin: 0 0 var(--bd-space-md);
+}
+
+.phrase {
+  font-size: var(--bd-type-body-lg-font-size);
+  line-height: var(--bd-type-body-lg-line-height);
+  margin: 0 0 var(--bd-space-md);
+  max-width: 40rem;
+}
+
+.caption {
+  font-size: var(--bd-type-caption-font-size);
+  line-height: var(--bd-type-caption-line-height);
+  letter-spacing: var(--bd-type-caption-letter-spacing);
+  color: var(--bd-color-ink-muted);
+  margin: var(--bd-space-xs) 0 0;
+}
+
+// source-line
+.sourceLine {
+  font-family: var(--bd-type-source-line-font-family);
+  font-size: var(--bd-type-source-line-font-size);
+  line-height: var(--bd-type-source-line-line-height);
+  color: var(--bd-color-ink-muted);
+  margin: 0;
+  overflow-wrap: anywhere;
+  a {
+    color: var(--bd-color-link);
+  }
+}
+
+// frequency-chip
+.chip {
+  display: inline-block;
+  border-radius: var(--bd-radius-pill);
+  padding: 2px 8px;
+  font-size: var(--bd-type-caption-font-size);
+  line-height: var(--bd-type-caption-line-height);
+  letter-spacing: var(--bd-type-caption-letter-spacing);
+  background: var(--bd-color-surface-1);
+  color: var(--bd-color-ink-muted);
+  white-space: nowrap;
+}
+
+.chipDelayed {
+  background: var(--bd-color-status-delay-bg);
+  color: var(--bd-color-status-delay);
+}
+
+// chart-panel
+.panel {
+  background: var(--bd-color-canvas);
+  border: 1px solid var(--bd-color-hairline);
+  padding: var(--bd-space-lg) var(--bd-space-md);
+  font-size: var(--bd-type-body-sm-font-size);
+  @media (min-width: 672px) {
+    padding: var(--bd-space-lg);
+  }
+}
+
+.panelTitle {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.panelSubtitle {
+  color: var(--bd-color-ink-muted);
+  margin: var(--bd-space-xxs) 0 var(--bd-space-md);
+}
+
+.tabsScroller {
+  overflow-x: auto;
+  margin-bottom: var(--bd-space-md);
+}
+
+.chart {
+  min-height: 220px;
+  margin-bottom: var(--bd-space-md);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bd-space-xs);
+  margin-top: var(--bd-space-md);
+}
+
+.tableWrap {
+  margin-top: var(--bd-space-md);
+  max-height: 480px;
+  overflow: auto;
+  td:last-child,
+  th:last-child {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+// correction-banner e aviso de fonte reserva
+.banner {
+  background: var(--bd-color-status-delay-bg);
+  color: var(--bd-color-ink);
+  font-size: var(--bd-type-body-sm-font-size);
+  padding: var(--bd-space-md);
+  margin-bottom: var(--bd-space-md);
+}
