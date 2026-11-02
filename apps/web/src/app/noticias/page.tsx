@@ -1,7 +1,6 @@
-// Notícias por tema (docs/04, F5; DESIGN.md, módulo de notícias). No topo, as matérias
-// mais recentes com foto, uma por veículo. Depois, uma seção por tema: o número oficial
-// do tema, uma grade de matérias com foto e uma lista das demais. No máximo duas por
-// veículo em cada tema. Regra 7: título, link, veículo, data, trecho curto e a imagem
+// Notícias por tema (docs/04, F5; DESIGN.md, módulo de notícias), uma página por tema.
+// "Agora": as mais recentes com foto, uma por veículo. Cada tema: o número oficial, uma
+// grade de matérias com foto e uma lista das demais, no máximo duas por veículo. Regra 7: título, link, veículo, data, trecho curto e a imagem
 // que o feed oferece, exibida do site do veículo. Critério de inclusão no fim.
 
 import type { Metadata } from "next";
@@ -9,98 +8,113 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Cartao, divide, Linha, Manchete } from "@/components/noticias/Cartoes";
 import { MiniIndicador } from "@/components/noticias/MiniIndicador";
+import { type Pagina, Paginas } from "@/components/noticias/Paginas";
 import styles from "@/components/noticias/noticias.module.scss";
 import { getTemas, getTemaViews } from "@/lib/data";
-import { equilibra, getNoticias, getVeiculos } from "@/lib/noticias";
+import { equilibra, getNoticias, getVeiculos, type Noticia } from "@/lib/noticias";
 
 export const metadata: Metadata = {
   title: "Notícias",
   description: "Notícias dos últimos 7 dias por tema, de 16 veículos nacionais, ao lado do número oficial de cada tema.",
 };
 
+function Secao({ fotos, linhas }: { fotos: Noticia[]; linhas: Noticia[] }) {
+  return (
+    <div className={`${styles.secaoCorpo} ${fotos.length === 1 && linhas.length ? styles.secaoCorpoUma : ""}`}>
+      {fotos.length ? (
+        <div className={styles.gradeSecao}>
+          {fotos.map((n) => (
+            <Cartao key={n.url} n={n} />
+          ))}
+        </div>
+      ) : null}
+      {linhas.length ? (
+        <ul className={styles.linhas}>
+          {linhas.map((n) => (
+            <Linha key={n.url} n={n} />
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
+
 async function Conteudo() {
   const [temas, noticias, veiculos] = await Promise.all([getTemas(), getNoticias(), getVeiculos()]);
+  // Página "Agora": a mais recente com foto de cada veículo em destaque e, abaixo,
+  // as seguintes de todos os temas, uma por veículo.
   const topo = equilibra(
     noticias.filter((n) => n.imagem),
     4,
     1,
   );
   const noTopo = new Set(topo.map((n) => n.url));
-  const secoes = (
+  const seguintes = equilibra(
+    noticias.filter((n) => !noTopo.has(n.url)),
+    8,
+    1,
+  );
+  const [lider, ...lado] = topo;
+
+  const temasComNoticia = (
     await Promise.all(
       temas
         .filter((t) => t.slug !== "noticias")
         .map(async (t) => {
           const doTema = noticias.filter((n) => n.temas.includes(t.slug));
-          const lista = equilibra(
-            doTema.filter((n) => !noTopo.has(n.url)),
-            12,
-          );
-          const views = lista.length ? await getTemaViews(t.slug) : [];
-          return { t, total: doTema.length, ...divide(lista, 3, 6), view: views[0] };
+          if (!doTema.length) return null;
+          const views = await getTemaViews(t.slug);
+          return { t, total: doTema.length, ...divide(equilibra(doTema, 12), 3, 6), view: views[0] };
         }),
     )
-  ).filter((s) => s.fotos.length + s.linhas.length > 0);
-  const [lider, ...lado] = topo;
+  ).filter((x) => x !== null);
 
-  return (
-    <>
-      <div className="container section">
-        <header className={styles.cabeca}>
-          <h1 className={styles.h1}>Notícias</h1>
-          <p>O que 16 veículos publicaram nos últimos 7 dias, separado por tema.</p>
-        </header>
-        <nav aria-label="Temas" className={styles.indice}>
-          {secoes.map(({ t, total }) => (
-            <a key={t.slug} href={`#${t.slug}`}>
-              {t.titulo} <span>{total}</span>
-            </a>
-          ))}
-        </nav>
-
-        {lider ? (
-          <section className={styles.topo} aria-label="Mais recentes">
+  const paginas: Pagina[] = [
+    {
+      slug: "agora",
+      titulo: "Agora",
+      conta: null,
+      conteudo: lider ? (
+        <>
+          <div className={styles.topo}>
             <Manchete n={lider} />
             <div className={styles.topoLado}>
               {lado.map((n) => (
                 <Cartao key={n.url} n={n} lado />
               ))}
             </div>
-          </section>
-        ) : (
-          <p>Nenhuma notícia coletada nos últimos 7 dias.</p>
-        )}
-      </div>
+          </div>
+          <Secao fotos={[]} linhas={seguintes} />
+        </>
+      ) : (
+        <p>Nenhuma notícia coletada nos últimos 7 dias.</p>
+      ),
+    },
+    ...temasComNoticia.map(({ t, total, fotos, linhas, view }) => ({
+      slug: t.slug,
+      titulo: t.titulo,
+      conta: total,
+      conteudo: (
+        <>
+          <div className={styles.secaoCabeca}>
+            <h2 className={styles.secaoTitulo}>
+              <Link href={`/${t.slug}`}>{t.titulo}</Link>
+            </h2>
+            {view ? <MiniIndicador view={view} /> : null}
+          </div>
+          <Secao fotos={fotos} linhas={linhas} />
+        </>
+      ),
+    })),
+  ];
 
-      <div className="container">
-        {secoes.map(({ t, fotos, linhas, view }) => (
-          <section key={t.slug} id={t.slug} className={styles.secao} aria-labelledby={`h-${t.slug}`}>
-            <div className={styles.secaoCabeca}>
-              <h2 id={`h-${t.slug}`} className={styles.secaoTitulo}>
-                <Link href={`/${t.slug}`}>{t.titulo}</Link>
-              </h2>
-              {view ? <MiniIndicador view={view} /> : null}
-            </div>
-            <div
-              className={`${styles.secaoCorpo} ${fotos.length === 1 && linhas.length ? styles.secaoCorpoUma : ""}`}
-            >
-              {fotos.length ? (
-                <div className={styles.gradeSecao}>
-                  {fotos.map((n) => (
-                    <Cartao key={n.url} n={n} />
-                  ))}
-                </div>
-              ) : null}
-              {linhas.length ? (
-                <ul className={styles.linhas}>
-                  {linhas.map((n) => (
-                    <Linha key={n.url} n={n} />
-                  ))}
-                </ul>
-              ) : null}
-            </div>
-          </section>
-        ))}
+  return (
+    <>
+      <div className="container section">
+        <header className={styles.cabeca}>
+          <h1 className={styles.h1}>Notícias</h1>
+        </header>
+        <Paginas paginas={paginas} />
       </div>
 
       <div className="section section--surface">

@@ -28,13 +28,70 @@
 
 .brand {
   grid-area: brand;
-  font-weight: 600;
-  font-size: 16px;
+  font-size: 23px;
   color: var(--bd-color-ink);
   text-decoration: none;
   min-height: 48px;
   display: inline-flex;
   align-items: center;
+  &:focus-visible {
+    outline: 2px solid var(--bd-color-primary);
+    outline-offset: 2px;
+  }
+}
+
+// Logotipo (DESIGN.md): Cruzeiro do Sul + "oBrasa" em Plex Serif, "o" em azul-tinta.
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32em;
+  font-family: var(--bd-type-news-headline-font-family);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.marca {
+  flex: none;
+  height: 1.3em;
+  width: 0.975em;
+  fill: var(--bd-color-primary);
+}
+
+.logoO {
+  color: var(--bd-color-primary);
+}
+
+// Uma vez, ao abrir o site: as estrelas aparecem em sequência, de cima para baixo.
+.brand .marca circle {
+  animation: estrela 0.4s ease-out backwards;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+  @for $i from 1 through 5 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{0.06s * $i};
+    }
+  }
+}
+
+@keyframes estrela {
+  from {
+    opacity: 0;
+  }
+}
+
+.footerLogo {
+  font-size: 40px;
+  color: var(--bd-color-inverse-ink);
+  margin-bottom: var(--bd-space-lg);
+  .marca {
+    fill: var(--bd-color-dark-primary);
+  }
+  .logoO {
+    color: var(--bd-color-dark-primary);
+  }
 }
 
 .navAside {

@@ -65,19 +65,9 @@ export async function getVeiculos(): Promise<Veiculo[]> {
   return data;
 }
 
-/** "02/11, 14h20", no horário de Brasília. Data absoluta: a página fica em cache. */
+/** "02/11", no fuso de Brasília. Data absoluta: a página fica em cache. */
 export function quando(iso: string): string {
-  const p = Object.fromEntries(
-    new Intl.DateTimeFormat("pt-BR", {
-      timeZone: "America/Sao_Paulo",
-      day: "2-digit",
-      month: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hourCycle: "h23",
-    })
-      .formatToParts(new Date(iso))
-      .map((x) => [x.type, x.value]),
+  return new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit" }).format(
+    new Date(iso),
   );
-  return `${p.day}/${p.month}, ${p.hour}h${p.minute}`;
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getTemas } from "@/lib/data";
+import { Logo } from "./Logo";
 import { ThemeNav } from "./ThemeNav";
 import styles from "./ui.module.scss";
 
@@ -9,9 +10,8 @@ export async function SiteHeader() {
   return (
     <header className={styles.topNav}>
       <div className={`container ${styles.topNavInner}`}>
-        {/* Nome provisório em texto, Plex Sans 600, até a decisão D1 (docs/08). */}
-        <Link href="/" className={styles.brand}>
-          oBrasa
+        <Link href="/" className={styles.brand} aria-label="oBrasa, página inicial">
+          <Logo />
         </Link>
         <ThemeNav items={items} />
         <Link href="/metodologia" className={styles.navAside}>
@@ -26,6 +26,7 @@ export function SiteFooter() {
   return (
     <footer className={styles.footer}>
       <div className="container">
+        <Logo className={styles.footerLogo} />
         <ul>
           <li>
             <Link href="/metodologia">Metodologia</Link>
