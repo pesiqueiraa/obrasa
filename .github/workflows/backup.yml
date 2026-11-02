@@ -55,8 +55,9 @@ jobs:
       - name: Conta as linhas e faz o dump
         run: |
           uv run python -m pipelines.backup contagens > contagens.json
+          # Tira espaço e quebra de linha do segredo (colado no painel com Enter no fim).
           docker run --rm --network host -v "$PWD:/w" postgres:17 \
-            pg_dump "$DATABASE_URL" -Fc -n public -f /w/banco.dump
+            pg_dump "${DATABASE_URL//[$'\r\n' ]/}" -Fc -n public -f /w/banco.dump
       - name: Copia o dump e as respostas brutas novas para o R2
         run: uv run python -m pipelines.backup copiar banco.dump contagens.json
       - name: Restaura a cópia do R2 num Postgres vazio e confere
