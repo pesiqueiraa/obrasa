@@ -1,6 +1,7 @@
 """Mapas por estado: variáveis do IBGE no nível UF (config/regional.yaml). Ver docs/05.
 
-Cada mapa é buscado, validado (27 UFs, classificação pedida, faixa plausível) e
+Cada mapa tem a descrição conferida na fonte (pipelines/metadados.py), é buscado,
+validado (27 UFs, classificação pedida, faixa plausível) e
 gravado em observacoes_uf. Falha de um mapa não impede os outros.
 
 Como em observations, nada é sobrescrito: valor revisado pelo IBGE vira linha nova com
@@ -16,7 +17,7 @@ from decimal import Decimal
 
 import psycopg
 
-from pipelines import config
+from pipelines import config, metadados
 from pipelines.config import MapaUf, Registry
 from pipelines.jobs.report import Report
 from pipelines.models import ValidationError
@@ -59,6 +60,10 @@ class Gravacao:
 
 
 def coleta(conn: psycopg.Connection, store: RawStore, m: MapaUf) -> Gravacao:
+    raw_meta = ibge_agregados.fetch_metadata(m.tabela)
+    store.save(raw_meta, f"uf_{m.id}_metadados")
+    descricao = ibge_agregados.parse_metadata(raw_meta.body, m.variavel, m.classificacao)
+    metadados.confere(m.na_fonte, descricao, f"mapa {m.id}")
     raw = ibge_agregados.fetch_uf(m.tabela, m.variavel, m.periodos, m.classificacao)
     objeto = store.save(raw, f"uf_{m.id}")
     dados = ibge_agregados.parse_uf(

@@ -56,9 +56,28 @@ Resposta: `[{"data":"01/07/2026","valor":"0.07"}]`
 | 4537 | Dívida bruta do governo geral (% do PIB), metodologia até 2007 | % | Mensal | ok |
 | 4513 | Dívida líquida do setor público consolidado (% do PIB) | % | Mensal | ok (testado em 01/11/2026: desde dez/2001) |
 | 24363 | IBC-Br, sem ajuste sazonal | Índice | Mensal | ok (testado em 01/11/2026: desde jan/2003) |
-| 5793, 4649, 5364 | Resultado primário (candidatas) | — | Mensal | confirmar: respondem, mas o nome oficial não pôde ser conferido (catálogo do SGS e portal de dados abertos do BC com HTTP 502 em 01/11/2026). Não usar até conferir. |
+| 5793 | NFSP sem desvalorização cambial (% PIB), fluxo acumulado em 12 meses, resultado primário, setor público consolidado | % | Mensal | ok (nome e unidade conferidos no webservice SGS em 02/11/2026; ainda não usada no site) |
+| 4649 | NFSP sem desvalorização cambial, fluxo mensal corrente, resultado primário, setor público consolidado | R$ (milhões) | Mensal | ok (conferida no webservice SGS em 02/11/2026; ainda não usada) |
+| 5364 | NFSP sem desvalorização cambial (% PIB), fluxo mensal corrente, resultado primário, setor público consolidado | % | Mensal | ok (conferida no webservice SGS em 02/11/2026; ainda não usada) |
 
-Catálogo completo: https://www3.bcb.gov.br/sgspub/ (`confirmar`: respondeu HTTP 502 em 01/11/2026).
+Atenção ao sinal das NFSP: necessidade de financiamento positiva é déficit. Conferir na nota metodológica do BC antes de exibir.
+
+Catálogo completo: https://www3.bcb.gov.br/sgspub/ (`confirmar`: respondeu HTTP 502 em 01/11/2026). Para nome, unidade e periodicidade de uma série, use o webservice abaixo.
+
+**Webservice SGS (descrição e último valor)** · status `ok` (testado em 02/11/2026)
+
+```http
+POST https://www3.bcb.gov.br/wssgs/services/FachadaWSSGS
+Content-Type: text/xml; charset=utf-8
+SOAPAction: getUltimoValorXML
+
+<soapenv:Envelope ...><pub:getUltimoValorXML><in0>{codigo}</in0></pub:getUltimoValorXML></soapenv:Envelope>
+```
+
+- A resposta SOAP traz, dentro de `getUltimoValorXMLReturn`, um XML em ISO-8859-1 com `NOME`, `CODIGO`, `PERIODICIDADE` (`D`, `M`), `UNIDADE`, `DATA` (dia, mês, ano) e `VALOR` com vírgula decimal.
+- Código inexistente responde HTTP 500 (SOAP Fault).
+- O coletor usa o webservice em toda coleta do SGS: nome, unidade e periodicidade precisam ser iguais a `na_fonte` em `config/sources.yaml`, e o último valor precisa ser igual ao da API JSON (dois serviços diferentes do BC). Ver `pipelines/metadados.py`.
+- A meta Selic (432) vem com a data da véspera da próxima reunião, no futuro: o coletor pede a API JSON até essa data e descarta o que passa de hoje.
 
 Página de metodologia do IPCA no IBGE, citada em `config/indicators.yaml`: `confirmar` (HTTP 403 a clientes automáticos em 01/11/2026; conferir num navegador antes de exibir no site).
 
@@ -108,7 +127,8 @@ GET https://servicodados.ibge.gov.br/api/v3/agregados/{tabela}/metadados
 - Com `curl`, use `-g` (os colchetes de `N1[all]` ativam o globbing do curl).
 - Valor ausente vem como texto: `"..."` (não disponível) ou `"-"`. O coletor trata esses casos como ausência, nunca como zero.
 - `GET /agregados/{tabela}/periodos` traz `modificacao` (dd/mm/aaaa) por período: é a data de divulgação/última alteração usada como "atualizado em".
-- Sempre leia `/metadados` antes de usar uma tabela nova.
+- Sempre leia `/metadados` antes de usar uma tabela nova. O coletor também lê em toda coleta: nome e unidade da variável, periodicidade da tabela e nome de cada categoria filtrada precisam ser iguais a `na_fonte` no config (`pipelines/metadados.py`; testado em 02/11/2026).
+- **O campo `unidade` da resposta de dados muda com o período pedido:** a tabela 1737 com `197912-202609` devolve unidade vazia para as variáveis 63 e 2265; com `-1` ou `202501-202609`, devolve `%` (testado em 02/11/2026). Por isso a unidade é conferida em `/metadados`, que não depende da consulta.
 - O IBGE pode reorganizar tabelas; guarde o número da tabela e da variável junto com cada observação.
 
 | Tabela | Variável | Conteúdo | Status |

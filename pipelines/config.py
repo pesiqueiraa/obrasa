@@ -101,6 +101,18 @@ class Source(_Strict):
     licenca: str | None = None
 
 
+class NaFonte(_Strict):
+    """Descrição da série como a fonte declara hoje (pipelines/metadados.py)."""
+
+    nome: str
+    unidade: str
+    periodicidade: str
+    categorias: list[str] = []
+
+
+FONTES_COM_DESCRICAO = {"bcb_sgs", "ibge_agregados"}
+
+
 class Series(_Strict):
     id: str
     source_id: str
@@ -117,6 +129,7 @@ class Series(_Strict):
     faixa: tuple[Decimal, Decimal] | None = None  # valores plausíveis; fora disso, recusa
     desde: date | None = None  # início do histórico buscado
     calendario: int | None = None  # produto no calendário do IBGE
+    na_fonte: NaFonte | None = None  # obrigatório no BCB e no IBGE
     # Prazo de divulgação quando a fonte não tem calendário: [meses, dias] contados do 1º
     # dia do último período. Sem isso vale o padrão da frequência (pipelines/jobs/atrasos.py).
     prazo: tuple[int, int] | None = None
@@ -130,6 +143,8 @@ class Series(_Strict):
             raise ValueError(f"série {self.id}: informe a faixa plausível de valores")
         if self.faixa and self.faixa[0] >= self.faixa[1]:
             raise ValueError(f"série {self.id}: faixa invertida")
+        if self.source_id in FONTES_COM_DESCRICAO and self.na_fonte is None:
+            raise ValueError(f"série {self.id}: informe `na_fonte` (descrição na fonte)")
         return self
 
 
@@ -319,6 +334,7 @@ class MapaUf(_Strict):
     casas: int
     faixa: tuple[Decimal, Decimal]
     prazo: tuple[int, int] | None = None  # como em Series.prazo
+    na_fonte: NaFonte  # como em Series.na_fonte
 
 
 class Regional(_Strict):

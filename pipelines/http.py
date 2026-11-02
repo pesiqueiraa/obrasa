@@ -18,13 +18,34 @@ def get(
     url: str,
     *,
     params: dict[str, str] | None = None,
+    **kwargs,
+) -> RawResponse:
+    return request(source_id, "GET", url, params=params, **kwargs)
+
+
+def post(
+    source_id: str, url: str, *, content: bytes, headers: dict[str, str], **kwargs
+) -> RawResponse:
+    """POST (webservice SOAP do SGS). Mesmas tentativas e garantias do GET."""
+    kwargs.setdefault("expect_json", False)
+    return request(source_id, "POST", url, content=content, headers=headers, **kwargs)
+
+
+def request(
+    source_id: str,
+    method: str,
+    url: str,
+    *,
+    params: dict[str, str] | None = None,
+    content: bytes | None = None,
+    headers: dict[str, str] | None = None,
     attempts: int = 4,
     timeout: float = 60.0,
     expect_json: bool = True,
     client: httpx.Client | None = None,
     sleep=time.sleep,
 ) -> RawResponse:
-    """GET com até `attempts` tentativas e espera crescente. Falha com exceção, nunca em silêncio.
+    """Requisição com até `attempts` tentativas e espera crescente. Falha com exceção, nunca em silêncio.
 
     Com `expect_json`, uma resposta 200 que não é JSON (o SGS às vezes devolve uma
     página HTML "Requisição inválida!" com status 200) também gera nova tentativa.
@@ -37,7 +58,9 @@ def get(
     try:
         for attempt in range(1, attempts + 1):
             try:
-                response = client.get(url, params=params)
+                response = client.request(
+                    method, url, params=params, content=content, headers=headers
+                )
                 if response.status_code in RETRY_STATUS and attempt < attempts:
                     sleep(2**attempt)
                     continue

@@ -13,11 +13,13 @@ reunião do Copom: quem chama corta no dia de hoje.
 from __future__ import annotations
 
 import json
+import re
+import xml.etree.ElementTree as ET
 from datetime import date, datetime, timedelta
 from decimal import Decimal, InvalidOperation
 
 from pipelines import http
-from pipelines.models import Observation, RawResponse, ValidationError
+from pipelines.models import Descricao, Observation, RawResponse, ValidationError
 
 SOURCE_ID = "bcb_sgs"
 BASE = "https://api.bcb.gov.br/dados/serie"
@@ -78,3 +80,59 @@ def parse(body: bytes, *, monthly: bool = True) -> list[Observation]:
         seen.add(ref)
         out.append(Observation(ref, value))
     return sorted(out, key=lambda o: o.ref_date)
+
+
+# Webservice SOAP do SGS (docs/05): nome, unidade, periodicidade e último valor da série.
+# É um serviço diferente da API JSON, então serve também para conferir o último valor.
+WSSGS = "https://www3.bcb.gov.br/wssgs/services/FachadaWSSGS"
+_ENVELOPE = (
+    '<?xml version="1.0"?><soapenv:Envelope '
+    'xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" '
+    'xmlns:pub="http://publico.ws.casosdeuso.sgs.pec.bcb.gov.br"><soapenv:Body>'
+    "<pub:getUltimoValorXML><in0>{codigo}</in0></pub:getUltimoValorXML>"
+    "</soapenv:Body></soapenv:Envelope>"
+)
+_VALOR_BR = re.compile(r"^-?(\d{1,3}(\.\d{3})+|\d+)(,\d+)?$")
+
+
+def fetch_metadata(codigo: int) -> RawResponse:
+    return http.post(
+        SOURCE_ID,
+        WSSGS,
+        content=_ENVELOPE.format(codigo=int(codigo)).encode(),
+        headers={"Content-Type": "text/xml; charset=utf-8", "SOAPAction": "getUltimoValorXML"},
+    )
+
+
+def parse_metadata(body: bytes, codigo: int) -> tuple[Descricao, date, Decimal]:
+    """Descrição da série e último valor (data, valor) segundo o webservice."""
+    try:
+        envelope = ET.fromstring(body)
+        retorno = next(e for e in envelope.iter() if e.tag.endswith("getUltimoValorXMLReturn"))
+        interno = re.sub(r"^<\?xml[^>]*\?>", "", (retorno.text or "").strip())
+        resposta = ET.fromstring(interno)
+    except (ET.ParseError, StopIteration) as exc:
+        raise ValidationError(f"webservice SGS fora do formato: {exc}") from exc
+    if resposta.get("status") != "2":
+        raise ValidationError(f"webservice SGS: {resposta.get('descricao')!r}")
+    serie = resposta.find("SERIE")
+
+    def campo(nome: str) -> str:
+        el = serie.find(nome) if serie is not None else None
+        if el is None or el.text is None:
+            raise ValidationError(f"webservice SGS sem o campo {nome}")
+        return el.text.strip()
+
+    if campo("CODIGO") != str(codigo):
+        raise ValidationError(f"webservice SGS respondeu a série {campo('CODIGO')}, não {codigo}")
+    valor = campo("VALOR")
+    if not _VALOR_BR.match(valor):
+        raise ValidationError(f"webservice SGS: valor fora do formato {valor!r}")
+    try:
+        ref = date(int(campo("DATA/ANO")), int(campo("DATA/MES")), int(campo("DATA/DIA")))
+    except ValueError as exc:
+        raise ValidationError(f"webservice SGS: data inválida: {exc}") from exc
+    descricao = Descricao(
+        nome=campo("NOME"), unidade=campo("UNIDADE"), periodicidade=campo("PERIODICIDADE")
+    )
+    return descricao, ref, Decimal(valor.replace(".", "").replace(",", "."))

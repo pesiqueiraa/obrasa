@@ -10,6 +10,10 @@ mapas:
     indicador: desocupacao
     tabela: 4099
     variavel: 4099
+    na_fonte:
+      nome: "Taxa de desocupação, na semana de referência, das pessoas de 14 anos ou mais de idade"
+      unidade: "%"
+      periodicidade: "trimestral"
     frequencia: trimestral
     periodos: "-20"
     # PNAD Contínua trimestral por UF: o trimestre sai uns 45 dias depois de terminar
@@ -25,6 +29,11 @@ mapas:
     indicador: analfabetismo
     tabela: 7113
     variavel: 10267
+    na_fonte:
+      nome: "Taxa de analfabetismo das pessoas de 15 anos ou mais de idade"
+      unidade: "%"
+      periodicidade: "anual"
+      categorias: ["Total", "15 anos ou mais"]
     classificacao: "2[6794]|58[2795]"
     frequencia: anual
     periodos: "-12"
@@ -37,6 +46,11 @@ mapas:
     indicador: anos-de-estudo
     tabela: 7126
     variavel: 3593
+    na_fonte:
+      nome: "Número médio de anos de estudo das pessoas de 15 anos ou mais de idade"
+      unidade: "Anos"
+      periodicidade: "anual"
+      categorias: ["Total", "25 anos ou mais"]
     classificacao: "2[6794]|58[108866]"
     frequencia: anual
     periodos: "-12"

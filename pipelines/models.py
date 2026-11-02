@@ -28,3 +28,14 @@ class RawResponse:
     body: bytes
     content_type: str
     fetched_at: datetime
+
+
+@dataclass(frozen=True)
+class Descricao:
+    """O que a fonte declara sobre uma série: nome, unidade, periodicidade e, no IBGE, o
+    nome de cada categoria filtrada. Conferido a cada coleta (pipelines/metadados.py)."""
+
+    nome: str
+    unidade: str
+    periodicidade: str
+    categorias: tuple[str, ...] = ()

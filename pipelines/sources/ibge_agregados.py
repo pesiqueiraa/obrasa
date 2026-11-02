@@ -18,7 +18,7 @@ from typing import Literal
 from zoneinfo import ZoneInfo
 
 from pipelines import http
-from pipelines.models import Observation, RawResponse, ValidationError
+from pipelines.models import Descricao, Observation, RawResponse, ValidationError
 
 SOURCE_ID = "ibge_agregados"
 BASE = "https://servicodados.ibge.gov.br/api/v3"
@@ -325,3 +325,35 @@ def parse_calendar(body: bytes, produto: int) -> list[ScheduledRelease]:
             raise ValidationError(f"item de calendário fora do formato: {item!r}") from exc
         out.append(ScheduledRelease(ref, released_at))
     return sorted(out, key=lambda r: r.released_at)
+
+
+def fetch_metadata(tabela: int) -> RawResponse:
+    """Metadados da tabela. Ao contrário da resposta de dados, cuja `unidade` muda com o
+    período pedido (o IPCA desde 1979 vem com unidade vazia), não depende da consulta."""
+    return http.get(SOURCE_ID, f"{BASE}/agregados/{tabela}/metadados")
+
+
+def parse_metadata(body: bytes, variavel: int, classificacao: str | None = None) -> Descricao:
+    try:
+        payload = json.loads(body)
+        variaveis = {int(v["id"]): v for v in payload["variaveis"]}
+        periodicidade = payload["periodicidade"]["frequencia"]
+        classes = {int(c["id"]): c for c in payload.get("classificacoes") or []}
+    except (json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
+        raise ValidationError(f"metadados fora do formato: {exc}") from exc
+    if variavel not in variaveis:
+        raise ValidationError(f"metadados: variável {variavel} não existe na tabela")
+    categorias = []
+    for cls_id, cat_id in re.findall(r"(\d+)\[(\d+)\]", classificacao or ""):
+        cls = classes.get(int(cls_id))
+        nomes = {int(c["id"]): c["nome"] for c in (cls or {}).get("categorias", [])}
+        if int(cat_id) not in nomes:
+            raise ValidationError(f"metadados: categoria {cls_id}[{cat_id}] não existe na tabela")
+        categorias.append(nomes[int(cat_id)])
+    v = variaveis[variavel]
+    return Descricao(
+        nome=v.get("nome", ""),
+        unidade=v.get("unidade", ""),
+        periodicidade=periodicidade,
+        categorias=tuple(categorias),
+    )

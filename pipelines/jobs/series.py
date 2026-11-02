@@ -1,7 +1,9 @@
 """Job genérico: coleta as séries de config/sources.yaml com `coletor: series`.
 
-Para cada série: buscar → guardar resposta bruta → validar → gravar. As regras de
-validação são as mesmas para todas (docs/06, "Testes"):
+Para cada série: conferir a descrição na fonte → buscar → guardar resposta bruta →
+validar → gravar. As regras de validação são as mesmas para todas (docs/06, "Testes"):
+  * nome, unidade, periodicidade e categorias iguais a `na_fonte` (pipelines/metadados.py);
+  * no BCB, o último valor do webservice SGS igual ao da API de dados;
   * nenhum valor fora da faixa plausível declarada na série;
   * nenhum período no futuro (a meta Selic traz datas até a próxima reunião);
   * sem buraco entre períodos, exceto em séries diárias (dias úteis variam);
@@ -20,7 +22,7 @@ from zoneinfo import ZoneInfo
 
 import psycopg
 
-from pipelines import db
+from pipelines import db, metadados
 from pipelines.config import Registry, Series
 from pipelines.jobs.report import Report
 from pipelines.models import Observation, ValidationError
@@ -69,8 +71,16 @@ def collect_sgs(
     conn: psycopg.Connection, store: RawStore, report: Report, s: Series, today: date
 ) -> None:
     codigo = int(s.codigo_externo)
+    raw_meta = bcb_sgs.fetch_metadata(codigo)
+    store.save(raw_meta, f"sgs_{codigo}_metadados")
+    descricao, ultimo_ref, ultimo_valor = bcb_sgs.parse_metadata(raw_meta.body, codigo)
+    assert s.na_fonte is not None  # garantido por config.Series
+    metadados.confere(s.na_fonte, descricao, s.id)
     inicio = s.desde or INICIO_PADRAO
-    janelas = bcb_sgs.windows(inicio, today) if s.frequencia == "diaria" else [(inicio, today)]
+    # Até a data do último valor do webservice: a meta Selic (432) vem com data futura, e a
+    # comparação abaixo precisa desse período nos dados. O corte em `today` vem depois.
+    fim = max(today, ultimo_ref)
+    janelas = bcb_sgs.windows(inicio, fim) if s.frequencia == "diaria" else [(inicio, fim)]
     raw_by_date: dict[date, str] = {}
     obs: list[Observation] = []
     fetched_at: datetime | None = None
@@ -83,6 +93,8 @@ def collect_sgs(
             raw_by_date[o.ref_date] = raw_object
         obs.extend(parsed)
 
+    # Antes do corte de datas futuras: o webservice também informa a meta Selic vigente.
+    metadados.confere_ultimo(s.id, ultimo_ref, ultimo_valor, obs)
     # A meta Selic (432) repete o valor vigente até a próxima reunião, com datas futuras.
     obs = sorted((o for o in obs if o.ref_date <= today), key=lambda o: o.ref_date)
     validate(obs, s, today)
@@ -106,6 +118,13 @@ def collect_ibge_table(
     tipo = group[0].frequencia
     classificacao = group[0].classificacao
     variaveis = [int(s.codigo_externo.split("/")[1]) for s in group]
+
+    raw_meta = ibge_agregados.fetch_metadata(tabela)
+    store.save(raw_meta, f"{tabela}_metadados")
+    for s, var in zip(group, variaveis, strict=True):
+        assert s.na_fonte is not None  # garantido por config.Series
+        descricao = ibge_agregados.parse_metadata(raw_meta.body, var, classificacao)
+        metadados.confere(s.na_fonte, descricao, s.id)
 
     raw_periods = ibge_agregados.fetch_periods(tabela)
     store.save(raw_periods, f"{tabela}_periodos")

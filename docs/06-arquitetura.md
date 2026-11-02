@@ -179,6 +179,7 @@ create table fact_checks (
 - **Deflator padrão:** número-índice do IPCA (IBGE, tabela 1737, variável 2266), com base no mês mais recente disponível.
 - **Revisões:** nunca sobrescrever. Revisão da fonte vira nova linha com `revision + 1`; a tela usa a mais recente e a página de metodologia mostra o histórico. O banco garante a regra: `observations`, `observacoes_uf` e as tabelas de votos recusam UPDATE, DELETE e TRUNCATE (triggers `so_insert`), e o pipeline roda com o papel `coletor`, sem permissão de mudar o schema (migração `20261109000000_integridade.sql`).
 - **Falhas:** coletor que não consegue validar a resposta falha com alerta. Nunca grava dado parcial ou com layout diferente do esperado.
+- **Descrição na fonte:** antes de baixar os dados, o coletor confere nome, unidade, periodicidade e categorias da série no webservice SGS ou em `/metadados` do IBGE contra `na_fonte` no config. Qualquer diferença para a coleta: a fonte pode ter mudado o significado do código sem mudar o formato (`pipelines/metadados.py`).
 
 ## Agendamento inicial
 

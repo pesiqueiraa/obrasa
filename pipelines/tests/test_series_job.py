@@ -27,6 +27,7 @@ def _series(**kw) -> Series:
         tipo="taxa",
         monetaria=False,
         faixa=(Decimal(0), Decimal(10)),
+        na_fonte={"nome": "x", "unidade": "%", "periodicidade": "M"},
     )
     return Series(**{**base, **kw})
 
@@ -220,3 +221,42 @@ def test_id_da_serie_com_categorias():
         classificacao="2[6794]|58[2795]", status="ok",
     )  # fmt: skip
     assert ref.series_id == "ibge_agregados_7113_10267_6794_2795"
+
+
+class _Store:
+    def __init__(self):
+        self.salvos = []
+
+    def save(self, raw, name):
+        self.salvos.append(name)
+        return f"local://{name}"
+
+
+def test_descricao_diferente_para_antes_de_baixar_os_dados(monkeypatch):
+    """IBC-Br com a unidade trocada na fonte: a coleta para sem pedir os dados nem gravar."""
+    from pipelines.jobs import series as job
+    from pipelines.jobs.report import Report
+    from pipelines.models import RawResponse
+
+    meta = RawResponse(
+        "bcb_sgs", "x", (FIX / "bcb_sgs_meta_24363.xml").read_bytes(), "text/xml", None
+    )
+    monkeypatch.setattr(bcb_sgs, "fetch_metadata", lambda codigo: meta)
+
+    def nao_chamar(*a, **k):
+        raise AssertionError("não deveria buscar os dados")
+
+    monkeypatch.setattr(bcb_sgs, "fetch", nao_chamar)
+    s = _series(
+        id="bcb_sgs_24363",
+        codigo_externo="24363",
+        na_fonte={
+            "nome": "Índice de Atividade Econômica do Banco Central - IBC-Br",
+            "unidade": "Var. %",  # o config diz uma coisa, a fonte declara "Índice"
+            "periodicidade": "M",
+        },
+    )
+    store = _Store()
+    with pytest.raises(ValidationError, match=r"unidade: esperado 'Var\. %'"):
+        job.collect_sgs(None, store, Report(), s, date(2026, 11, 2))
+    assert store.salvos == ["sgs_24363_metadados"]  # só a resposta bruta, para diagnóstico

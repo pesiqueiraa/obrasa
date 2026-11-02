@@ -1,6 +1,7 @@
 """Job do IPCA: IBGE (fonte principal) e Banco Central (reserva).
 
-Ordem de cada coleta: buscar → guardar resposta bruta → validar → gravar.
+Ordem de cada coleta: conferir a descrição na fonte (pipelines/metadados.py) → buscar →
+guardar resposta bruta → validar → gravar.
 Se a validação falhar, nada daquela fonte é gravado (só a resposta bruta, para
 diagnóstico) e o job termina com erro, o que dispara o alerta do GitHub Actions.
 """
@@ -15,7 +16,7 @@ from zoneinfo import ZoneInfo
 
 import psycopg
 
-from pipelines import db
+from pipelines import db, metadados
 from pipelines.config import Registry
 from pipelines.jobs.report import Report
 from pipelines.models import Observation, ValidationError
@@ -86,7 +87,21 @@ def compare_sources(primary: list[Observation], reserve: list[Observation]) -> l
     return [o.ref_date for o in reserve if o.ref_date in pri and pri[o.ref_date] != o.value]
 
 
-def collect_ibge(conn: psycopg.Connection, store: RawStore, report: Report) -> list[Observation]:
+def _na_fonte(registry: Registry, series_id: str):
+    s = next(s for s in registry.series if s.id == series_id)
+    assert s.na_fonte is not None  # garantido por config.Series
+    return s.na_fonte
+
+
+def collect_ibge(
+    conn: psycopg.Connection, store: RawStore, report: Report, registry: Registry
+) -> list[Observation]:
+    raw_meta = ibge_agregados.fetch_metadata(TABELA)
+    store.save(raw_meta, f"{TABELA}_metadados")
+    for var, series_id in SERIES_IBGE.items():
+        descricao = ibge_agregados.parse_metadata(raw_meta.body, var)
+        metadados.confere(_na_fonte(registry, series_id), descricao, series_id)
+
     raw_periods = ibge_agregados.fetch_periods(TABELA)
     store.save(raw_periods, f"{TABELA}_periodos")
     periods = ibge_agregados.parse_periods(raw_periods.body)
@@ -132,14 +147,19 @@ def collect_calendar(conn: psycopg.Connection, store: RawStore, today: date) -> 
 
 
 def collect_bcb(
-    conn: psycopg.Connection, store: RawStore, report: Report, today: date
+    conn: psycopg.Connection, store: RawStore, report: Report, today: date, registry: Registry
 ) -> dict[int, list[Observation]]:
     parsed: dict[int, list[Observation]] = {}
     raws = {}
     for codigo in (SGS_MENSAL, SGS_12M):
+        raw_meta = bcb_sgs.fetch_metadata(codigo)
+        store.save(raw_meta, f"sgs_{codigo}_metadados")
+        descricao, ultimo_ref, ultimo_valor = bcb_sgs.parse_metadata(raw_meta.body, codigo)
+        metadados.confere(_na_fonte(registry, SERIES_BCB[codigo]), descricao, SERIES_BCB[codigo])
         raw = bcb_sgs.fetch(codigo, date(1979, 12, 1), today)
         raws[codigo] = (raw, store.save(raw, f"sgs_{codigo}"))
         parsed[codigo] = bcb_sgs.parse(raw.body)
+        metadados.confere_ultimo(SERIES_BCB[codigo], ultimo_ref, ultimo_valor, parsed[codigo])
 
     validate_ipca(parsed[SGS_MENSAL], parsed[SGS_12M], "BCB SGS")
 
@@ -168,7 +188,7 @@ def run(
 
     ibge_12m: list[Observation] | None = None
     try:
-        ibge_12m = collect_ibge(conn, store, report)
+        ibge_12m = collect_ibge(conn, store, report, registry)
     except Exception as exc:  # cada fonte falha sozinha; o job termina com erro no fim
         log.exception("coleta do IBGE falhou")
         report.errors.append(f"IBGE: {exc}")
@@ -181,7 +201,7 @@ def run(
         report.errors.append(f"calendário IBGE: {exc}")
 
     try:
-        bcb = collect_bcb(conn, store, report, today)
+        bcb = collect_bcb(conn, store, report, today, registry)
         if ibge_12m is not None:
             diverge = compare_sources(ibge_12m, bcb[SGS_12M])
             if diverge:

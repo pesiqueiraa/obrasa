@@ -7,6 +7,9 @@
 #   faixa        [mínimo, máximo] plausíveis; valor fora disso faz a coleta ser recusada
 #   desde        início do histórico buscado
 #   calendario   produto no calendário do IBGE (próxima divulgação)
+#   na_fonte     nome, unidade, periodicidade e categorias como a fonte declara (webservice
+#                SGS / endpoint de metadados do IBGE). A coleta confere a cada execução e
+#                para se algo mudar (pipelines/metadados.py). Levantado em 02/11/2026.
 #   prazo        [meses, dias] para a divulgação do período seguinte, contados do 1º dia
 #                do último período, quando a fonte não tem calendário. Sem ele vale o
 #                padrão da frequência (mensal: [2, 14]). Passou do prazo, o site mostra
@@ -61,6 +64,10 @@ series:
     coletor: ipca
     source_id: ibge_agregados
     codigo_externo: "1737/2265"
+    na_fonte:
+      nome: "IPCA - Variação acumulada em 12 meses"
+      unidade: "%"
+      periodicidade: "mensal"
     nome: IPCA, variação acumulada em 12 meses
     unidade: "%"
     frequencia: mensal
@@ -71,6 +78,10 @@ series:
     coletor: ipca
     source_id: ibge_agregados
     codigo_externo: "1737/63"
+    na_fonte:
+      nome: "IPCA - Variação mensal"
+      unidade: "%"
+      periodicidade: "mensal"
     nome: IPCA, variação mensal
     unidade: "%"
     frequencia: mensal
@@ -81,6 +92,10 @@ series:
     coletor: ipca
     source_id: ibge_agregados
     codigo_externo: "1737/2266"
+    na_fonte:
+      nome: "IPCA - Número-índice (base: dezembro de 1993 = 100)"
+      unidade: "Número-índice"
+      periodicidade: "mensal"
     nome: IPCA, número-índice (base dez/1993 = 100)
     unidade: número-índice
     frequencia: mensal
@@ -91,6 +106,10 @@ series:
     coletor: ipca
     source_id: bcb_sgs
     codigo_externo: "13522"
+    na_fonte:
+      nome: "Índice nacional de preços ao consumidor - amplo (IPCA) - em 12 meses"
+      unidade: "%"
+      periodicidade: "M"
     nome: IPCA, acumulado em 12 meses
     unidade: "%"
     frequencia: mensal
@@ -101,6 +120,10 @@ series:
     coletor: ipca
     source_id: bcb_sgs
     codigo_externo: "433"
+    na_fonte:
+      nome: "Índice nacional de preços ao consumidor-amplo (IPCA)"
+      unidade: "Var. % mensal"
+      periodicidade: "M"
     nome: IPCA, variação mensal
     unidade: "%"
     frequencia: mensal
@@ -112,6 +135,10 @@ series:
   - id: bcb_sgs_432
     source_id: bcb_sgs
     codigo_externo: "432"
+    na_fonte:
+      nome: "Taxa de juros - Meta Selic definida pelo Copom"
+      unidade: "% a.a."
+      periodicidade: "D"
     nome: Meta da taxa Selic definida pelo Copom
     unidade: "% a.a."
     frequencia: diaria
@@ -126,6 +153,10 @@ series:
   - id: bcb_sgs_1
     source_id: bcb_sgs
     codigo_externo: "1"
+    na_fonte:
+      nome: "Taxa de câmbio - Livre - Dólar americano (venda) - diário"
+      unidade: "u.m.c./US$"
+      periodicidade: "D"
     nome: Dólar comercial, venda (taxa livre)
     unidade: R$/US$
     frequencia: diaria
@@ -140,6 +171,10 @@ series:
   - id: bcb_sgs_24363
     source_id: bcb_sgs
     codigo_externo: "24363"
+    na_fonte:
+      nome: "Índice de Atividade Econômica do Banco Central - IBC-Br"
+      unidade: "Índice"
+      periodicidade: "M"
     nome: Índice de Atividade Econômica do Banco Central (IBC-Br)
     unidade: índice
     frequencia: mensal
@@ -153,6 +188,11 @@ series:
   - id: ibge_agregados_5932_6562
     source_id: ibge_agregados
     codigo_externo: "5932/6562"
+    na_fonte:
+      nome: "Taxa acumulada em quatro trimestres (em relação ao mesmo período do ano anterior)"
+      unidade: "%"
+      periodicidade: "trimestral"
+      categorias: ["PIB a preços de mercado"]
     classificacao: "11255[90707]"
     nome: PIB, taxa acumulada em quatro trimestres
     unidade: "%"
@@ -167,6 +207,11 @@ series:
   - id: ibge_agregados_5932_6564
     source_id: ibge_agregados
     codigo_externo: "5932/6564"
+    na_fonte:
+      nome: "Taxa trimestre contra trimestre imediatamente anterior"
+      unidade: "%"
+      periodicidade: "trimestral"
+      categorias: ["PIB a preços de mercado"]
     classificacao: "11255[90707]"
     nome: PIB, taxa contra o trimestre imediatamente anterior
     unidade: "%"
@@ -183,6 +228,10 @@ series:
   - id: ibge_agregados_6381_4099
     source_id: ibge_agregados
     codigo_externo: "6381/4099"
+    na_fonte:
+      nome: "Taxa de desocupação, na semana de referência, das pessoas de 14 anos ou mais de idade"
+      unidade: "%"
+      periodicidade: "trimestral móvel"
     nome: Taxa de desocupação (PNAD Contínua)
     unidade: "%"
     frequencia: trimestral_movel
@@ -197,6 +246,10 @@ series:
   - id: ibge_agregados_6390_5933
     source_id: ibge_agregados
     codigo_externo: "6390/5933"
+    na_fonte:
+      nome: "Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos"
+      unidade: "Reais"
+      periodicidade: "trimestral móvel"
     nome: Rendimento médio mensal real habitual (PNAD Contínua)
     unidade: R$
     frequencia: trimestral_movel
@@ -211,6 +264,10 @@ series:
   - id: ibge_agregados_6390_5929
     source_id: ibge_agregados
     codigo_externo: "6390/5929"
+    na_fonte:
+      nome: "Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos"
+      unidade: "Reais"
+      periodicidade: "trimestral móvel"
     nome: Rendimento médio mensal nominal habitual (PNAD Contínua)
     unidade: R$
     frequencia: trimestral_movel
@@ -222,6 +279,10 @@ series:
   - id: ibge_agregados_8529_12466
     source_id: ibge_agregados
     codigo_externo: "8529/12466"
+    na_fonte:
+      nome: "Taxa de informalidade das pessoas de 14 anos ou mais de idade ocupadas na semana de referência"
+      unidade: "%"
+      periodicidade: "trimestral"
     nome: Taxa de informalidade das pessoas ocupadas (PNAD Contínua)
     unidade: "%"
     frequencia: trimestral
@@ -238,6 +299,11 @@ series:
   - id: ibge_agregados_7113_10267_6794_2795
     source_id: ibge_agregados
     codigo_externo: "7113/10267"
+    na_fonte:
+      nome: "Taxa de analfabetismo das pessoas de 15 anos ou mais de idade"
+      unidade: "%"
+      periodicidade: "anual"
+      categorias: ["Total", "15 anos ou mais"]
     classificacao: "2[6794]|58[2795]"
     nome: Taxa de analfabetismo das pessoas de 15 anos ou mais (PNAD Contínua)
     unidade: "%"
@@ -251,6 +317,11 @@ series:
   - id: ibge_agregados_7126_3593_6794_108866
     source_id: ibge_agregados
     codigo_externo: "7126/3593"
+    na_fonte:
+      nome: "Número médio de anos de estudo das pessoas de 15 anos ou mais de idade"
+      unidade: "Anos"
+      periodicidade: "anual"
+      categorias: ["Total", "25 anos ou mais"]
     classificacao: "2[6794]|58[108866]"
     nome: Número médio de anos de estudo das pessoas de 25 anos ou mais (PNAD Contínua)
     unidade: "anos"
@@ -264,6 +335,11 @@ series:
   - id: ibge_agregados_7141_10282_6794_47818
     source_id: ibge_agregados
     codigo_externo: "7141/10282"
+    na_fonte:
+      nome: "Taxa ajustada de frequência escolar líquida"
+      unidade: "%"
+      periodicidade: "anual"
+      categorias: ["Total", "15 a 17 anos no ensino médio"]
     classificacao: "2[6794]|871[47818]"
     nome: Taxa ajustada de frequência escolar líquida, 15 a 17 anos no ensino médio (PNAD Contínua)
     unidade: "%"
@@ -277,6 +353,11 @@ series:
   - id: ibge_agregados_7141_10282_6794_47819
     source_id: ibge_agregados
     codigo_externo: "7141/10282"
+    na_fonte:
+      nome: "Taxa ajustada de frequência escolar líquida"
+      unidade: "%"
+      periodicidade: "anual"
+      categorias: ["Total", "18 a 24 no ensino superior"]
     classificacao: "2[6794]|871[47819]"
     nome: Taxa ajustada de frequência escolar líquida, 18 a 24 anos no ensino superior (PNAD Contínua)
     unidade: "%"
@@ -290,6 +371,11 @@ series:
   - id: ibge_agregados_7138_10276_6794_99749
     source_id: ibge_agregados
     codigo_externo: "7138/10276"
+    na_fonte:
+      nome: "Taxa de escolarização"
+      unidade: "%"
+      periodicidade: "anual"
+      categorias: ["Total", "0 a 3 anos"]
     classificacao: "2[6794]|58[99749]"
     nome: Taxa de escolarização das crianças de 0 a 3 anos (PNAD Contínua)
     unidade: "%"
@@ -303,6 +389,11 @@ series:
   - id: ibge_agregados_7269_10270_6794_11627
     source_id: ibge_agregados
     codigo_externo: "7269/10270"
+    na_fonte:
+      nome: "Distribuição percentual das pessoas de 25 anos ou mais de idade"
+      unidade: "%"
+      periodicidade: "anual"
+      categorias: ["Total", "Sem instrução e fundamental incompleto ou equivalente"]
     classificacao: "2[6794]|1568[11627]"
     nome: Pessoas de 25 anos ou mais com sem instrução ou fundamental incompleto, % do total (PNAD Contínua)
     unidade: "%"
@@ -316,6 +407,11 @@ series:
   - id: ibge_agregados_7269_10270_6794_48134
     source_id: ibge_agregados
     codigo_externo: "7269/10270"
+    na_fonte:
+      nome: "Distribuição percentual das pessoas de 25 anos ou mais de idade"
+      unidade: "%"
+      periodicidade: "anual"
+      categorias: ["Total", "Fundamental completo e médio incompleto ou equivalente"]
     classificacao: "2[6794]|1568[48134]"
     nome: Pessoas de 25 anos ou mais com fundamental completo e médio incompleto, % do total (PNAD Contínua)
     unidade: "%"
@@ -329,6 +425,11 @@ series:
   - id: ibge_agregados_7269_10270_6794_48135
     source_id: ibge_agregados
     codigo_externo: "7269/10270"
+    na_fonte:
+      nome: "Distribuição percentual das pessoas de 25 anos ou mais de idade"
+      unidade: "%"
+      periodicidade: "anual"
+      categorias: ["Total", "Médio completo ou equivalente e superior incompleto"]
     classificacao: "2[6794]|1568[48135]"
     nome: Pessoas de 25 anos ou mais com médio completo e superior incompleto, % do total (PNAD Contínua)
     unidade: "%"
@@ -342,6 +443,11 @@ series:
   - id: ibge_agregados_7269_10270_6794_99713
     source_id: ibge_agregados
     codigo_externo: "7269/10270"
+    na_fonte:
+      nome: "Distribuição percentual das pessoas de 25 anos ou mais de idade"
+      unidade: "%"
+      periodicidade: "anual"
+      categorias: ["Total", "Superior completo"]
     classificacao: "2[6794]|1568[99713]"
     nome: Pessoas de 25 anos ou mais com superior completo, % do total (PNAD Contínua)
     unidade: "%"
@@ -357,6 +463,10 @@ series:
   - id: bcb_sgs_13762
     source_id: bcb_sgs
     codigo_externo: "13762"
+    na_fonte:
+      nome: "Dívida bruta do governo geral (% PIB) - Metodologia utilizada a partir de 2008"
+      unidade: "%"
+      periodicidade: "M"
     nome: Dívida bruta do governo geral (% do PIB)
     unidade: "% do PIB"
     frequencia: mensal
@@ -370,6 +480,10 @@ series:
   - id: bcb_sgs_4513
     source_id: bcb_sgs
     codigo_externo: "4513"
+    na_fonte:
+      nome: "Dívida Líquida do Setor Público (% PIB) - Total - Setor público consolidado"
+      unidade: "%"
+      periodicidade: "M"
     nome: Dívida líquida do setor público consolidado (% do PIB)
     unidade: "% do PIB"
     frequencia: mensal
