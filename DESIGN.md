@@ -443,6 +443,7 @@ Biblioteca `motion`, com `MotionConfig reducedMotion="user"`: quem pede menos mo
 
 ### Módulo de notícias (padrão WIRED)
 - **`news-story-row`**: linha com divisória fina, como a story-row da WIRED. Contém o `outlet-eyebrow` (nome do veículo), o título em Plex Serif, a hora e um mini `indicator-card` ao lado (empilhado embaixo no celular). O link vai para o site do veículo.
+- Na página `/noticias`, cada tema é uma seção com divisória de 2px: à esquerda (fixa ao rolar no desktop), o título do tema em `news-headline-lg`, a contagem de matérias e veículos e o mini `indicator-card` do indicador principal com a linha de fonte; à direita, as `news-story-row` com trecho. Hora sempre absoluta, no horário de Brasília ("01/11, 19h47"), porque a página fica em cache. Sem foto. No fim de cada página de tema, um bloco "Notícias sobre …" com até cinco linhas sem trecho. No máximo duas matérias por veículo em cada lista. Critério de inclusão e lista de veículos sempre visíveis no fim da página.
 - **`news-cluster`**: título neutro do grupo em `news-headline-lg`, seguido de uma `news-story-row` por veículo e, se houver, das `fact-check-row`.
 - **`fact-check-row`**: nome da agência e a classificação **com as palavras da própria agência**, sem cor por classificação.
 - Sem fotos de matérias de terceiros (direito autoral). A WIRED é referência de ritmo e densidade, não de imagens.

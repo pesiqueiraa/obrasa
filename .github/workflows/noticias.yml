@@ -1,0 +1,38 @@
+name: Notícias
+
+# Feeds RSS dos veículos de config/noticias.yaml a cada 30 minutos (docs/06 pede 15; 30
+# reduz a carga nos sites dos veículos). Só título, link, veículo, data e trecho curto
+# (regra 7). A falha de um feed vira erro no relatório e o job falha, mas os demais
+# feeds são gravados.
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: noticias
+  cancel-in-progress: false
+
+jobs:
+  noticias:
+    name: Feeds dos veículos
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: producao
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - run: uv sync --locked
+      - name: Coleta, classifica e grava
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RAW_STORE: supabase
+        run: uv run python -m pipelines.run noticias

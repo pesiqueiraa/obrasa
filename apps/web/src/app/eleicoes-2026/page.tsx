@@ -10,6 +10,7 @@ import styles from "@/components/eleicoes/eleicoes.module.scss";
 import { EleitosUf } from "@/components/eleicoes/EleitosUf";
 import { FonteTse } from "@/components/eleicoes/FonteTse";
 import { MapaPresidente } from "@/components/eleicoes/MapaPresidente";
+import { NoticiasTema } from "@/components/noticias/NoticiasTema";
 import { PrimeiroTurno, SegundoTurno, linhasDoTurno } from "@/components/eleicoes/Resultado";
 import { TabelaUf } from "@/components/eleicoes/TabelaUf";
 import { inteiro } from "@/components/eleicoes/util";
@@ -155,6 +156,7 @@ async function Conteudo() {
           <EleitosUf eleitos={e.eleitos} />
           <FonteTse arquivo={e.arquivos.candidatos} coleta={e.coletas.candidatos} referencia={datas} />
         </section>
+        <NoticiasTema tema="eleicoes-2026" titulo="as eleições" />
       </div>
     </>
   );

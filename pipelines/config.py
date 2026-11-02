@@ -217,3 +217,49 @@ class Eleicao(_Strict):
 def load_eleicao(config_dir: Path = CONFIG_DIR) -> Eleicao:
     data = yaml.safe_load((config_dir / "eleicoes.yaml").read_text(encoding="utf-8"))
     return Eleicao(**data)
+
+
+# --- Notícias (config/noticias.yaml) ---
+
+
+class Veiculo(_Strict):
+    id: str
+    nome: str
+    dominio: str  # o link de cada matéria tem de ser deste domínio (ou subdomínio)
+    feeds: list[str]
+
+
+class RegraTema(_Strict):
+    termos: list[str]
+    excluir: list[str] = []
+
+
+class Noticias(_Strict):
+    trecho_max: int
+    janela_dias: int
+    excluir_url: list[str] = []  # trechos de endereço (seções de opinião)
+    excluir_titulo: list[str] = []  # termos no título (notícias de outros países)
+    veiculos: list[Veiculo]
+    temas: dict[str, RegraTema]
+
+    @model_validator(mode="after")
+    def _check(self) -> Noticias:
+        ids = [v.id for v in self.veiculos]
+        if len(set(ids)) != len(ids):
+            raise ValueError("veículos com id repetido")
+        if ids != sorted(ids):
+            raise ValueError("veículos fora da ordem alfabética (config/noticias.yaml)")
+        if not 0 < self.trecho_max <= 300:
+            raise ValueError("trecho_max acima de 300 caracteres não é trecho curto (regra 7)")
+        if any(not f.startswith("https://") for v in self.veiculos for f in v.feeds):
+            raise ValueError("feed sem https")
+        return self
+
+
+def load_noticias(config_dir: Path = CONFIG_DIR, temas: list[Tema] | None = None) -> Noticias:
+    data = yaml.safe_load((config_dir / "noticias.yaml").read_text(encoding="utf-8"))
+    n = Noticias(**data)
+    slugs = {t.slug for t in (temas if temas is not None else load(config_dir).temas)}
+    if desconhecidos := set(n.temas) - slugs:
+        raise ValueError(f"noticias.yaml cita temas fora de temas.yaml: {sorted(desconhecidos)}")
+    return n

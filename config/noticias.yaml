@@ -1,0 +1,119 @@
+# Notícias por tema (docs/04, F5; docs/05, "Notícias"). Regra 7 do AGENTS.md: guardamos e
+# mostramos só título, link, veículo, data e um trecho curto da descrição do feed. O texto
+# da matéria nunca é lido nem guardado.
+#
+# Critério de inclusão (publicado na página /noticias): veículo de alcance nacional, em
+# português, que publica notícias de política, economia ou serviço público do Brasil e
+# oferece feed RSS público permitido pelo robots.txt. Não há nota nem rótulo de viés
+# (docs/08, D10). A lista fica em ordem alfabética; pedidos de inclusão entram pelo
+# "Reportar erro" e passam pelo mesmo critério.
+#
+# Feeds testados em 02/11/2026: todos responderam 200 com RSS e o robots.txt de cada
+# domínio permite o caminho do feed para o agente "Brasilado". Fora da lista por não
+# cumprirem o critério nessa data: CNN Brasil (o feed redireciona para um domínio cujo
+# robots.txt bloqueia tudo) e Correio Braziliense (o endereço do feed devolve HTML).
+
+trecho_max: 200      # caracteres da descrição do feed, cortados em fim de palavra
+janela_dias: 7       # só entram matérias publicadas nos últimos 7 dias
+
+veiculos:
+  - id: agencia-brasil
+    nome: Agência Brasil
+    dominio: agenciabrasil.ebc.com.br
+    feeds: [https://agenciabrasil.ebc.com.br/rss/ultimasnoticias/feed.xml]
+  - id: bbc-brasil
+    nome: BBC News Brasil
+    dominio: bbc.com
+    feeds: [https://feeds.bbci.co.uk/portuguese/rss.xml]
+  - id: cartacapital
+    nome: CartaCapital
+    dominio: cartacapital.com.br
+    feeds: [https://www.cartacapital.com.br/feed/]
+  - id: estadao
+    nome: Estadão
+    dominio: estadao.com.br
+    feeds: [https://www.estadao.com.br/arc/outboundfeeds/feeds/rss/sections/economia/]
+  - id: exame
+    nome: Exame
+    dominio: exame.com
+    feeds: [https://exame.com/feed/]
+  - id: folha
+    nome: Folha de S.Paulo
+    dominio: folha.uol.com.br
+    feeds: [https://feeds.folha.uol.com.br/emcimadahora/rss091.xml]
+  - id: g1
+    nome: g1
+    dominio: g1.globo.com
+    feeds: [https://g1.globo.com/rss/g1/]
+  - id: gazeta-do-povo
+    nome: Gazeta do Povo
+    dominio: gazetadopovo.com.br
+    feeds: [https://www.gazetadopovo.com.br/feed/rss/republica.xml]
+  - id: infomoney
+    nome: InfoMoney
+    dominio: infomoney.com.br
+    feeds: [https://www.infomoney.com.br/feed/]
+  - id: metropoles
+    nome: Metrópoles
+    dominio: metropoles.com
+    feeds: [https://www.metropoles.com/feed]
+  - id: nexo
+    nome: Nexo Jornal
+    dominio: nexojornal.com.br
+    feeds: [https://www.nexojornal.com.br/rss.xml]
+  - id: o-globo
+    nome: O Globo
+    dominio: oglobo.globo.com
+    feeds: [https://oglobo.globo.com/rss/oglobo]
+  - id: poder360
+    nome: Poder360
+    dominio: poder360.com.br
+    feeds: [https://www.poder360.com.br/feed/]
+  - id: revista-oeste
+    nome: Revista Oeste
+    dominio: revistaoeste.com
+    feeds: [https://revistaoeste.com/feed/]
+  - id: uol
+    nome: UOL
+    dominio: uol.com.br
+    feeds: [https://rss.uol.com.br/feed/noticias.xml]
+  - id: valor
+    nome: Valor Econômico
+    dominio: valor.globo.com
+    feeds: [https://valor.globo.com/rss/valor]
+
+# Só notícias: colunas, editoriais e artigos de opinião ficam de fora (pelo endereço), assim
+# como notícias de outros países (pelo título). Vale para todos os temas.
+excluir_url: [/opiniao/, /colunas/, /colunistas/, /coluna/, /editorial/, /blogs/, /blog/, /artigos/]
+excluir_titulo: [EUA, Estados Unidos, Trump, Biden, midterms, Argentina, Milei, Chile, Venezuela,
+                 Colômbia, Peru, Bolívia, Paraguai, Uruguai, México, Portugal, França, Reino Unido,
+                 Alemanha, China, Rússia, Ucrânia, Israel, Gaza, Irã, OPEP]
+
+# Tema de cada matéria: termos procurados no título e no trecho, sem diferença de
+# maiúsculas nem de acentos, como palavra inteira. Uma matéria pode ter mais de um tema;
+# sem nenhum, não é guardada. `excluir` descarta a matéria do tema quando aparece no título.
+# Regra pública e sem IA: qualquer pessoa pode conferir por que uma matéria está num tema.
+temas:
+  eleicoes-2026:
+    termos: [TSE, segundo turno, primeiro turno, presidente eleito, governador eleito, governadora eleita,
+             senador eleito, senadora eleita, deputado eleito, deputada eleita, eleições 2026,
+             eleição de 2026, diplomação, transição de governo, bancada eleita]
+    excluir: []
+  economia:
+    termos: [inflação, IPCA, IPCA-15, IGP-M, Selic, juros, Copom, Banco Central, dólar, câmbio, PIB,
+             IBC-Br, Focus, preço da gasolina, preço dos alimentos, cesta básica]
+    excluir: []
+  trabalho:
+    termos: [desemprego, desocupação, desocupados, Caged, PNAD, emprego formal, carteira assinada,
+             informalidade, informais, salário mínimo, rendimento médio, mercado de trabalho]
+    excluir: []
+  contas-publicas:
+    termos: [dívida pública, dívida bruta, déficit primário, superávit primário, resultado primário,
+             arcabouço fiscal, meta fiscal, Orçamento, LDO, LOA, Tesouro Nacional, contingenciamento,
+             bloqueio de gastos, arrecadação federal, Receita Federal]
+    excluir: []
+  educacao:
+    termos: [Enem, Ideb, Inep, Saeb, MEC, Ministério da Educação, ensino médio, ensino fundamental,
+             educação infantil, creche, creches, alfabetização, analfabetismo, Fies, ProUni, Sisu,
+             universidade federal, universidades federais, escola pública, escolas públicas, professores]
+    excluir: []

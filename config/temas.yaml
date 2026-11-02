@@ -24,3 +24,8 @@
   titulo: Educação
   resumo: Quantos sabem ler, quanto tempo estudaram e quantos estão na escola na idade esperada.
   ordem: 4
+- slug: noticias
+  titulo: Notícias
+  resumo: O que os veículos publicaram nos últimos 7 dias sobre cada tema, ao lado do número oficial.
+  ordem: 5
+  pagina: propria

@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { IndicatorTile } from "@/components/IndicatorTile";
+import { NoticiasTema } from "@/components/noticias/NoticiasTema";
 import { TemaDestaque } from "@/components/TemaDestaque";
 import styles from "@/components/tema.module.scss";
 import ui from "@/components/ui.module.scss";
@@ -47,6 +48,7 @@ async function TemaContent({ params }: Pick<PageProps<"/[tema]">, "params">) {
             <IndicatorTile key={v.indicator.slug} view={v} delay={i * 0.08} />
           ))}
         </div>
+        <NoticiasTema tema={t.slug} titulo={t.titulo} />
       </div>
     </>
   );

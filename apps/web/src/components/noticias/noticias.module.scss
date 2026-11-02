@@ -1,0 +1,164 @@
+// Módulo de notícias (DESIGN.md): ritmo editorial da WIRED, com IBM Plex Serif nos títulos,
+// linhas finas entre as matérias e sem fotos.
+
+.lista {
+  border-top: 1px solid var(--bd-color-hairline-strong);
+}
+
+.linha {
+  padding: var(--bd-space-md) 0;
+  border-bottom: 1px solid var(--bd-color-hairline);
+  p {
+    margin: 0;
+  }
+}
+
+.veiculo {
+  font-size: var(--bd-type-eyebrow-font-size, 12px);
+  font-weight: 600;
+  letter-spacing: 0.32px;
+  color: var(--bd-color-ink);
+  margin-bottom: var(--bd-space-xxs) !important;
+  time {
+    font-weight: 400;
+    color: var(--bd-color-ink-muted);
+    margin-left: var(--bd-space-xs);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.titulo {
+  font-family: var(--bd-type-news-headline-font-family);
+  font-size: var(--bd-type-news-headline-font-size);
+  font-weight: var(--bd-type-news-headline-font-weight);
+  line-height: var(--bd-type-news-headline-line-height);
+  margin: 0;
+  max-width: 46rem;
+  a {
+    color: var(--bd-color-ink);
+    text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    &:focus-visible {
+      outline: 2px solid var(--bd-color-primary);
+      outline-offset: 2px;
+    }
+  }
+}
+
+.trecho {
+  margin-top: var(--bd-space-xs) !important;
+  font-size: var(--bd-type-body-sm-font-size);
+  color: var(--bd-color-ink-muted);
+  max-width: 46rem;
+}
+
+// ---- página /noticias: uma seção por tema ----
+.secao {
+  display: grid;
+  gap: var(--bd-space-lg);
+  padding: var(--bd-space-xl) 0;
+  border-top: 2px solid var(--bd-color-ink);
+  scroll-margin-top: 64px;
+  @media (min-width: 1056px) {
+    grid-template-columns: 1fr 2fr;
+    gap: var(--bd-space-xl);
+  }
+}
+
+.lado {
+  @media (min-width: 1056px) {
+    position: sticky;
+    top: 72px;
+    align-self: start;
+  }
+}
+
+.secaoTitulo {
+  font-family: var(--bd-type-news-headline-lg-font-family);
+  font-size: var(--bd-type-news-headline-lg-font-size);
+  font-weight: var(--bd-type-news-headline-lg-font-weight);
+  line-height: var(--bd-type-news-headline-lg-line-height);
+  margin: 0 0 var(--bd-space-xs);
+}
+
+.secaoConta {
+  font-size: var(--bd-type-body-sm-font-size);
+  color: var(--bd-color-ink-muted);
+  margin: 0 0 var(--bd-space-md);
+}
+
+.mini {
+  border-left: 3px solid var(--bd-color-chart-1);
+  padding: var(--bd-space-xs) 0 var(--bd-space-xs) var(--bd-space-sm);
+  p {
+    margin: 0;
+  }
+}
+
+.miniRotulo {
+  font-size: var(--bd-type-body-sm-font-size);
+  a {
+    color: var(--bd-color-ink);
+  }
+}
+
+.miniValor {
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.indice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bd-space-xs) var(--bd-space-md);
+  margin: var(--bd-space-md) 0 0;
+  a {
+    color: var(--bd-color-link, var(--bd-color-primary));
+  }
+}
+
+.criterio {
+  max-width: 44rem;
+  font-size: var(--bd-type-body-sm-font-size);
+  color: var(--bd-color-ink-muted);
+  p {
+    margin: 0 0 var(--bd-space-sm);
+  }
+}
+
+.veiculos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bd-space-xxs) var(--bd-space-md);
+  color: var(--bd-color-ink);
+}
+
+// ---- bloco no fim das páginas de tema ----
+.blocoTema {
+  margin-top: var(--bd-space-xl);
+}
+
+.blocoTitulo {
+  font-family: var(--bd-type-news-headline-lg-font-family);
+  font-size: var(--bd-type-news-headline-lg-font-size);
+  font-weight: var(--bd-type-news-headline-lg-font-weight);
+  line-height: var(--bd-type-news-headline-lg-line-height);
+  margin: 0 0 var(--bd-space-xs);
+}
+
+.blocoSub {
+  font-size: var(--bd-type-body-sm-font-size);
+  color: var(--bd-color-ink-muted);
+  margin: 0 0 var(--bd-space-md);
+}
+
+.mais {
+  display: inline-block;
+  margin-top: var(--bd-space-md);
+  color: var(--bd-color-link, var(--bd-color-primary));
+}
