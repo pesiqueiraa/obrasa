@@ -16,7 +16,8 @@ from pipelines.models import Observation
 
 
 def connect() -> psycopg.Connection:
-    url = os.environ.get("DATABASE_URL")
+    # strip: segredo colado no painel do GitHub costuma vir com uma quebra de linha no fim.
+    url = os.environ.get("DATABASE_URL", "").strip()
     if not url:
         raise RuntimeError(
             "defina DATABASE_URL (ex.: postgresql://postgres:postgres@127.0.0.1:55322/postgres)"

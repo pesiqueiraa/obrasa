@@ -116,8 +116,9 @@ class SupabaseRawStore:
 def from_env() -> RawStore:
     """RAW_STORE=supabase|local. Sem valor: Supabase se houver credenciais, senão disco."""
     mode = os.environ.get("RAW_STORE", "").lower()
-    url = os.environ.get("SUPABASE_URL")
-    key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+    # strip: segredo colado no painel costuma vir com uma quebra de linha no fim.
+    url = os.environ.get("SUPABASE_URL", "").strip()
+    key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "").strip()
     if mode == "supabase" or (not mode and url and key):
         if not (url and key):
             raise RuntimeError("RAW_STORE=supabase exige SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY")

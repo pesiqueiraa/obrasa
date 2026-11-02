@@ -79,3 +79,9 @@ def test_outras_fontes_e_maquina_local_vao_direto(monkeypatch):
     monkeypatch.delenv("IBGE_PONTE_TOKEN", raising=False)
     assert http.ponte_ibge() is None
     assert http.destino("https://servicodados.ibge.gov.br/api/v3/x", None)[1] == {}
+
+
+def test_ponte_ignora_quebra_de_linha_do_segredo(monkeypatch):
+    monkeypatch.setenv("IBGE_PONTE_URL", "https://obrasa.vercel.app/api/ponte-ibge\n")
+    monkeypatch.setenv("IBGE_PONTE_TOKEN", "t" * 40 + "\n")
+    assert http.ponte_ibge() == ("https://obrasa.vercel.app/api/ponte-ibge/", "t" * 40)

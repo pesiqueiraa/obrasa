@@ -15,6 +15,7 @@ const SEGMENTO = /^[A-Za-z0-9._|-]+$/;
 const TOKEN_MINIMO = 32;
 
 export function tokenConfere(recebido: string | null, esperado: string | undefined): boolean {
+  esperado = esperado?.trim(); // variável colada no painel pode vir com quebra de linha
   if (!esperado || esperado.length < TOKEN_MINIMO || !recebido) return false;
   const a = Buffer.from(recebido);
   const b = Buffer.from(esperado);

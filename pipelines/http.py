@@ -21,7 +21,8 @@ ORIGEM_IBGE = "https://servicodados.ibge.gov.br/api/"
 
 
 def ponte_ibge() -> tuple[str, str] | None:
-    url, token = os.environ.get("IBGE_PONTE_URL", ""), os.environ.get("IBGE_PONTE_TOKEN", "")
+    url = os.environ.get("IBGE_PONTE_URL", "").strip()
+    token = os.environ.get("IBGE_PONTE_TOKEN", "").strip()
     return (url.rstrip("/") + "/", token) if url and token else None
 
 
