@@ -8,7 +8,8 @@ quais campos são texto livre. O núcleo:
   2. exige a saída no schema JSON (structured outputs);
   3. aplica as verificações de docs/06, "Regras de uso de IA":
        * todo número e data com lastro numa saída de ferramenta ou na entrada (numeros.py);
-       * toda citação marcada como evidência existe, literalmente, numa saída de ferramenta;
+       * toda citação marcada como evidência existe, literalmente, numa saída de ferramenta
+         ou na entrada (que vem do próprio pipeline);
        * nenhum termo proibido de config/forbidden_terms.yaml;
      com uma chance de correção. Se continuar falhando, a saída é recusada inteira;
   4. registra entrada, cada chamada, cada ferramenta, saída, modelo e versão do prompt em
@@ -114,7 +115,7 @@ def verifica_saida(
     for texto in textos:
         for p in numeros.verifica(texto, lastro):
             problemas.append(f"número sem lastro: {p.trecho!r} ({p.motivo})")
-    corpus = [_normaliza(s) for s in saidas_ferramentas]
+    corpus = [_normaliza(s) for s in [tarefa.entrada, *saidas_ferramentas]]
     for citacao in tarefa.citacoes(saida):
         if not any(_normaliza(citacao) in s for s in corpus):
             problemas.append(f"citação que não aparece em nenhuma ferramenta: {citacao[:120]!r}")

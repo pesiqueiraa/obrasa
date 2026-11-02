@@ -28,7 +28,8 @@ def _git(raiz: Path, *args: str) -> None:
     subprocess.run(["git", "-C", str(raiz), *args], check=True, capture_output=True)
 
 
-def prepara(caso: dict, destino: Path) -> None:
+def prepara(caso: dict, destino: Path, commit: bool = True) -> None:
+    """Worktree descartável do HEAD com as trocas do caso (e o commit, para o revisor)."""
     _git(RAIZ, "worktree", "add", "--detach", str(destino), "HEAD")
     for t in caso["trocas"]:
         alvo = destino / t["arquivo"]
@@ -36,6 +37,8 @@ def prepara(caso: dict, destino: Path) -> None:
         if texto.count(t["de"]) != 1:
             raise ValueError(f"{caso['id']}: trecho de {t['arquivo']} não é único ou não existe")
         alvo.write_text(texto.replace(t["de"], t["para"]), encoding="utf-8")
+    if not commit:
+        return
     _git(destino, "-c", "user.email=avaliacao@obrasa", "-c", "user.name=avaliacao",
          "commit", "-qam", f"avaliação: {caso['id']}")  # fmt: skip
 

@@ -256,6 +256,15 @@ pelo git (`config/aprovacoes.yaml`).
   publicado, status `ok` sem teste (regra 6), linguagem (regra 4, inclusive adjetivos fora
   da lista automática) e trava afrouxada sem motivo. Só comenta; sai com 1 quando há
   comentário de gravidade "problema". Lê o diff por ferramenta, só dos arquivos alterados.
+- **Auditor de textos** (`pipelines/agentes/auditar_textos.py`): lê, por indicador, o
+  título, o template da frase, a unidade, a frequência e a série exibida com a nota de
+  metodologia. Aponta linguagem fora do [02](02-principios-de-neutralidade.md) (inclusive
+  adjetivos fora da lista automática), unidade ou período ausente, e texto que descreve
+  outra coisa que o config ou a fonte (escala, unidade, tabela e variável). Grava em
+  `data/agentes/auditorias/` e sai com 1 quando há achado de gravidade "problema". Roda
+  semanalmente quando entrar em produção. Primeira rodada nos textos atuais (02/11/2026):
+  nenhum problema e três pontos de atenção (definição de informalidade resumida na frase,
+  base do índice do IBC-Br, mês-base do rendimento na frase).
 - **Núcleo** (`pipelines/agentes/nucleo.py`): `claude-opus-5-5`, saída em JSON com
   schema, até 25 turnos, uma chance de correção quando a verificação recusa, fallback
   do servidor em caso de recusa de segurança. Cada execução grava um JSONL em
@@ -264,9 +273,11 @@ pelo git (`config/aprovacoes.yaml`).
 - **Avaliação** (`pipelines/agentes/avaliar.py`): casos com causa conhecida em
   `pipelines/agentes/avaliacao/investigar.yaml`, incluindo uma tentativa de injeção numa
   resposta bruta. O revisor tem `pipelines/agentes/avaliar_revisor.py`, com erros
-  plantados num git worktree descartável (`avaliacao/revisar.yaml`). Gasta API; rodar
-  antes de mudar prompt ou modelo. Em 02/11/2026: investigador 6 de 6 (US$ 1,53),
-  revisor 6 de 6 (US$ 0,44).
+  plantados num git worktree descartável (`avaliacao/revisar.yaml`), e o auditor tem
+  `pipelines/agentes/avaliar_auditor.py` (`avaliacao/auditar_textos.yaml`, com os textos
+  atuais como caso limpo e uma tentativa de injeção num comentário de template). Gasta
+  API; rodar antes de mudar prompt ou modelo. Em 02/11/2026: investigador 6 de 6
+  (US$ 1,53), revisor 6 de 6 (US$ 0,44), auditor 6 de 6 (US$ 0,73).
 - **Credencial:** `AGENTES_DATABASE_URL`. Local: `postgresql://leitor:leitor@127.0.0.1:55322/postgres`
   (senha em `supabase/seed.sql`, que só roda no banco local). Produção: senha definida à
   mão no painel.
