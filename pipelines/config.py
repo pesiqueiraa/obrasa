@@ -170,6 +170,21 @@ class Liberacao(_Strict):
     motivo: str
 
 
+def _coerente(ind: Indicator, s: Series, nominal: bool) -> None:
+    """O indicador descreve a série que ele mostra: mesma unidade, frequência e tipo.
+
+    Uma divergência aqui faz a tela rotular o número com unidade ou período errados."""
+    campos = [("unidade", ind.unidade, s.unidade), ("frequencia", ind.frequencia, s.frequencia)]
+    campos.append(("tipo", ind.tipo_serie, s.tipo))
+    if not nominal:
+        campos.append(("monetaria", ind.monetaria, s.monetaria))
+    for nome, a, b in campos:
+        if a != b:
+            raise ValueError(
+                f"{ind.slug}: {nome} do indicador ({a!r}) difere da série {s.id} ({b!r})"
+            )
+
+
 class Registry(BaseModel):
     sources: list[Source]
     series: list[Series]
@@ -222,6 +237,11 @@ class Registry(BaseModel):
                     )
                 if ref.series_id not in series_ids:
                     raise ValueError(f"{ind.slug}: série {ref.series_id} não registrada")
+                _coerente(ind, por_id[ref.series_id], nominal=ref is ind.serie_nominal)
+            if ind.monetaria and ind.serie_nominal is None:
+                raise ValueError(
+                    f"{ind.slug}: indicador monetário sem `serie_nominal` (regra 3: nominal e real)"
+                )
             if not (CONFIG_DIR / "templates" / ind.frase_template).is_file():
                 raise ValueError(f"{ind.slug}: template {ind.frase_template} não encontrado")
         return self
