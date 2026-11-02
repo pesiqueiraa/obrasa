@@ -8,7 +8,7 @@ name: Cópia de segurança
 
 on:
   schedule:
-    - cron: "0 6 * * 0"
+    - cron: "41 6 * * 0"  # minuto fora do pico (:00)
   workflow_dispatch:
 
 permissions:

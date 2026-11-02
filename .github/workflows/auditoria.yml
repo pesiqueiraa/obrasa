@@ -8,7 +8,7 @@ name: Auditoria
 
 on:
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "37 0 * * *"  # minuto fora do pico (:00)
   workflow_dispatch:
 
 permissions:

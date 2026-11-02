@@ -7,7 +7,8 @@ name: Coleta
 
 on:
   schedule:
-    - cron: "0 13 * * *"
+    # Minuto fora do pico: no :00 o GitHub pode atrasar ou descartar a execução.
+    - cron: "7 13 * * *"
   workflow_dispatch:
 
 permissions:

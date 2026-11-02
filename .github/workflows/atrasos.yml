@@ -8,7 +8,7 @@ name: Atrasos
 
 on:
   schedule:
-    - cron: "0 23 * * *"
+    - cron: "23 23 * * *"  # minuto fora do pico (:00)
   workflow_dispatch:
 
 permissions:

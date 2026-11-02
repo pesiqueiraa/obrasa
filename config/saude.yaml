@@ -10,7 +10,7 @@
 jobs:
   todos: {horas: 27, workflow: coleta.yml}       # diário, 13h UTC
   noticias: {horas: 3, workflow: noticias.yml}   # a cada 30 minutos
-  atrasos: {horas: 27, workflow: atrasos.yml}    # diário, 23h UTC
-  auditar: {horas: 27, workflow: auditoria.yml}  # diário, 0h UTC
+  atrasos: {horas: 27, workflow: atrasos.yml}    # diário, 23h23 UTC
+  auditar: {horas: 27, workflow: auditoria.yml}  # diário, 0h37 UTC
 
 noticia_mais_recente_horas: 24

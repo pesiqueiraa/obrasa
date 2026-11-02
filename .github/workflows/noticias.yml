@@ -8,7 +8,8 @@ name: Notícias
 
 on:
   schedule:
-    - cron: "*/30 * * * *"
+    # Minutos fora do pico (:00 e :30 lotam e o GitHub pode descartar execuções).
+    - cron: "17,47 * * * *"
   workflow_dispatch:
 
 permissions:
