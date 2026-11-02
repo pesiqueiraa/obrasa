@@ -94,7 +94,7 @@ O que fazer quando chegar o e-mail "Down": abrir `/saude` no navegador. O JSON d
 
 | Segredo | Onde fica | Para quê |
 |---|---|---|
-| `DATABASE_URL` | GitHub, ambiente `producao` | Coleta, auditoria, atrasos, backup (conexão direta, porta 5432) |
+| `DATABASE_URL` | GitHub, ambiente `producao` | Coleta, auditoria, atrasos, backup. Usar a do **Session pooler** (Connect → Session pooler): a conexão direta do plano grátis é só IPv6, e o GitHub Actions só tem IPv4. Nunca a do Transaction pooler (porta 6543) |
 | `SUPABASE_URL` | GitHub `producao` e Vercel | Storage (coleta) e leitura (site) |
 | `SUPABASE_SERVICE_ROLE_KEY` | GitHub `producao` | Gravar e ler as respostas brutas no Storage. Nunca na Vercel |
 | `SUPABASE_ANON_KEY` | Vercel | Leitura pública do site |
