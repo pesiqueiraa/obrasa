@@ -9,7 +9,8 @@
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
-    "tokens": "node scripts/design-tokens.mjs"
+    "tokens": "node scripts/design-tokens.mjs",
+    "auditar-tela": "node --env-file=.env.local scripts/auditar-tela.mjs"
   },
   "dependencies": {
     "@carbon/charts": "^1.27.25",

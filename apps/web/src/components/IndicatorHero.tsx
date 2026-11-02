@@ -1,6 +1,8 @@
 // Topo da página de indicador (indicator-card do DESIGN.md, versão completa).
 // De cima para baixo: rótulo e chip; valor; base do valor real (se monetário);
 // variação na janela padrão; frase do template; source-line; próxima divulgação.
+// Os atributos data-auditoria-* não aparecem na tela: o auditor de tela
+// (scripts/auditar-tela.mjs) confere por eles que o número exibido é o do banco.
 
 import type { IndicatorView } from "@/lib/data";
 import { formatDate, formatRef } from "@/lib/format";
@@ -24,12 +26,17 @@ export function IndicatorHero({ view }: { view: IndicatorView }) {
     obs,
   });
   return (
-    <section className={styles.hero}>
+    <section className={styles.hero} data-auditoria-indicador={indicator.slug}>
       <div className={styles.cardHeader}>
         <h1 className={styles.heroLabel}>{indicator.titulo}</h1>
         <FrequencyChip frequencia={series.frequencia} atraso={atraso} />
       </div>
-      <p className={styles.value}>
+      <p
+        className={styles.value}
+        data-auditoria-serie={series.id}
+        data-auditoria-ref={p.latest.refDate}
+        data-auditoria-valor={String(p.latest.value)}
+      >
         {p.fmt(p.latest.value)}
         <span className="visually-hidden"> em {formatRef(p.latest.refDate, series.frequencia)}</span>
       </p>

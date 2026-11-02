@@ -184,6 +184,7 @@ create table fact_checks (
 - **Segunda fonte:** desocupação e PIB trimestral são conferidos contra as cópias que o BC publica no SGS (`conferir_com`, `pipelines/segunda_fonte.py`). O IPCA já era conferido contra o SGS 433 e 13522.
 - **Coerência do config:** `config.load()` recusa indicador cuja unidade, frequência ou tipo difere da série que ele mostra, e indicador monetário sem série nominal (regra 3).
 - **Auditoria do bruto:** `pipelines.run auditar` relê cada resposta bruta citada no banco, confere o SHA-256 gravado na coleta e reprocessa com o mesmo parser: todo valor do banco precisa sair igual do bruto (em 02/11/2026: 30 respostas, 23.680 linhas, nenhuma divergência).
+- **Auditoria da tela:** `pnpm --filter @brasilado/web auditar-tela <url>` abre a página de cada indicador e confere série, período, valor e órgão da fonte contra o banco, com regra própria, sem reaproveitar `src/lib` (`apps/web/scripts/auditar-tela.mjs`).
 
 ## Agendamento inicial
 

@@ -49,6 +49,7 @@ uv run pytest -m network               # endpoints oficiais, ao vivo
 DATABASE_URL="$DB_URL" uv run pytest -m db   # banco recusa alterar dado gravado
 DATABASE_URL="$DB_URL" uv run python -m pipelines.run atrasos   # algum indicador passou do prazo?
 DATABASE_URL="$DB_URL" uv run python -m pipelines.run auditar   # banco igual às respostas brutas?
+pnpm --filter @brasilado/web auditar-tela http://localhost:3000   # tela igual ao banco? (site rodando)
 uv run ruff check pipelines scripts
 uv run python scripts/check_terms.py   # termos proibidos (docs/02)
 pnpm lint && pnpm typecheck && pnpm test
