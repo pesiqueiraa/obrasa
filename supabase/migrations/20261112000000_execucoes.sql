@@ -9,6 +9,8 @@ create table execucoes (
   id bigint generated always as identity primary key,
   job text not null,
   iniciado_em timestamptz not null,
+  -- Início e fim vêm do relógio do job (pipelines/db.py), não do banco: os relógios da
+  -- máquina do job e do banco podem divergir em frações de segundo.
   terminado_em timestamptz not null default clock_timestamp(),
   ok boolean not null,
   novos int not null default 0,

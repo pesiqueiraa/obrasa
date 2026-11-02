@@ -1,0 +1,109 @@
+// Formulário "Reportar erro" (DESIGN.md): campos Carbon (fundo surface-1, filete inferior,
+// cantos retos), botão primário azul-tinta, vermelho só em erro de formulário.
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-lg);
+  max-width: 40rem;
+  margin-top: var(--bd-space-lg);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-xxs);
+
+  label {
+    font-size: 14px;
+    color: var(--bd-color-ink);
+  }
+
+  input,
+  textarea {
+    font: inherit;
+    font-size: 16px;
+    color: var(--bd-color-ink);
+    background: var(--bd-color-surface-1);
+    border: 0;
+    border-bottom: 1px solid var(--bd-color-ink-muted);
+    border-radius: 0;
+    padding: 10px 12px;
+    min-height: 40px;
+    width: 100%;
+    &:focus {
+      outline: 2px solid var(--bd-color-primary);
+      outline-offset: -2px;
+    }
+    &[aria-invalid="true"] {
+      outline: 2px solid var(--bd-color-form-error);
+      outline-offset: -2px;
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    line-height: 1.5;
+  }
+}
+
+.ajuda,
+.opcional {
+  font-size: 13px;
+  color: var(--bd-color-ink-muted);
+  margin: 0;
+}
+
+.erro {
+  font-size: 13px;
+  color: var(--bd-color-form-error);
+  margin: 0;
+}
+
+.enviar {
+  align-self: flex-start;
+  font: inherit;
+  font-size: 14px;
+  color: var(--bd-color-on-primary);
+  background: var(--bd-color-primary);
+  border: 0;
+  border-radius: 0;
+  padding: 12px 48px 12px 16px;
+  min-height: 48px;
+  cursor: pointer;
+  &:hover {
+    background: var(--bd-color-primary-hover);
+  }
+  &:active {
+    background: var(--bd-color-primary-pressed);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--bd-color-primary);
+    outline-offset: 2px;
+  }
+  &:disabled {
+    cursor: wait;
+    opacity: 0.7;
+  }
+}
+
+// Fora da tela para quem usa o site; leitores de tela também ignoram (aria-hidden).
+.isca {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.recebido {
+  max-width: 40rem;
+  margin-top: var(--bd-space-lg);
+  padding: var(--bd-space-md) 0;
+  border-top: 2px solid var(--bd-color-primary);
+}
+
+.recebidoTitulo {
+  font-weight: 600;
+  margin-bottom: var(--bd-space-xs);
+}

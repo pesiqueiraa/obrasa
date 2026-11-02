@@ -6,15 +6,14 @@ Nenhuma senha ou chave entra no git. Cada uma vai num lugar só, indicado na tab
 
 ## Antes de publicar
 
-Já feito: cabeçalhos de segurança (CSP e outros, `apps/web/src/lib/seguranca.ts`), `robots.txt`, `sitemap.xml` e a página `/privacidade`. O `robots.txt` e o `sitemap.xml` são gerados no build com o `SITE_URL` daquele momento: defina a variável na Vercel antes do primeiro deploy.
+Já feito: formulário "Reportar erro" (tabela `reportes`, sem dado de quem reporta), cabeçalhos de segurança (CSP e outros, `apps/web/src/lib/seguranca.ts`), `robots.txt`, `sitemap.xml` e a página `/privacidade`. O `robots.txt` e o `sitemap.xml` são gerados no build com o `SITE_URL` daquele momento: defina a variável na Vercel antes do primeiro deploy.
 
 O que ainda não está feito e precisa de decisão ou trabalho antes do lançamento público:
 
 | Item | Situação | O que falta |
 |---|---|---|
-| Formulário "Reportar erro" | Página existe, sem formulário | Decidir o canal (issue pública no GitHub, e-mail ou formulário com banco) e construir. Atualizar `/privacidade` com o que ele guarda |
-| Domínio | Não escolhido | Registrar e apontar para a Vercel; define `SITE_URL` |
-| Repositório público ou privado | Em aberto ([08](08-decisoes-em-aberto.md), D8) | Público: sem limite de minutos no Actions, código auditável. Privado: 2.000 minutos por mês no plano grátis, e só as notícias gastam boa parte |
+| Domínio | Decidido: `.com.br` no registro.br (`obrasa.com.br`, `obrasa.org.br` e `obrasa.org` estavam livres em 02/11/2026; `obrasa.com` não) | Registrar e apontar para a Vercel (passo 3); define `SITE_URL` |
+| Repositório público | Decidido em 02/11/2026. Histórico do git sem chave nem senha (conferido na mesma data) | Tornar público em Settings → General → Danger Zone, depois de proteger a `main` |
 | Proteção da `main` | Não configurada | A coleta lê o config da `main`. Exigir CI verde antes do merge impede que um config errado chegue à coleta |
 | Atualização de dependências | Manual | Ativar o Dependabot para o npm, o uv e as GitHub Actions |
 | Formato jurídico e financiamento | Em aberto (D2, D3) | Não bloqueia o deploy técnico; bloqueia o lançamento público. A página "Quem financia" foi retirada em 02/11/2026 e volta quando D3 for decidido |

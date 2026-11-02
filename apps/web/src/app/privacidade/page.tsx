@@ -34,8 +34,11 @@ export default function PrivacyPage() {
 
         <h2>Reportar erro</h2>
         <p>
-          O <Link href="/reportar-erro">formulário de reporte</Link> ainda está em preparação. Quando entrar no ar,
-          esta página vai dizer o que ele guarda, por quanto tempo e quem tem acesso.
+          O <Link href="/reportar-erro">formulário de reporte</Link> guarda só o que você escreve nele (o erro, a página
+          e o link da fonte, se informar) e a data do envio. Não pede nome nem e-mail e não guarda o seu endereço IP.
+          O texto não é publicado: só a equipe do oBrasa lê, para conferir na fonte oficial. Se houver erro, a correção
+          sai na página de <Link href="/correcoes">Correções</Link>, sem o texto do reporte. Não escreva dados
+          pessoais no formulário.
         </p>
       </div>
     </div>

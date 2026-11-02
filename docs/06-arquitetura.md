@@ -223,6 +223,12 @@ A esteira roda sem ninguém olhando; duas peças dizem quando algo precisa de um
   diferentes: comenta. Voltou a funcionar: comenta e fecha. Um feed fora do ar a cada 30
   minutos vira uma issue, não 48 e-mails por dia.
 
+- **Reportes de erro (`/reportar-erro`, migração `20261113000000_reportes.sql`):** o site
+  só chama a função `registra_reporte`; não lê nem altera a tabela `reportes`. Não guarda
+  nome, e-mail nem IP. Contra spam: campo isca e tempo mínimo no formulário, e no banco
+  um limite de 30 reportes por hora. O job `atrasos` mantém aberta a issue "Reportes de
+  erro aguardando leitura" enquanto houver reporte `novo` (`scripts/reportes.py`), só com
+  a contagem: o repositório é público e o texto do reporte não é.
 - **Cópia de segurança (`pipelines/backup.py`, `backup.yml`):** toda semana, dump do
   schema `public` e as respostas brutas novas vão para o Cloudflare R2, fora do Supabase.
   Ficam as últimas 12 semanas de dump; as respostas brutas nunca são apagadas (o caminho

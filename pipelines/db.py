@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from decimal import Decimal
 
 import psycopg
@@ -244,12 +244,13 @@ def grava_execucao(
     """Uma linha em `execucoes` por job rodado, com sucesso ou não (vigia, /saude)."""
     conn.execute(
         """
-        insert into execucoes (job, iniciado_em, ok, novos, revisados, erros, avisos)
-        values (%s, %s, %s, %s, %s, %s, %s)
+        insert into execucoes (job, iniciado_em, terminado_em, ok, novos, revisados, erros, avisos)
+        values (%s, %s, %s, %s, %s, %s, %s, %s)
         """,
         (
             job,
             iniciado_em,
+            max(datetime.now(UTC), iniciado_em),  # mesmo relógio do início (o do job)
             not erros,
             sum(x.new for x in summaries),
             sum(x.revised for x in summaries),
