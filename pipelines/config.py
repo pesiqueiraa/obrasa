@@ -113,6 +113,15 @@ class NaFonte(_Strict):
 FONTES_COM_DESCRICAO = {"bcb_sgs", "ibge_agregados"}
 
 
+class ConferirCom(_Strict):
+    """Segunda fonte da série (pipelines/segunda_fonte.py)."""
+
+    serie: str
+    regra: Literal["igual", "variacao_trimestral", "acumulado_4_trimestres"]
+    tolerancia: Decimal = Decimal(0)
+    anos: int | None = None  # só os últimos N anos (diferença antiga documentada em docs/05)
+
+
 class Series(_Strict):
     id: str
     source_id: str
@@ -130,6 +139,7 @@ class Series(_Strict):
     desde: date | None = None  # início do histórico buscado
     calendario: int | None = None  # produto no calendário do IBGE
     na_fonte: NaFonte | None = None  # obrigatório no BCB e no IBGE
+    conferir_com: ConferirCom | None = None  # segunda fonte
     # Prazo de divulgação quando a fonte não tem calendário: [meses, dias] contados do 1º
     # dia do último período. Sem isso vale o padrão da frequência (pipelines/jobs/atrasos.py).
     prazo: tuple[int, int] | None = None
@@ -180,6 +190,14 @@ class Registry(BaseModel):
             aceitos = {base, base + sufixo_classificacao(s.classificacao)}
             if s.id not in aceitos:
                 raise ValueError(f"id da série {s.id} deveria ser um de {sorted(aceitos)}")
+        por_id = {s.id: s for s in self.series}
+        for s in self.series:
+            if s.conferir_com:
+                outra = por_id.get(s.conferir_com.serie)
+                if outra is None:
+                    raise ValueError(f"{s.id}: conferir_com cita série não registrada")
+                if outra.source_id == s.source_id:
+                    raise ValueError(f"{s.id}: a segunda fonte precisa ser de outro órgão")
         for lib in self.liberacoes:
             if lib.serie not in series_ids and not lib.serie.startswith("mapa/"):
                 raise ValueError(f"liberação para série não registrada: {lib.serie}")

@@ -10,6 +10,8 @@
 #   na_fonte     nome, unidade, periodicidade e categorias como a fonte declara (webservice
 #                SGS / endpoint de metadados do IBGE). A coleta confere a cada execução e
 #                para se algo mudar (pipelines/metadados.py). Levantado em 02/11/2026.
+#   conferir_com segunda fonte: série de outro órgão e regra de comparação
+#                (pipelines/segunda_fonte.py). Se discordarem, a coleta para.
 #   prazo        [meses, dias] para a divulgação do período seguinte, contados do 1º dia
 #                do último período, quando a fonte não tem calendário. Sem ele vale o
 #                padrão da frequência (mensal: [2, 14]). Passou do prazo, o site mostra
@@ -203,6 +205,7 @@ series:
       Tabela 5932, variável 6562, PIB a preços de mercado (classificação 11255, categoria
       90707). Variação do volume dos quatro últimos trimestres sobre os quatro anteriores.
     faixa: [-20, 20]
+    conferir_com: {serie: bcb_sgs_22099, regra: acumulado_4_trimestres, tolerancia: "0.06", anos: 10}
     calendario: 9300
   - id: ibge_agregados_5932_6564
     source_id: ibge_agregados
@@ -222,6 +225,7 @@ series:
       Tabela 5932, variável 6564, PIB a preços de mercado (classificação 11255, categoria
       90707). Variação do volume sobre o trimestre anterior, com ajuste sazonal.
     faixa: [-20, 20]
+    conferir_com: {serie: bcb_sgs_22109, regra: variacao_trimestral, tolerancia: "0.06", anos: 10}
     calendario: 9300
 
   # ---- Trabalho ----
@@ -242,6 +246,7 @@ series:
       tinham, divididas pela força de trabalho. Trimestre móvel: o período set/2026 é
       jul–set/2026.
     faixa: [0, 40]
+    conferir_com: {serie: bcb_sgs_24369, regra: igual}
     calendario: 9171
   - id: ibge_agregados_6390_5933
     source_id: ibge_agregados
@@ -496,3 +501,56 @@ series:
     desde: 2001-12-01
     # Mesma divulgação da dívida bruta (estatísticas fiscais do BC).
     prazo: [3, 14]
+
+  # ---- Cópias do IBGE no SGS (segunda fonte, `conferir_com`; não aparecem no site) ----
+  - id: bcb_sgs_24369
+    source_id: bcb_sgs
+    codigo_externo: "24369"
+    na_fonte:
+      nome: "Taxa de desocupação - PNADC"
+      unidade: "%"
+      periodicidade: "M"
+    nome: Taxa de desocupação (PNAD Contínua), cópia do Banco Central
+    unidade: "%"
+    frequencia: trimestral_movel
+    tipo: taxa
+    monetaria: false
+    nota_metodologia: >-
+      Série 24369 do SGS. Republica a tabela 6381/4099 do IBGE; idêntica em todos os
+      175 trimestres móveis de mar/2012 a set/2026 (conferido em 02/11/2026).
+    faixa: [0, 40]
+    desde: 2012-03-01
+  - id: bcb_sgs_22099
+    source_id: bcb_sgs
+    codigo_externo: "22099"
+    na_fonte:
+      nome: "PIB trimestral - Dados observados - Produto Interno Bruto a preços de mercado"
+      unidade: "Índice"
+      periodicidade: "T"
+    nome: PIB trimestral, índice sem ajuste sazonal, cópia do Banco Central
+    unidade: índice
+    frequencia: trimestral
+    tipo: nivel
+    monetaria: false
+    nota_metodologia: >-
+      Série 22099 do SGS (índice do PIB das Contas Nacionais Trimestrais do IBGE, sem
+      ajuste). Usada para conferir a taxa acumulada em 4 trimestres (5932/6562).
+    faixa: [30, 400]
+    desde: 1996-01-01
+  - id: bcb_sgs_22109
+    source_id: bcb_sgs
+    codigo_externo: "22109"
+    na_fonte:
+      nome: "PIB trimestral - Dados dessazonalizados - Produto Interno Bruto a preços de mercado"
+      unidade: "Índice"
+      periodicidade: "T"
+    nome: PIB trimestral, índice com ajuste sazonal, cópia do Banco Central
+    unidade: índice
+    frequencia: trimestral
+    tipo: nivel
+    monetaria: false
+    nota_metodologia: >-
+      Série 22109 do SGS (índice dessazonalizado das Contas Nacionais Trimestrais do IBGE).
+      Usada para conferir a taxa contra o trimestre anterior (5932/6564).
+    faixa: [30, 400]
+    desde: 1996-01-01

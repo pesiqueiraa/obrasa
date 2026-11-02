@@ -4,6 +4,8 @@ Para cada série: conferir a descrição na fonte → buscar → guardar respost
 validar → gravar. As regras de validação são as mesmas para todas (docs/06, "Testes"):
   * nome, unidade, periodicidade e categorias iguais a `na_fonte` (pipelines/metadados.py);
   * período novo ou revisado sem salto fora do histórico (pipelines/saltos.py);
+  * no IBGE, igual à cópia do Banco Central quando houver (`conferir_com`,
+    pipelines/segunda_fonte.py). O SGS é coletado antes, na mesma execução;
   * no BCB, o último valor do webservice SGS igual ao da API de dados;
   * nenhum valor fora da faixa plausível declarada na série;
   * nenhum período no futuro (a meta Selic traz datas até a próxima reunião);
@@ -23,7 +25,7 @@ from zoneinfo import ZoneInfo
 
 import psycopg
 
-from pipelines import db, metadados, saltos
+from pipelines import db, metadados, saltos, segunda_fonte
 from pipelines.config import Registry, Series
 from pipelines.jobs.report import Report
 from pipelines.models import Observation, ValidationError
@@ -150,6 +152,12 @@ def collect_ibge_table(
     for s, var in zip(group, variaveis, strict=True):
         validate(data[var], s, today)
         saltos.confere_serie(conn, s.id, s.tipo, data[var], liberacoes, report)
+        if s.conferir_com:
+            c = s.conferir_com
+            copia = {d: v for d, (v, _) in db.current_values(conn, c.serie).items()}
+            desde = date(today.year - c.anos, today.month, 1) if c.anos else None
+            n = segunda_fonte.confere(s.id, c.serie, c.regra, c.tolerancia, desde, data[var], copia)
+            log.info("%s: igual a %s em %d períodos", s.id, c.serie, n)
 
     with conn.transaction():
         for s, var in zip(group, variaveis, strict=True):

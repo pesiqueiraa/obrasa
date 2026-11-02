@@ -56,6 +56,10 @@ Resposta: `[{"data":"01/07/2026","valor":"0.07"}]`
 | 4537 | Dívida bruta do governo geral (% do PIB), metodologia até 2007 | % | Mensal | ok |
 | 4513 | Dívida líquida do setor público consolidado (% do PIB) | % | Mensal | ok (testado em 01/11/2026: desde dez/2001) |
 | 24363 | IBC-Br, sem ajuste sazonal | Índice | Mensal | ok (testado em 01/11/2026: desde jan/2003) |
+| 24369 | Taxa de desocupação - PNADC (cópia da tabela 6381/4099 do IBGE) | % | Mensal (trimestre móvel) | ok (02/11/2026: igual ao IBGE nos 175 trimestres móveis de mar/2012 a set/2026; segunda fonte da desocupação) |
+| 22099 | PIB trimestral, dados observados, índice (Contas Nacionais do IBGE) | Índice | Trimestral | ok (02/11/2026: a taxa em 4 trimestres calculada dele difere da tabela 5932/6562 em até 0,05 p.p. desde 1998, arredondamento; em 1997 a diferença chega a 1 p.p.; segunda fonte do PIB nos últimos 10 anos) |
+| 22109 | PIB trimestral, dados dessazonalizados, índice | Índice | Trimestral | ok (02/11/2026: a taxa contra o trimestre anterior calculada dele difere da tabela 5932/6564 em até 0,06 p.p., arredondamento; segunda fonte nos últimos 10 anos) |
+| 24382 | Rendimento médio real habitual das pessoas ocupadas - PNADC | R$ | Mensal | ok, mas **não serve de segunda fonte**: difere da tabela 6390/5933 em todos os 175 períodos (02/11/2026: R$ 3.676 contra R$ 3.790 em set/2026), provavelmente por outro mês-base do deflator |
 | 5793 | NFSP sem desvalorização cambial (% PIB), fluxo acumulado em 12 meses, resultado primário, setor público consolidado | % | Mensal | ok (nome e unidade conferidos no webservice SGS em 02/11/2026; ainda não usada no site) |
 | 4649 | NFSP sem desvalorização cambial, fluxo mensal corrente, resultado primário, setor público consolidado | R$ (milhões) | Mensal | ok (conferida no webservice SGS em 02/11/2026; ainda não usada) |
 | 5364 | NFSP sem desvalorização cambial (% PIB), fluxo mensal corrente, resultado primário, setor público consolidado | % | Mensal | ok (conferida no webservice SGS em 02/11/2026; ainda não usada) |
@@ -77,6 +81,7 @@ SOAPAction: getUltimoValorXML
 - A resposta SOAP traz, dentro de `getUltimoValorXMLReturn`, um XML em ISO-8859-1 com `NOME`, `CODIGO`, `PERIODICIDADE` (`D`, `M`), `UNIDADE`, `DATA` (dia, mês, ano) e `VALOR` com vírgula decimal.
 - Código inexistente responde HTTP 500 (SOAP Fault).
 - O coletor usa o webservice em toda coleta do SGS: nome, unidade e periodicidade precisam ser iguais a `na_fonte` em `config/sources.yaml`, e o último valor precisa ser igual ao da API JSON (dois serviços diferentes do BC). Ver `pipelines/metadados.py`.
+- **Segunda fonte:** o BC republica no SGS séries do IBGE. Quando a cópia confere com o histórico completo, ela entra em `conferir_com` (`config/sources.yaml`) e a coleta da tabela do IBGE para se as duas discordarem (`pipelines/segunda_fonte.py`). Cópia que difere por método, como o rendimento 24382, não entra.
 - A meta Selic (432) vem com a data da véspera da próxima reunião, no futuro: o coletor pede a API JSON até essa data e descarta o que passa de hoje.
 
 Página de metodologia do IPCA no IBGE, citada em `config/indicators.yaml`: `confirmar` (HTTP 403 a clientes automáticos em 01/11/2026; conferir num navegador antes de exibir no site).
