@@ -56,6 +56,7 @@ DATABASE_URL="$DB_URL" uv run python -m pipelines.run auditar   # banco igual à
 pnpm --filter @brasilado/web auditar-tela http://localhost:3000   # tela igual ao banco? (site rodando)
 uv run python -m pipelines.agentes.investigar data/agentes/falhas-series.json   # IA explica a falha (ANTHROPIC_API_KEY, AGENTES_DATABASE_URL)
 uv run python -m pipelines.agentes.revisar main..HEAD   # IA revisa a mudança antes do merge
+BACKUP_DESTINO=pasta uv run python -m pipelines.backup   # cópia de segurança (docs/11; no Actions vai para o R2)
 uv run python -m pipelines.agentes.auditar_textos   # IA confere frases e metodologia contra docs/02
 uv run python -m pipelines.agentes.avaliar   # IA nos casos de causa conhecida (gasta API)
 uv run python -m pipelines.agentes.avaliar_revisor   # revisor nos erros plantados (gasta API)

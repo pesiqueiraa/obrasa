@@ -18,6 +18,7 @@ Esta pasta descreve o que estamos construindo, por quê e com quais regras. Ela 
 | 08 | [Decisões em aberto](08-decisoes-em-aberto.md) | O que ainda não foi decidido, com recomendação provisória | Tarefas que dependem dessas decisões |
 | 09 | [Calendário e ganchos](09-calendario.md) | Datas e divulgações recorrentes que pautam o produto | Planejar conteúdo e jobs |
 | 10 | [Próximos passos pós-MVP](10-pos-mvp.md) | Roadmap de features depois da primeira versão | Planejar fases seguintes |
+| 11 | [Colocar em produção](11-producao.md) | Ordem dos passos, segredos, cópia de segurança (Cloudflare R2) e vigia (UptimeRobot) | Publicar ou mudar a infraestrutura |
 | — | [DESIGN.md](../DESIGN.md) (raiz do repositório) | Design system: adapta o Carbon da IBM e aponta para as bases em `design/base/` | Qualquer tarefa de interface |
 
 ## Estrutura no repositório

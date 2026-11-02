@@ -223,6 +223,14 @@ A esteira roda sem ninguém olhando; duas peças dizem quando algo precisa de um
   diferentes: comenta. Voltou a funcionar: comenta e fecha. Um feed fora do ar a cada 30
   minutos vira uma issue, não 48 e-mails por dia.
 
+- **Cópia de segurança (`pipelines/backup.py`, `backup.yml`):** toda semana, dump do
+  schema `public` e as respostas brutas novas vão para o Cloudflare R2, fora do Supabase.
+  Ficam as últimas 12 semanas de dump; as respostas brutas nunca são apagadas (o caminho
+  leva o hash, então cada arquivo é copiado uma vez e conferido contra o hash do nome). O
+  restauro é testado a cada cópia: o dump volta do R2, é restaurado num Postgres vazio e
+  cada tabela precisa ter as linhas contadas antes do dump. Passo a passo da conta em
+  [11](11-producao.md).
+
 ## Regras de uso de IA
 
 **Permitido:**
