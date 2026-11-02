@@ -112,6 +112,7 @@ class Ferramentas:
     registry: Registry
     saidas: list[str] = field(default_factory=list)
     tempo_limite: str = "15s"  # por consulta
+    raiz: Path = RAIZ  # repositório lido por ler_doc (a avaliação usa uma cópia)
 
     def _registra(self, saida: str) -> str:
         self.saidas.append(saida)
@@ -251,7 +252,7 @@ class Ferramentas:
 
     def ler_doc(self, caminho: str, inicio: int = 0) -> str:
         """Arquivo de docs/, config/ ou das regras do projeto (CLAUDE.md, DESIGN.md)."""
-        alvo = verifica_doc(caminho)
+        alvo = verifica_doc(caminho, self.raiz)
         return self._registra(_trecho(alvo.read_text(encoding="utf-8"), inicio, LIMITE_TEXTO))
 
 
@@ -263,9 +264,10 @@ def verifica_url_oficial(url: str) -> None:
         raise FerramentaRecusada(f"só https em domínios oficiais: {', '.join(DOMINIOS_OFICIAIS)}")
 
 
-def verifica_doc(caminho: str) -> Path:
-    alvo = (RAIZ / caminho).resolve()
-    relativo = alvo.relative_to(RAIZ).as_posix() if alvo.is_relative_to(RAIZ) else ""
+def verifica_doc(caminho: str, raiz: Path = RAIZ) -> Path:
+    raiz = raiz.resolve()
+    alvo = (raiz / caminho).resolve()
+    relativo = alvo.relative_to(raiz).as_posix() if alvo.is_relative_to(raiz) else ""
     permitido = relativo and any(
         relativo == p or (p.endswith("/") and relativo.startswith(p)) for p in DOCS_PERMITIDOS
     )

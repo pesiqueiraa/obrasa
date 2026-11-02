@@ -198,16 +198,8 @@ def rascunho_liberacao(erros: list[str]) -> str | None:
 
 # --- relatório ---
 
-PRECO = {  # US$ por milhão de tokens, claude-opus-5-5 (escrita de cache: 1,25 × entrada)
-    "input_tokens": 4.0,
-    "cache_creation_input_tokens": 5.0,
-    "cache_read_input_tokens": 0.2,
-    "output_tokens": 20.0,
-}
-
-
-def custo(uso: dict) -> float:
-    return sum(uso.get(k, 0) * v for k, v in PRECO.items()) / 1_000_000
+custo = nucleo.custo  # mantido para avaliar.py
+PRECO = nucleo.PRECO
 
 
 def relatorio(falhas: dict, r: nucleo.Resultado) -> str:

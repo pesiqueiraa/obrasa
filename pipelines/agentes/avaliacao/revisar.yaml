@@ -1,0 +1,75 @@
+# Casos de avaliação do revisor (pipelines/agentes/avaliar_revisor.py).
+#
+# Cada caso aplica trocas num git worktree descartável a partir do HEAD, faz o commit e
+# roda o revisor sobre esse commit. `esperado`: vereditos aceitos. `comentario_em`: o
+# revisor precisa comentar esse arquivo (com uma das `regras`, se houver).
+# Erro que o próprio config já recusa (como código SGS trocado sem trocar o id) fica
+# fora: o CI pega antes.
+
+casos:
+  - id: mudanca-correta
+    nota: Nota metodológica ganha uma frase factual. Não há o que apontar.
+    esperado: [sem_problemas, ver_comentarios]
+    sem_problema_em: config/sources.yaml
+    trocas:
+      - arquivo: config/sources.yaml
+        de: "      jul–set/2026.\n    faixa: [0, 40]\n    conferir_com: {serie: bcb_sgs_24369"
+        para: "      jul–set/2026. Pesquisa domiciliar por amostra (PNAD Contínua).\n    faixa: [0, 40]\n    conferir_com: {serie: bcb_sgs_24369"
+
+  - id: na-fonte-errada
+    nota: Unidade do IBC-Br em na_fonte trocada; a fonte declara "Índice".
+    esperado: [problema]
+    comentario_em: config/sources.yaml
+    regras: [na_fonte, regra_2_fonte_e_data, outro]
+    trocas:
+      - arquivo: config/sources.yaml
+        de: "      nome: \"Índice de Atividade Econômica do Banco Central - IBC-Br\"\n      unidade: \"Índice\""
+        para: "      nome: \"Índice de Atividade Econômica do Banco Central - IBC-Br\"\n      unidade: \"Var. %\""
+
+  - id: adjetivo-fora-da-lista
+    nota: Adjetivo valorativo que a lista de termos proibidos não pega.
+    esperado: [problema]
+    comentario_em: config/sources.yaml
+    regras: [regra_4_linguagem]
+    trocas:
+      - arquivo: config/sources.yaml
+        de: "      jul–set/2026.\n    faixa: [0, 40]\n    conferir_com: {serie: bcb_sgs_24369"
+        para: "      jul–set/2026. O resultado recente mostra um mercado de trabalho saudável.\n    faixa: [0, 40]\n    conferir_com: {serie: bcb_sgs_24369"
+
+  - id: liberacao-com-valor-errado
+    nota: Liberação do dólar com dígitos trocados (a fonte publica 5.5007).
+    esperado: [problema]
+    comentario_em: config/aprovacoes.yaml
+    regras: [liberacao, regra_1_numero_do_banco]
+    trocas:
+      - arquivo: config/aprovacoes.yaml
+        de: "liberacoes: []"
+        para: |-
+          liberacoes:
+            - serie: bcb_sgs_1
+              periodo: 2026-10-26
+              valor: "5.5070"
+              conferido_por: Pedro
+              conferido_em: 2026-11-02
+              evidencia: https://www.bcb.gov.br/estabilidadefinanceira/historicocotacoes
+              motivo: variação do câmbio no dia, conferida na cotação do Banco Central
+
+  - id: tolerancia-afrouxada
+    nota: Tolerância da segunda fonte do PIB multiplicada por 10, sem justificativa.
+    esperado: [problema, ver_comentarios]
+    comentario_em: config/sources.yaml
+    regras: [trava_afrouxada]
+    trocas:
+      - arquivo: config/sources.yaml
+        de: 'conferir_com: {serie: bcb_sgs_22109, regra: variacao_trimestral, tolerancia: "0.06", anos: 10}'
+        para: 'conferir_com: {serie: bcb_sgs_22109, regra: variacao_trimestral, tolerancia: "0.6", anos: 10}'
+
+  - id: endpoint-ok-sem-teste
+    nota: Série nova marcada ok em docs/05 sem data de teste (regra 6).
+    esperado: [problema, ver_comentarios]
+    comentario_em: docs/05-fontes-de-dados.md
+    regras: [regra_6_confirmar]
+    trocas:
+      - arquivo: docs/05-fontes-de-dados.md
+        de: "| 24369 |"
+        para: "| 24370 | Pessoas em idade de trabalhar - PNADC | Unidades (mil) | Mensal | ok |\n| 24369 |"

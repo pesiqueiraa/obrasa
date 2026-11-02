@@ -53,7 +53,9 @@ DATABASE_URL="$DB_URL" uv run python -m pipelines.run atrasos   # algum indicado
 DATABASE_URL="$DB_URL" uv run python -m pipelines.run auditar   # banco igual às respostas brutas?
 pnpm --filter @brasilado/web auditar-tela http://localhost:3000   # tela igual ao banco? (site rodando)
 uv run python -m pipelines.agentes.investigar data/agentes/falhas-series.json   # IA explica a falha (ANTHROPIC_API_KEY, AGENTES_DATABASE_URL)
+uv run python -m pipelines.agentes.revisar main..HEAD   # IA revisa a mudança antes do merge
 uv run python -m pipelines.agentes.avaliar   # IA nos casos de causa conhecida (gasta API)
+uv run python -m pipelines.agentes.avaliar_revisor   # revisor nos erros plantados (gasta API)
 uv run ruff check pipelines scripts
 uv run python scripts/check_terms.py   # termos proibidos (docs/02)
 pnpm lint && pnpm typecheck && pnpm test

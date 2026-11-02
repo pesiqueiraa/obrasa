@@ -250,6 +250,12 @@ pelo git (`config/aprovacoes.yaml`).
   evidências citadas literalmente das ferramentas e links oficiais para conferir.
   Diagnóstico que não passa nas verificações sai recusado, sem o texto do modelo. Em
   falha de salto, o rascunho de liberação é montado por código a partir do erro.
+- **Revisor** (`pipelines/agentes/revisar.py`): revisa `base..head` em `config/`,
+  `pipelines/`, `scripts/`, `docs/`, `supabase/migrations/` e `apps/web/src/`. Confere
+  série nova ou alterada contra a descrição na fonte ao vivo, liberação contra o valor
+  publicado, status `ok` sem teste (regra 6), linguagem (regra 4, inclusive adjetivos fora
+  da lista automática) e trava afrouxada sem motivo. Só comenta; sai com 1 quando há
+  comentário de gravidade "problema". Lê o diff por ferramenta, só dos arquivos alterados.
 - **Núcleo** (`pipelines/agentes/nucleo.py`): `claude-opus-5-5`, saída em JSON com
   schema, até 25 turnos, uma chance de correção quando a verificação recusa, fallback
   do servidor em caso de recusa de segurança. Cada execução grava um JSONL em
@@ -257,7 +263,10 @@ pelo git (`config/aprovacoes.yaml`).
   prompt (verificação 3 acima).
 - **Avaliação** (`pipelines/agentes/avaliar.py`): casos com causa conhecida em
   `pipelines/agentes/avaliacao/investigar.yaml`, incluindo uma tentativa de injeção numa
-  resposta bruta. Gasta API; rodar antes de mudar prompt ou modelo.
+  resposta bruta. O revisor tem `pipelines/agentes/avaliar_revisor.py`, com erros
+  plantados num git worktree descartável (`avaliacao/revisar.yaml`). Gasta API; rodar
+  antes de mudar prompt ou modelo. Em 02/11/2026: investigador 6 de 6 (US$ 1,53),
+  revisor 6 de 6 (US$ 0,44).
 - **Credencial:** `AGENTES_DATABASE_URL`. Local: `postgresql://leitor:leitor@127.0.0.1:55322/postgres`
   (senha em `supabase/seed.sql`, que só roda no banco local). Produção: senha definida à
   mão no painel.

@@ -38,6 +38,19 @@ from scripts.check_terms import check_text, load_rules
 log = logging.getLogger(__name__)
 
 MODELO = "claude-opus-5-5"
+PRECO = {  # US$ por milhão de tokens, claude-opus-5-5 (escrita de cache: 1,25 × entrada)
+    "input_tokens": 4.0,
+    "cache_creation_input_tokens": 5.0,
+    "cache_read_input_tokens": 0.2,
+    "output_tokens": 20.0,
+}
+
+
+def custo(uso: dict) -> float:
+    """Custo estimado de uma execução, em US$."""
+    return sum(uso.get(k, 0) * v for k, v in PRECO.items()) / 1_000_000
+
+
 BETA_FALLBACK = "server-side-fallback-2026-07-01"
 
 
