@@ -315,7 +315,7 @@ Este arquivo **adapta e aponta**. Ele não repete as bases; define só o que o o
 - **Ideia:** o Cruzeiro do Sul ao lado do nome. A constelação é do céu brasileiro, não tem cor nem lado e guiou a navegação: um ponto de referência para se orientar, que é o papel do site com os dados. Escolhido em 02/11/2026 entre outros caminhos (anéis do pau-brasil, ondas do calçadão, só o nome); decisão D1 em [docs/08](docs/08-decisoes-em-aberto.md).
 - **Construção** (`components/Logo.tsx`, viewBox `5 0 30 40`): as cinco estrelas nas posições reais (ascensão reta e declinação do catálogo Hipparcos), vistas do chão olhando para o sul, com Gacrux em cima e Acrux embaixo. O raio de cada ponto segue o brilho: Acrux 3,7; Mimosa 3,3; Gacrux 3,1; δ 2,4; ε 1,8. Pontos redondos, sem as pontas de estrela da bandeira, que mostra o céu visto de fora (espelhado em relação ao nosso).
 - **Nome:** "oBrasa" em IBM Plex Serif 500, espaçamento -0,01em, com o "o" em azul-tinta. Símbolo com 1,3em de altura, centrado na altura do nome, a 0,32em dele.
-- **Cores:** símbolo e "o" em `{colors.primary}`, "Brasa" em `{colors.ink}`. No fundo escuro (rodapé, modo escuro), `{colors.dark-primary}` e branco. Nunca verde-amarelo, vermelho, laranja ou as estrelas de pontas da bandeira ([02](docs/02-principios-de-neutralidade.md#8-cor-também-tem-lado)).
+- **Cores:** símbolo e "o" em `{colors.primary}`, "Brasa" em `{colors.ink}`. No fundo escuro (rodapé, modo escuro), símbolo em `{colors.dark-primary}` e nome em branco; no rodapé o "o" também fica branco. Nunca verde-amarelo, vermelho, laranja ou as estrelas de pontas da bandeira ([02](docs/02-principios-de-neutralidade.md#8-cor-também-tem-lado)).
 - **Ícone** (`app/icon.svg`, `app/apple-icon.png`): quadrado azul-tinta, cantos retos, só a constelação em branco a 80% do quadro; pontos com raio mínimo de 2,4 para a estrela menor não sumir a 16px. **Imagem de compartilhamento** (`app/opengraph-image.png`): logotipo grande, a frase "Dados oficiais do Brasil, com contexto e sem lado." e filete azul-tinta embaixo; nenhum número.
 - **Uso:** cabeçalho (23px) e rodapé (40px). Ao abrir o site, as estrelas aparecem uma a uma, de cima para baixo (0,4s; nada com `prefers-reduced-motion`). Respiro mínimo: a altura do "o" em volta. Não mudar a posição das estrelas, não trocar por estrelas de pontas, não esticar, não separar o símbolo do nome no cabeçalho.
 
@@ -469,7 +469,7 @@ Biblioteca `motion`, com `MotionConfig reducedMotion="user"`: quem pede menos mo
 - Fotos só as que o próprio feed do veículo indica para a matéria, carregadas do endereço do veículo (sem `next/image`, que copiaria a imagem para o nosso servidor) e sempre dentro de um link para a matéria no site do veículo. Se o veículo recusar a imagem, o cartão fica só com o texto. Matéria sem foto entra na lista de títulos, nunca com imagem genérica no lugar.
 
 ### Componentes herdados sem mudança
-Botões, campos de texto, abas, navegação e rodapé seguem a base IBM. O rodapé invertido do oBrasa traz sempre os links Metodologia, Correções, Quem financia e Reportar erro.
+Botões, campos de texto, abas, navegação e rodapé seguem a base IBM. O rodapé invertido do oBrasa traz sempre os links Metodologia, Correções, Reportar erro e Privacidade. A página "Quem financia" volta ao rodapé quando o financiamento for decidido ([08](docs/08-decisoes-em-aberto.md), D3).
 
 ## Do's and Don'ts
 

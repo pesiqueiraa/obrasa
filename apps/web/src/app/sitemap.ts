@@ -11,7 +11,6 @@ const FIXAS = [
   "/comparar",
   "/agenda",
   "/correcoes",
-  "/quem-financia",
   "/reportar-erro",
   "/privacidade",
 ];

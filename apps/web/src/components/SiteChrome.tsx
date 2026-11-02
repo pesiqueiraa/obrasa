@@ -46,9 +46,6 @@ export function SiteFooter() {
             <Link href="/correcoes">Correções</Link>
           </li>
           <li>
-            <Link href="/quem-financia">Quem financia</Link>
-          </li>
-          <li>
             <Link href="/reportar-erro">Reportar erro</Link>
           </li>
           <li>

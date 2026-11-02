@@ -89,8 +89,9 @@
   .marca {
     fill: var(--bd-color-dark-primary);
   }
+  // No rodapé o nome inteiro fica em branco; só o símbolo leva a cor (DESIGN.md, "Logotipo").
   .logoO {
-    color: var(--bd-color-dark-primary);
+    color: inherit;
   }
 }
 

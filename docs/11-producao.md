@@ -17,7 +17,7 @@ O que ainda não está feito e precisa de decisão ou trabalho antes do lançame
 | Repositório público ou privado | Em aberto ([08](08-decisoes-em-aberto.md), D8) | Público: sem limite de minutos no Actions, código auditável. Privado: 2.000 minutos por mês no plano grátis, e só as notícias gastam boa parte |
 | Proteção da `main` | Não configurada | A coleta lê o config da `main`. Exigir CI verde antes do merge impede que um config errado chegue à coleta |
 | Atualização de dependências | Manual | Ativar o Dependabot para o npm, o uv e as GitHub Actions |
-| Formato jurídico e financiamento | Em aberto (D2, D3) | Não bloqueia o deploy técnico; bloqueia o lançamento público e a página "Quem financia" |
+| Formato jurídico e financiamento | Em aberto (D2, D3) | Não bloqueia o deploy técnico; bloqueia o lançamento público. A página "Quem financia" foi retirada em 02/11/2026 e volta quando D3 for decidido |
 
 ## 1. Supabase
 
