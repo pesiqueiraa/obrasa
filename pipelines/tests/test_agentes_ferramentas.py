@@ -78,7 +78,8 @@ def ferr_db():
 
 @pytest.mark.db
 def test_consulta_le_como_leitor(ferr_db):
-    saida = ferr_db.consultar_banco("select current_user, count(*) > 0 from series")
+    # Lê a tabela (sem permissão daria erro); o CI começa com o banco vazio.
+    saida = ferr_db.consultar_banco("select current_user, count(*) >= 0 from series")
     assert '"leitor"' in saida and "true" in saida
 
 
@@ -97,7 +98,7 @@ def test_consulta_nao_escreve_nem_escapa(ferr_db, sql):
     with pytest.raises(f.FerramentaRecusada):
         ferr_db.consultar_banco(sql)
     # a conexão continua utilizável e sem escrita depois da recusa
-    assert "true" in ferr_db.consultar_banco("select count(*) > 0 from series")
+    assert "true" in ferr_db.consultar_banco("select count(*) >= 0 from series")
 
 
 @pytest.mark.db

@@ -22,6 +22,8 @@ concurrency:
 jobs:
   noticias:
     name: Feeds dos veículos
+    # Agendado só roda com a variável PRODUCAO_ATIVA=true (docs/11); à mão roda sempre.
+    if: github.event_name != 'schedule' || vars.PRODUCAO_ATIVA == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: producao

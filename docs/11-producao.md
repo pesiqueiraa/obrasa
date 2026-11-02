@@ -30,11 +30,25 @@ O que ainda não está feito e precisa de decisão ou trabalho antes do lançame
 
 ## 2. GitHub
 
-1. Em Settings → Environments, criar o ambiente `producao` e restringir a branch `main`. Todos os workflows agendados usam esse ambiente, e os segredos ficam nele.
-2. Cadastrar os segredos do ambiente (tabela abaixo).
-3. Em Settings → Branches, proteger a `main`: exigir os checks do CI (`ci.yml`).
-4. Rodar à mão, em Actions, na ordem: Coleta → Notícias → Auditoria → Atrasos. A primeira coleta grava o histórico completo e pode levar alguns minutos.
-5. Conferir que nenhuma issue "Alerta" foi aberta. Se foi, ela diz o que falhou.
+Já feito em 02/11/2026 (repositório público `pesiqueiraa/obrasa`):
+
+- Ambiente `producao`, só para a `main`. Os workflows agendados usam esse ambiente.
+- `main` protegida: exige os quatro checks do CI, sem force push e sem apagar a branch.
+- Dependabot (`.github/dependabot.yml`), alertas de dependência, varredura de segredos com
+  bloqueio no push e relato privado de falha de segurança (`SECURITY.md`).
+- Actions com token só de leitura por padrão; cada workflow pede o que precisa.
+- Workflows agendados parados: só rodam com a variável `PRODUCAO_ATIVA=true`. À mão
+  (Actions → Run workflow) rodam sempre.
+
+Falta, no dia da produção:
+
+1. Cadastrar os segredos em Settings → Environments → `producao` (tabela abaixo). A chave
+   vai direto no painel, nunca no chat ou no terminal.
+2. Rodar à mão, em Actions, na ordem: Coleta → Notícias → Auditoria → Atrasos. A primeira
+   coleta grava o histórico completo e pode levar alguns minutos.
+3. Conferir que nenhuma issue "Alerta" foi aberta. Se foi, ela diz o que falhou.
+4. Ligar os agendamentos: Settings → Secrets and variables → Actions → Variables →
+   `PRODUCAO_ATIVA` = `true`.
 
 ## 3. Vercel (site)
 

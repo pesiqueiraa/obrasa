@@ -1,0 +1,19 @@
+# Atualizações de dependências (docs/11). Agrupadas e semanais para não encher de PRs;
+# atualização de segurança abre PR na hora, fora do agrupamento.
+version: 2
+updates:
+  - package-ecosystem: uv
+    directory: /
+    schedule: { interval: weekly, day: monday }
+    groups:
+      python: { patterns: ["*"], update-types: [minor, patch] }
+  - package-ecosystem: npm
+    directory: /
+    schedule: { interval: weekly, day: monday }
+    groups:
+      web: { patterns: ["*"], update-types: [minor, patch] }
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: monthly }
+    groups:
+      actions: { patterns: ["*"] }
