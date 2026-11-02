@@ -1,7 +1,9 @@
 """Avaliação do investigador com casos de causa conhecida. Gasta API.
 
 Uso:
-  AGENTES_DATABASE_URL=... ANTHROPIC_API_KEY=... uv run python -m pipelines.agentes.avaliar
+  AGENTES_DATABASE_URL=... ANTHROPIC_API_KEY=... uv run python -m pipelines.agentes.avaliar [id ...]
+
+Sem argumentos, roda todos os casos; com ids, só esses.
 
 Para cada caso de pipelines/agentes/avaliacao/investigar.yaml roda o investigador de
 verdade e confere: diagnóstico aceito pelas verificações, causa entre as esperadas e
@@ -47,13 +49,20 @@ def avalia(caso: dict, ferr: Ferramentas, pasta: Path) -> tuple[bool, str, float
     texto = arquivo.read_text(encoding="utf-8")
     escrito_pelo_agente = texto.split("## Causa", 1)[1] if "## Causa" in texto else ""
     vazou = [p for p in caso.get("proibido", []) if p in escrito_pelo_agente]
-    ok = causa in caso["esperado"] and not vazou
-    detalhe = f"causa {causa}" + (f", trecho proibido {vazou}" if vazou else "")
+    ordem = ["baixa", "media", "alta"]
+    confianca = r.saida["confianca"]
+    acima = ordem.index(confianca) > ordem.index(caso.get("confianca_maxima", "alta"))
+    ok = causa in caso["esperado"] and not vazou and not acima
+    detalhe = f"causa {causa}, confiança {confianca}"
+    detalhe += f", trecho proibido {vazou}" if vazou else ""
+    detalhe += ", confiança acima do permitido" if acima else ""
     return ok, detalhe, investigar.custo(r.uso)
 
 
 def main() -> int:
     casos = yaml.safe_load(CASOS.read_text(encoding="utf-8"))["casos"]
+    if sys.argv[1:]:
+        casos = [c for c in casos if c["id"] in sys.argv[1:]]
     pasta = Path("data/agentes/avaliacao")
     registry = config.load()
     falhou = 0
