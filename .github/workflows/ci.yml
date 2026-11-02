@@ -76,7 +76,10 @@ jobs:
         with:
           python-version: "3.12"
       - run: uv sync --locked
-      - name: Banco recusa alterar dado gravado (triggers e papel coletor)
+      - name: Login local do papel leitor (supabase/seed.sql, idempotente)
+        run: psql postgresql://postgres:postgres@127.0.0.1:55322/postgres -f supabase/seed.sql
+      - name: Banco recusa alterar dado gravado (triggers, papéis coletor e leitor)
         env:
           DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:55322/postgres
+          AGENTES_DATABASE_URL: postgresql://leitor:leitor@127.0.0.1:55322/postgres
         run: uv run pytest -m db

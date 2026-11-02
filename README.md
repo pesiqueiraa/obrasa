@@ -39,6 +39,8 @@ DATABASE_URL="$DB_URL" SUPABASE_URL="$API_URL" SUPABASE_SERVICE_ROLE_KEY="$SERVI
 pnpm dev   # http://localhost:3000/indicador/ipca-12-meses
 ```
 
+Agentes de IA (`pipelines/agentes`, docs/06): entram no banco com o login do papel `leitor`, que só lê. No banco local, `supabase db reset` aplica `supabase/seed.sql`, que cria esse login; num banco já criado, rode o seed uma vez. Depois use `AGENTES_DATABASE_URL=postgresql://leitor:leitor@127.0.0.1:55322/postgres`.
+
 Sem Supabase Storage, use `RAW_STORE=local` para gravar as respostas brutas em `data/raw/`.
 
 ## Verificações
@@ -46,7 +48,7 @@ Sem Supabase Storage, use `RAW_STORE=local` para gravar as respostas brutas em `
 ```bash
 uv run pytest                          # pipelines (sem rede)
 uv run pytest -m network               # endpoints oficiais, ao vivo
-DATABASE_URL="$DB_URL" uv run pytest -m db   # banco recusa alterar dado gravado
+DATABASE_URL="$DB_URL" uv run pytest -m db   # banco recusa alterar dado; agente só lê
 DATABASE_URL="$DB_URL" uv run python -m pipelines.run atrasos   # algum indicador passou do prazo?
 DATABASE_URL="$DB_URL" uv run python -m pipelines.run auditar   # banco igual às respostas brutas?
 pnpm --filter @brasilado/web auditar-tela http://localhost:3000   # tela igual ao banco? (site rodando)

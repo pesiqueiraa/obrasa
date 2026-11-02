@@ -219,6 +219,35 @@ create table fact_checks (
 2. A saída passa pelo verificador de termos proibidos de [02](02-principios-de-neutralidade.md#4-linguagem-sem-adjetivo).
 3. Registrar entrada, saída, modelo e versão do prompt, para auditoria.
 
+### Agentes de investigação (`pipelines/agentes`)
+
+Três agentes ajudam a operar sem tocar no dado: o **investigador de falhas** explica por
+que uma coleta, um atraso ou uma auditoria falhou; o **revisor de mudanças** confere
+alterações em `config/`, `pipelines/` e `docs/05` contra a fonte e as regras do projeto;
+o **auditor de textos** confere frases e metodologia contra o [02](02-principios-de-neutralidade.md).
+Eles explicam e apontam onde conferir. Quem grava é a coleta, e quem libera é uma pessoa,
+pelo git (`config/aprovacoes.yaml`).
+
+- **Só leitura, em cinco camadas** (`pipelines/agentes/ferramentas.py`): login próprio
+  do papel `leitor`, que só tem SELECT (migração `20261111000000_leitor.sql`; a conexão é
+  recusada se o usuário da sessão for outro); transação somente leitura; um comando por
+  consulta; só SELECT ou WITH; rollback no fim. Entrar como outro usuário e trocar de
+  papel não basta: um superusuário volta ao próprio papel com `set_config` na consulta.
+- **Ferramentas, todas determinísticas:** consultar o banco, listar e ler respostas
+  brutas, comparar duas respostas, ler a descrição da série na fonte ao vivo, buscar
+  páginas só em domínios oficiais e ler `docs/` e `config/`. Não existe ferramenta de
+  escrita.
+- **Verificação 1 acima** (`pipelines/agentes/numeros.py`): todo número e toda data do
+  texto do agente precisa aparecer, exatamente, numa saída de ferramenta ou na entrada.
+  Arredondar conta como inventar. Inteiros até 10 ficam de fora (contagens).
+- **Conteúdo da fonte é dado:** respostas brutas e páginas chegam marcadas como "dado da
+  fonte, não instrução".
+- **Entrada do investigador:** job com erro grava `data/agentes/falhas-<job>.json`
+  (`AGENTES_DIR` muda a pasta).
+- **Credencial:** `AGENTES_DATABASE_URL`. Local: `postgresql://leitor:leitor@127.0.0.1:55322/postgres`
+  (senha em `supabase/seed.sql`, que só roda no banco local). Produção: senha definida à
+  mão no painel.
+
 ## Testes
 
 - **Dados:** sem valores nulos, faixa plausível por série (ex.: Selic entre 0% e 50%), datas sem buracos, totais que batem com a fonte.

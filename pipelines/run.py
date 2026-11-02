@@ -16,8 +16,12 @@ Variáveis de ambiente:
 from __future__ import annotations
 
 import argparse
+import json
 import logging
+import os
 import sys
+from datetime import UTC, datetime
+from pathlib import Path
 
 from pipelines import config, db, raw_store
 from pipelines.jobs import agenda, atrasos, auditar, eleicoes, ipca, noticias, regional, series
@@ -53,6 +57,26 @@ JOBS = {
 }
 
 
+def grava_falhas(job: str, report: Report, pasta: Path) -> Path:
+    """Erros do job em JSON, entrada do investigador (pipelines/agentes/investigar.py)."""
+    pasta.mkdir(parents=True, exist_ok=True)
+    destino = pasta / f"falhas-{job}.json"
+    destino.write_text(
+        json.dumps(
+            {
+                "job": job,
+                "executado_em": datetime.now(UTC).isoformat(timespec="seconds"),
+                "erros": report.errors,
+                "avisos": report.warnings,
+            },
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    return destino
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Coletores do oBrasa")
     parser.add_argument("job", choices=sorted(JOBS))
@@ -72,6 +96,9 @@ def main(argv: list[str] | None = None) -> int:
         print(f"AVISO: {w}")
     for e in report.errors:
         print(f"ERRO: {e}", file=sys.stderr)
+    if report.errors:
+        pasta = Path(os.environ.get("AGENTES_DIR", "data/agentes"))
+        print(f"Falhas para o investigador: {grava_falhas(args.job, report, pasta)}")
     return 1 if report.errors else 0
 
 
