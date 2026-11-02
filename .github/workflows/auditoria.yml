@@ -3,7 +3,8 @@ name: Auditoria
 # Auditoria do bruto (docs/06): todo dia às 21h de Brasília (00h UTC), depois das coletas.
 # Relê cada resposta bruta citada no banco, confere o SHA-256 gravado na coleta e
 # reprocessa com o mesmo parser. Se algum valor do banco não sair igual do bruto, ou se um
-# arquivo foi trocado, o job falha e o GitHub avisa por e-mail. Não grava nada.
+# arquivo foi trocado, o job falha e abre uma issue "Alerta" (scripts/alerta.py).
+# Não grava nada.
 
 on:
   schedule:
@@ -12,6 +13,7 @@ on:
 
 permissions:
   contents: read
+  issues: write  # alerta: uma issue aberta enquanto o job falhar (scripts/alerta.py)
 
 concurrency:
   group: auditoria
@@ -36,3 +38,8 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           RAW_STORE: supabase
         run: uv run python -m pipelines.run auditar
+      - name: Alerta (abre, atualiza ou fecha a issue do job)
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: uv run python scripts/alerta.py auditoria ${{ job.status }} data/agentes/falhas-auditar.json

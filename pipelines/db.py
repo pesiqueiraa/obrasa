@@ -9,6 +9,7 @@ from datetime import date, datetime
 from decimal import Decimal
 
 import psycopg
+from psycopg.types.json import Jsonb
 
 from pipelines.config import Registry
 from pipelines.models import Observation
@@ -230,3 +231,29 @@ def upsert_scheduled(conn: psycopg.Connection, series_id: str, scheduled: dict[d
             """,
             [(series_id, ref, day) for ref, day in scheduled.items()],
         )
+
+
+def grava_execucao(
+    conn: psycopg.Connection,
+    job: str,
+    iniciado_em: datetime,
+    erros: list[str],
+    avisos: list[str],
+    summaries: list[WriteSummary],
+) -> None:
+    """Uma linha em `execucoes` por job rodado, com sucesso ou não (vigia, /saude)."""
+    conn.execute(
+        """
+        insert into execucoes (job, iniciado_em, ok, novos, revisados, erros, avisos)
+        values (%s, %s, %s, %s, %s, %s, %s)
+        """,
+        (
+            job,
+            iniciado_em,
+            not erros,
+            sum(x.new for x in summaries),
+            sum(x.revised for x in summaries),
+            Jsonb(erros),
+            Jsonb(avisos),
+        ),
+    )

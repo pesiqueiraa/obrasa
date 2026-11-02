@@ -87,8 +87,19 @@ def main(argv: list[str] | None = None) -> int:
     )
     registry = config.load()
     store = raw_store.from_env()
+    iniciado_em = datetime.now(UTC)
     with db.connect() as conn:
-        report = JOBS[args.job](conn, store, registry)
+        try:
+            report = JOBS[args.job](conn, store, registry)
+        except Exception as exc:  # registra a execução antes de propagar
+            db.grava_execucao(conn, args.job, iniciado_em, [f"{args.job}: {exc}"], [], [])
+            raise
+        try:
+            db.grava_execucao(
+                conn, args.job, iniciado_em, report.errors, report.warnings, report.summaries
+            )
+        except Exception as exc:  # sem registro, o vigia acusa: o job precisa falhar também
+            report.errors.append(f"registro da execução falhou: {exc}")
 
     for s in report.summaries:
         print(f"{s.series_id}: {s.new} novos, {s.revised} revisados, {s.unchanged} sem mudança")

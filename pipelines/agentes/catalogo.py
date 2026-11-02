@@ -22,7 +22,8 @@ def leitura(ferr: Ferramentas) -> list[Ferramenta]:
             "observations_current (valor vigente: series_id, ref_date, value, revision, "
             "collected_at, raw_object), observations (todas as revisões), series, "
             "indicators, observacoes_uf_atual, releases (calendário de divulgação das fontes), "
-            "corrections. Para ver colunas: "
+            "corrections, execucoes (cada execução de job: job, iniciado_em, terminado_em, "
+            "ok, erros, avisos). Para ver colunas: "
             "select column_name from information_schema.columns where table_name = '...'.",
             {"sql": _TEXTO},
             ("sql",),

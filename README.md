@@ -39,6 +39,8 @@ DATABASE_URL="$DB_URL" SUPABASE_URL="$API_URL" SUPABASE_SERVICE_ROLE_KEY="$SERVI
 pnpm dev   # http://localhost:3000/indicador/ipca-12-meses
 ```
 
+Vigia (docs/06): `curl -i localhost:3000/saude` diz se cada job rodou no prazo (200) ou não (503). Cada execução de `pipelines.run` grava uma linha na tabela `execucoes`.
+
 Agentes de IA (`pipelines/agentes`, docs/06): entram no banco com o login do papel `leitor`, que só lê. No banco local, `supabase db reset` aplica `supabase/seed.sql`, que cria esse login; num banco já criado, rode o seed uma vez. Depois use `AGENTES_DATABASE_URL=postgresql://leitor:leitor@127.0.0.1:55322/postgres`.
 
 Sem Supabase Storage, use `RAW_STORE=local` para gravar as respostas brutas em `data/raw/`.

@@ -3,7 +3,8 @@ name: Notícias
 # Feeds RSS dos veículos de config/noticias.yaml a cada 30 minutos (docs/06 pede 15; 30
 # reduz a carga nos sites dos veículos). Só título, link, veículo, data e trecho curto
 # (regra 7). A falha de um feed vira erro no relatório e o job falha, mas os demais
-# feeds são gravados.
+# feeds são gravados. A falha abre uma issue "Alerta" (scripts/alerta.py); falhas
+# repetidas com os mesmos erros não notificam de novo.
 
 on:
   schedule:
@@ -12,6 +13,7 @@ on:
 
 permissions:
   contents: read
+  issues: write  # alerta: uma issue aberta enquanto o job falhar (scripts/alerta.py)
 
 concurrency:
   group: noticias
@@ -36,3 +38,8 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           RAW_STORE: supabase
         run: uv run python -m pipelines.run noticias
+      - name: Alerta (abre, atualiza ou fecha a issue do job)
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: uv run python scripts/alerta.py noticias ${{ job.status }} data/agentes/falhas-noticias.json

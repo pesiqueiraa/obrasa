@@ -202,6 +202,27 @@ create table fact_checks (
 | Agrupamento e checagens | A cada hora | |
 | Verificação de atraso | Diariamente, 20h | Alerta se algum indicador ou mapa por estado passou do prazo (`atrasos.yml`). Sem calendário da fonte, vale o `prazo` da série em `config/sources.yaml` ou o padrão da frequência |
 
+### Vigia e alertas
+
+A esteira roda sem ninguém olhando; duas peças dizem quando algo precisa de uma pessoa.
+
+- **Registro de execuções:** cada `python -m pipelines.run <job>` grava uma linha em
+  `execucoes` (migração `20261112000000_execucoes.sql`) ao terminar, com sucesso ou não:
+  horário, resultado, linhas novas e revisadas, erros e avisos. Só INSERT, como as tabelas
+  de dado. O público lê só job, horário e resultado; o texto dos erros fica para o coletor
+  e para o papel `leitor` dos agentes.
+- **Vigia (`/saude`):** responde 200 se cada job de `config/saude.yaml` rodou dentro do
+  prazo e se a notícia mais recente tem menos de 24 horas; 503 se não, ou se o banco não
+  responde. Mede se a esteira roda, não se acerta: falha é assunto do alerta abaixo. Um
+  monitor de fora do GitHub consulta `/saude` a cada poucos minutos e avisa por e-mail.
+  Pega o caso que nada dentro do GitHub pega: o próprio GitHub parar de rodar os
+  agendamentos (num repositório público, ele os desliga depois de 60 dias sem commit).
+- **Alerta por issue (`scripts/alerta.py`):** último passo dos quatro workflows
+  agendados. Falhou e não há issue aberta: abre "Alerta: <job>" com os erros e o link da
+  execução. Falhou de novo com os mesmos erros: só atualiza a issue, sem notificar. Erros
+  diferentes: comenta. Voltou a funcionar: comenta e fecha. Um feed fora do ar a cada 30
+  minutos vira uma issue, não 48 e-mails por dia.
+
 ## Regras de uso de IA
 
 **Permitido:**

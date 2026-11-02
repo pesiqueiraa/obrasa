@@ -2,7 +2,8 @@ name: Coleta
 
 # Agendamento de docs/06: IBGE e BCB SGS (mensais) diariamente às 10h de Brasília
 # (13h UTC). Pega a divulgação no dia em que sai. Uma falha de coleta ou de
-# validação faz o job falhar, e o GitHub avisa por e-mail quem acompanha o repositório.
+# validação faz o job falhar e abre uma issue "Alerta" (scripts/alerta.py), que
+# fecha sozinha quando a coleta volta a funcionar.
 
 on:
   schedule:
@@ -11,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  issues: write  # alerta: uma issue aberta enquanto o job falhar (scripts/alerta.py)
 
 concurrency:
   group: coleta
@@ -37,3 +39,8 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           RAW_STORE: supabase
         run: uv run python -m pipelines.run todos
+      - name: Alerta (abre, atualiza ou fecha a issue do job)
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: uv run python scripts/alerta.py coleta ${{ job.status }} data/agentes/falhas-todos.json

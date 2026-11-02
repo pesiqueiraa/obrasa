@@ -2,8 +2,9 @@ name: Atrasos
 
 # Verificação de atraso de docs/06: diariamente às 20h de Brasília (23h UTC), depois de
 # todas as coletas do dia. Não coleta nada. Se algum indicador ou mapa por estado passou
-# do prazo de divulgação sem o período novo no banco, o job falha e o GitHub avisa por
-# e-mail quem acompanha o repositório. A mensagem diz qual dado e desde quando.
+# do prazo de divulgação sem o período novo no banco, o job falha e abre uma issue
+# "Alerta" (scripts/alerta.py), que diz qual dado e desde quando e fecha sozinha quando o
+# prazo volta a ser cumprido.
 
 on:
   schedule:
@@ -12,6 +13,7 @@ on:
 
 permissions:
   contents: read
+  issues: write  # alerta: uma issue aberta enquanto o job falhar (scripts/alerta.py)
 
 concurrency:
   group: atrasos
@@ -34,3 +36,8 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           RAW_STORE: local
         run: uv run python -m pipelines.run atrasos
+      - name: Alerta (abre, atualiza ou fecha a issue do job)
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: uv run python scripts/alerta.py atrasos ${{ job.status }} data/agentes/falhas-atrasos.json

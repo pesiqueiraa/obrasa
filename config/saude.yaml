@@ -1,0 +1,16 @@
+# Vigia da esteira (docs/06, "Vigia"). A página /saude responde 503 quando um job passou
+# do prazo sem rodar, ou quando a notícia mais recente é mais antiga que o limite. Um
+# monitor de fora do GitHub consulta /saude e avisa: pega o caso em que o próprio GitHub
+# para de rodar os agendamentos (ex.: repositório público sem commit por 60 dias).
+#
+# horas: tempo máximo desde a última execução, com sucesso ou não. Falha de execução é
+# assunto da issue de alerta (scripts/alerta.py); aqui só importa se a esteira roda.
+# Os prazos dão uma folga sobre o agendamento de .github/workflows/.
+
+jobs:
+  todos: {horas: 27, workflow: coleta.yml}       # diário, 13h UTC
+  noticias: {horas: 3, workflow: noticias.yml}   # a cada 30 minutos
+  atrasos: {horas: 27, workflow: atrasos.yml}    # diário, 23h UTC
+  auditar: {horas: 27, workflow: auditoria.yml}  # diário, 0h UTC
+
+noticia_mais_recente_horas: 24
