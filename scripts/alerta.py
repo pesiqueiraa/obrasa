@@ -64,7 +64,13 @@ def corpo(nome: str, erros: list[str], link: str, agora: datetime) -> str:
         "",
         "## Erros",
         "",
-        *([f"- {e}" for e in erros] or ["- A falha foi antes do job gravar os erros. Veja o log."]),
+        *(
+            [f"- {e}" for e in erros]
+            or [
+                "- A falha foi antes do job gravar os erros, ou o job passou do tempo limite "
+                "(uma fonte que parou de responder). Veja o log."
+            ]
+        ),
         "",
         "Esta issue fecha sozinha quando o job voltar a funcionar.",
         "",
@@ -85,7 +91,9 @@ def alerta(
     nome: str, status: str, falhas: Path | None, run: Gh = gh, agora: datetime | None = None
 ) -> str:
     """Abre, atualiza, comenta ou fecha a issue do job. Devolve o que foi feito."""
-    if status not in ("success", "failure"):
+    # "cancelled" também é falha: é o status de um job que passou do tempo limite
+    # (timeout-minutes), como uma fonte que para de responder. "skipped" não faz nada.
+    if status not in ("success", "failure", "cancelled"):
         return "nada"
     agora = agora or datetime.now(UTC)
     issue = aberta(nome, run)

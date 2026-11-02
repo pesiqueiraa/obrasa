@@ -55,11 +55,19 @@ def test_sucesso_fecha_a_issue_aberta():
     assert g.acoes() == [["issue", "comment"], ["issue", "close"]]
 
 
-def test_sucesso_sem_issue_e_cancelado_nao_fazem_nada():
+def test_sucesso_sem_issue_e_pulado_nao_fazem_nada():
     g = GhFalso([{"number": 8, "title": "Alerta: noticias", "body": ""}])
     assert alerta.alerta("coleta", "success", None, run=g) == "nada"
-    assert alerta.alerta("coleta", "cancelled", None, run=g) == "nada"
+    assert alerta.alerta("coleta", "skipped", None, run=g) == "nada"
     assert g.acoes() == []
+
+
+def test_tempo_limite_estourado_abre_alerta():
+    # Job que passa de timeout-minutes termina como "cancelled" (coleta de 02/11/2026).
+    g = GhFalso()
+    assert alerta.alerta("coleta", "cancelled", None, run=g) == "aberta"
+    criar = next(c for c in g.chamadas if c[:2] == ["issue", "create"])
+    assert "tempo limite" in criar[-1]
 
 
 def test_falha_antes_do_job_aponta_para_o_log(tmp_path):
