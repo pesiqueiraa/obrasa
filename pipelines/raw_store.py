@@ -15,6 +15,7 @@ import json
 import os
 from pathlib import Path
 from typing import Protocol
+from urllib.parse import urlsplit
 
 import httpx
 
@@ -120,5 +121,11 @@ def from_env() -> RawStore:
     if mode == "supabase" or (not mode and url and key):
         if not (url and key):
             raise RuntimeError("RAW_STORE=supabase exige SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY")
+        if urlsplit(url).path.strip("/"):
+            # Engano comum: copiar a URL da API REST (.../rest/v1/) no lugar da do projeto.
+            raise RuntimeError(
+                "SUPABASE_URL deve ser só o endereço do projeto (https://<ref>.supabase.co), "
+                "sem caminho no final como /rest/v1/"
+            )
         return SupabaseRawStore(url, key)
     return LocalRawStore(Path(os.environ.get("RAW_DIR", "data/raw")))
