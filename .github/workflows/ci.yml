@@ -17,8 +17,8 @@ jobs:
     name: Pipelines (Python)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.3
         with:
           python-version: "3.12"
       - run: uv sync --locked
@@ -33,8 +33,8 @@ jobs:
     name: Termos proibidos (docs/02)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.3
         with:
           python-version: "3.12"
       - run: uv sync --locked
@@ -44,9 +44,9 @@ jobs:
     name: Web (Next.js)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
@@ -64,8 +64,8 @@ jobs:
     name: Migrações (Postgres do Supabase)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: supabase/setup-cli@v1
+      - uses: actions/checkout@v7
+      - uses: supabase/setup-cli@v3
         with:
           # Versão fixa: "latest" consulta a API do GitHub e falha quando estoura o limite.
           version: 2.121.0
@@ -73,7 +73,7 @@ jobs:
         run: supabase db start
       - name: Lint do schema
         run: supabase db lint --level warning
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v10.3.3
         with:
           python-version: "3.12"
       - run: uv sync --locked

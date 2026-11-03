@@ -7,8 +7,12 @@ estão as colunas que o código lê; nenhum dado pessoal entra no repositório.
 
 import dataclasses
 import gzip
+import io
+import os
+import zipfile
 from pathlib import Path
 
+import httpx
 import pytest
 
 from pipelines import config
@@ -138,3 +142,69 @@ def test_registro_das_excecoes():
     assert e.vagas["DEPUTADO FEDERAL"] == 513
     with pytest.raises(ValueError, match="mesmo IBGE"):
         config.Eleicao(**{**e.model_dump(), "municipios_excecoes": {"00001": 1, "00002": 1}})
+
+
+# --- leitura do zip por partes (HTTP Range) ---------------------------------------
+
+
+def _zip(conteudo: bytes, extra: bytes = b"") -> bytes:
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr("dados_BR.csv", conteudo)
+        z.writestr("leiame.pdf", extra or os.urandom(3 << 20))  # força várias partes
+    return buf.getvalue()
+
+
+class _CDN:
+    """Servidor falso com Range e If-Range. `trocas` diz após quantos GETs o arquivo
+    passa para a versão seguinte; `ignora_if_range` imita um CDN que não confere ETag."""
+
+    def __init__(self, versoes: list[bytes], trocas: list[int], ignora_if_range=False):
+        self.versoes, self.trocas, self.ignora = versoes, trocas, ignora_if_range
+        self.v, self.gets = 0, 0
+
+    def __call__(self, request: httpx.Request) -> httpx.Response:
+        if self.trocas and self.gets >= self.trocas[0]:
+            self.trocas.pop(0)
+            self.v += 1
+        corpo, etag = self.versoes[self.v], f'"v{self.v}"'
+        base = {"accept-ranges": "bytes", "etag": etag}
+        if request.method == "HEAD":
+            return httpx.Response(200, headers={**base, "content-length": str(len(corpo))})
+        self.gets += 1
+        if_range = request.headers.get("if-range")
+        if if_range and if_range != etag and not self.ignora:
+            return httpx.Response(200, headers=base, content=corpo)
+        ini, fim = (int(x) for x in request.headers["range"].removeprefix("bytes=").split("-"))
+        fim = min(fim, len(corpo) - 1)
+        headers = {**base, "content-range": f"bytes {ini}-{fim}/{len(corpo)}"}
+        return httpx.Response(206, headers=headers, content=corpo[ini : fim + 1])
+
+
+def _fetch(cdn: _CDN, attempts: int = 2):
+    client = httpx.Client(transport=httpx.MockTransport(cdn))
+    return tse.fetch_member(
+        "https://cdn.test/a.zip", "dados_BR.csv", client, attempts, lambda _: None
+    )
+
+
+def test_zip_lido_por_partes():
+    raw = _fetch(_CDN([_zip(b"a;b\n1;2\n")], []))
+    assert gzip.decompress(raw.body) == b"a;b\n1;2\n"
+
+
+def test_zip_que_muda_no_meio_da_leitura_recomeca():
+    cdn = _CDN([_zip(b"velho"), _zip(b"novo")], [1])
+    raw = _fetch(cdn)
+    assert gzip.decompress(raw.body) == b"novo"
+
+
+def test_cdn_sem_if_range_e_pego_pelo_tamanho():
+    cdn = _CDN([_zip(b"velho"), _zip(b"novo", extra=os.urandom(4 << 20))], [1], True)
+    assert gzip.decompress(_fetch(cdn).body) == b"novo"
+
+
+def test_zip_que_nao_para_de_mudar_falha_com_erro_claro():
+    cdn = _CDN([_zip(b"1"), _zip(b"2"), _zip(b"3")], [1, 3])
+    with pytest.raises(tse.ArquivoMudou, match="mudou"):
+        _fetch(cdn)

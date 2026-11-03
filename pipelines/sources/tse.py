@@ -4,6 +4,11 @@ Os zips do TSE são grandes (o de votação por candidato tem 454 MB). O servido
 HTTP Range, então o zip é lido por partes: primeiro o diretório central, depois só o
 arquivo pedido. O arquivo extraído é a resposta bruta guardada (comprimido em gzip).
 
+O TSE regenera os zips e o CDN guarda cópias por horas; partes de versões diferentes
+misturadas formam um zip inválido. Cada parte é pedida com o ETag da primeira resposta
+(If-Range) e o tamanho total de cada parte é conferido. Se o arquivo mudou no meio da
+leitura, ela recomeça do zero.
+
 Os CSVs vêm em latin-1, separados por ";". Cada linha é um município e zona; aqui as
 zonas são somadas por município. Dos arquivos de candidaturas só são lidos os campos
 que a página mostra: CPF, e-mail, título de eleitor e outros dados pessoais ficam de fora.
@@ -17,7 +22,7 @@ import io
 import time
 import zipfile
 from collections import defaultdict
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from zoneinfo import ZoneInfo
@@ -31,32 +36,54 @@ SOURCE_ID = "tse_dados_abertos"
 TZ = ZoneInfo("America/Sao_Paulo")
 
 
-class _RangeFile(io.RawIOBase):
-    """Arquivo remoto só de leitura, buscado por HTTP Range sob demanda."""
+class ArquivoMudou(ValidationError):
+    """O zip remoto mudou de versão durante a leitura por partes."""
 
-    def __init__(self, client: httpx.Client, url: str, attempts: int = 4) -> None:
-        self.client, self.url, self.attempts = client, url, attempts
+
+class _RangeFile(io.RawIOBase):
+    """Arquivo remoto só de leitura, buscado por HTTP Range sob demanda.
+
+    Todas as partes têm de vir da mesma versão do arquivo: a do HEAD inicial.
+    """
+
+    def __init__(
+        self,
+        client: httpx.Client,
+        url: str,
+        attempts: int = 4,
+        sleep: Callable[[float], None] = time.sleep,
+    ) -> None:
+        self.client, self.url, self.attempts, self.sleep = client, url, attempts, sleep
         head = self._request("HEAD", {})
+        head.close()
         if head.headers.get("accept-ranges") != "bytes":
             raise ValidationError(f"{url}: o servidor não aceita HTTP Range")
         self.size = int(head.headers["content-length"])
+        etag = head.headers.get("etag")
+        # ETag fraco (W/) não vale em If-Range; sem ele, sobra a conferência do tamanho.
+        self.etag = etag if etag and not etag.startswith("W/") else None
         self.pos = 0
         self.downloaded = 0
 
     def _request(self, method: str, headers: dict[str, str]) -> httpx.Response:
+        """Resposta com o corpo ainda não lido (stream): quem chama lê ou fecha."""
         last: Exception | None = None
         for attempt in range(1, self.attempts + 1):
             try:
-                r = self.client.request(method, self.url, headers=headers)
+                req = self.client.build_request(method, self.url, headers=headers)
+                r = self.client.send(req, stream=True)
                 if r.status_code in RETRY_STATUS and attempt < self.attempts:
-                    time.sleep(2**attempt)
+                    r.close()
+                    self.sleep(2**attempt)
                     continue
+                if r.is_error:
+                    r.close()
                 r.raise_for_status()
                 return r
             except (httpx.TransportError, httpx.HTTPStatusError) as exc:
                 last = exc
                 if attempt < self.attempts:
-                    time.sleep(2**attempt)
+                    self.sleep(2**attempt)
         raise RuntimeError(f"{SOURCE_ID}: falha ao buscar {self.url}: {last}") from last
 
     def readable(self) -> bool:
@@ -76,28 +103,71 @@ class _RangeFile(io.RawIOBase):
         if self.pos >= self.size:
             return 0
         end = min(self.pos + len(buf), self.size) - 1
-        r = self._request("GET", {"Range": f"bytes={self.pos}-{end}"})
-        if r.status_code != 206:
-            raise ValidationError(f"{self.url}: esperado 206 para Range, veio {r.status_code}")
-        data = r.content
+        headers = {"Range": f"bytes={self.pos}-{end}"}
+        if self.etag:
+            headers["If-Range"] = self.etag
+        r = self._request("GET", headers)
+        try:
+            if r.status_code == 200 and self.etag:
+                # If-Range não bateu: o servidor mandaria o arquivo novo inteiro.
+                raise ArquivoMudou(f"{self.url}: ETag mudou de {self.etag} durante a leitura")
+            if r.status_code != 206:
+                raise ValidationError(f"{self.url}: esperado 206 para Range, veio {r.status_code}")
+            total = r.headers.get("content-range", "").rpartition("/")[2]
+            if total != str(self.size):
+                raise ArquivoMudou(
+                    f"{self.url}: tamanho mudou de {self.size} para {total or '?'} bytes"
+                    " durante a leitura"
+                )
+            data = r.read()
+        finally:
+            r.close()
+        if len(data) != end - self.pos + 1:
+            raise ValidationError(
+                f"{self.url}: pedidos {end - self.pos + 1} bytes, vieram {len(data)}"
+            )
         buf[: len(data)] = data
         self.pos += len(data)
         self.downloaded += len(data)
         return len(data)
 
 
-def fetch_member(zip_url: str, membro: str, client: httpx.Client | None = None) -> RawResponse:
-    """Baixa só `membro` de dentro do zip remoto. O corpo devolvido é o CSV em gzip."""
+def _read_member(client: httpx.Client, zip_url: str, membro: str, sleep) -> bytes:
+    remote = _RangeFile(client, zip_url, sleep=sleep)
+    try:
+        with zipfile.ZipFile(io.BufferedReader(remote, buffer_size=1 << 20)) as z:
+            if membro not in z.namelist():
+                raise ValidationError(f"{zip_url}: não tem {membro}")
+            return z.read(membro)
+    except zipfile.BadZipFile as exc:
+        raise ArquivoMudou(f"{zip_url}: zip inválido ({exc})") from exc
+
+
+def fetch_member(
+    zip_url: str,
+    membro: str,
+    client: httpx.Client | None = None,
+    attempts: int = 2,
+    sleep: Callable[[float], None] = time.sleep,
+) -> RawResponse:
+    """Baixa só `membro` de dentro do zip remoto. O corpo devolvido é o CSV em gzip.
+
+    Se o arquivo mudar no meio da leitura (ou o zip vier inválido), recomeça do zero,
+    até `attempts` vezes no total.
+    """
     own = client is None
     client = client or httpx.Client(
         timeout=120, headers={"User-Agent": USER_AGENT}, follow_redirects=True
     )
     try:
-        remote = _RangeFile(client, zip_url)
-        with zipfile.ZipFile(io.BufferedReader(remote, buffer_size=1 << 20)) as z:
-            if membro not in z.namelist():
-                raise ValidationError(f"{zip_url}: não tem {membro}")
-            data = z.read(membro)
+        for attempt in range(1, attempts + 1):
+            try:
+                data = _read_member(client, zip_url, membro, sleep)
+                break
+            except ArquivoMudou:
+                if attempt == attempts:
+                    raise
+                sleep(30)
         return RawResponse(
             source_id=SOURCE_ID,
             url=f"{zip_url}#{membro}",
