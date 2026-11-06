@@ -110,7 +110,7 @@ temas:
   contas-publicas:
     termos: [dívida pública, dívida bruta, déficit primário, superávit primário, resultado primário,
              arcabouço fiscal, meta fiscal, Orçamento, LDO, LOA, Tesouro Nacional, contingenciamento,
-             bloqueio de gastos, arrecadação federal, Receita Federal]
+             bloqueio de gastos, arrecadação federal, Receita Federal, ajuste fiscal, imposto, impostos]
     excluir: []
   educacao:
     termos: [Enem, Ideb, Inep, Saeb, MEC, Ministério da Educação, ensino médio, ensino fundamental,
