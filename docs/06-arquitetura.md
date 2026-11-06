@@ -36,7 +36,7 @@ flowchart LR
 | Camada | Escolha | Motivo |
 |---|---|---|
 | Coleta e transformação | Python 3.12, `httpx`, `pandas` ou `polars`, `pydantic` | Ecossistema maduro para dados públicos brasileiros |
-| Agendamento | GitHub Actions (cron) no MVP; Prefect ou Dagster quando passar de ~30 jobs | Começa grátis e simples |
+| Agendamento | GitHub Actions no MVP; as notícias, a cada 30 min, disparadas pelo `pg_cron` do Supabase (o cron do GitHub descartou ~9 em 10 horários em nov/2026); Prefect ou Dagster quando passar de ~30 jobs | Começa grátis e simples |
 | Banco | Postgres no Supabase, com `pgvector` | Relacional, com busca vetorial para notícias, e já conectado ao projeto |
 | Respostas brutas | Supabase Storage (ou S3), em JSON ou CSV com hash | Rastreabilidade e reprocessamento |
 | Histórico analítico | Parquet + DuckDB | Consultas rápidas em séries longas sem pesar o Postgres |

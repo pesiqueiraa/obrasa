@@ -7,10 +7,20 @@ name: Notícias
 # repetidas com os mesmos erros não notificam de novo.
 
 on:
+  # O agendador principal é o pg_cron do Supabase (supabase/migrations/20261114000000_agendador.sql),
+  # que dispara workflow_dispatch com origem=agendador a cada 30 minutos: o cron do GitHub
+  # descartou cerca de 9 em cada 10 horários entre 03/11 e 06/11/2026. Este cron fica como
+  # reserva; o `concurrency` abaixo impede duas coletas ao mesmo tempo.
   schedule:
     # Minutos fora do pico (:00 e :30 lotam e o GitHub pode descartar execuções).
     - cron: "17,47 * * * *"
   workflow_dispatch:
+    inputs:
+      origem:
+        description: "Quem disparou (agendador = pg_cron do Supabase)"
+        type: choice
+        options: [manual, agendador]
+        default: manual
 
 permissions:
   contents: read
@@ -23,8 +33,9 @@ concurrency:
 jobs:
   noticias:
     name: Feeds dos veículos
-    # Agendado só roda com a variável PRODUCAO_ATIVA=true (docs/11); à mão roda sempre.
-    if: github.event_name != 'schedule' || vars.PRODUCAO_ATIVA == 'true'
+    # Agendado (cron do GitHub ou agendador do Supabase) só roda com a variável
+    # PRODUCAO_ATIVA=true (docs/11); à mão roda sempre.
+    if: (github.event_name != 'schedule' && inputs.origem != 'agendador') || vars.PRODUCAO_ATIVA == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: producao

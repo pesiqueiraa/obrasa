@@ -27,6 +27,16 @@ O que ainda não está feito e precisa de decisão ou trabalho antes do lançame
 4. Em Authentication, desligar "Allow new users to sign up". O site não tem login, e com o cadastro ligado qualquer pessoa cria um usuário pela API.
 5. Em Storage, conferir que o bucket `raw` é privado (a primeira coleta o cria).
 6. Em Advisors, rodar Security e Performance e resolver o que aparecer como erro.
+7. Agendador das notícias (`supabase/migrations/20261114000000_agendador.sql`): o cron do
+   GitHub descarta a maior parte dos horários, então o `pg_cron` do banco dispara o
+   workflow **Notícias** a cada 30 minutos. Criar no GitHub um token fine-grained só do
+   repositório `pesiqueiraa/obrasa`, com permissão "Actions: read and write", e guardá-lo
+   no Vault pelo SQL Editor (direto no painel, nunca no chat ou no terminal):
+   `select vault.create_secret('<token>', 'github_dispatch_token');`
+   Conferir depois do próximo :17 ou :47:
+   `select status_code, created from net._http_response order by created desc limit 3;`
+   (204 = aceito; 401 ou 404 = token errado ou sem permissão). Para trocar o token:
+   `select vault.update_secret(id, '<token novo>') from vault.secrets where name = 'github_dispatch_token';`
 
 ## 2. GitHub
 
@@ -37,8 +47,9 @@ Já feito em 02/11/2026 (repositório público `pesiqueiraa/obrasa`):
 - Dependabot (`.github/dependabot.yml`), alertas de dependência, varredura de segredos com
   bloqueio no push e relato privado de falha de segurança (`SECURITY.md`).
 - Actions com token só de leitura por padrão; cada workflow pede o que precisa.
-- Workflows agendados parados: só rodam com a variável `PRODUCAO_ATIVA=true`. À mão
-  (Actions → Run workflow) rodam sempre.
+- Workflows agendados parados: só rodam com a variável `PRODUCAO_ATIVA=true`. Vale também
+  para o disparo do agendador do Supabase (`origem=agendador`). À mão (Actions → Run
+  workflow) rodam sempre.
 
 Falta, no dia da produção:
 
