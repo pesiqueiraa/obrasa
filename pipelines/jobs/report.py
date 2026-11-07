@@ -13,6 +13,12 @@ class Report:
     errors: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
 
+    def falhou(self, onde: str, exc: Exception) -> None:
+        """Erro de uma série ou fonte. Salto esperando confirmação automática é aviso."""
+        from pipelines.saltos import SaltoEmEspera
+
+        (self.warnings if isinstance(exc, SaltoEmEspera) else self.errors).append(f"{onde}: {exc}")
+
     def merge(self, other: Report) -> Report:
         self.summaries += other.summaries
         self.errors += other.errors

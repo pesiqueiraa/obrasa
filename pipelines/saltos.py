@@ -8,8 +8,16 @@ trava compara cada período novo ou revisado com o comportamento da própria sé
   * uma revisão não pode mudar o valor mais do que esse mesmo limite.
 
 Passou do limite, a coleta da série para sem gravar (o site continua com o último valor
-válido) até um humano conferir na fonte e registrar a liberação em config/aprovacoes.yaml.
-O histórico de liberações fica no git.
+válido). A liberação é automática (`confere_serie`, tabela `saltos_vistos`), quando:
+
+  * a segunda fonte da série (`conferir_com`) publica o mesmo valor para o período; ou
+  * a fonte publica o mesmo valor para o mesmo período em coletas separadas por pelo
+    menos PERSISTENCIA_HORAS: erro passageiro da fonte costuma ser corrigido antes disso.
+    Erro nosso (parser na coluna errada, escala trocada) não depende desta trava: o valor
+    de referência de 2019, a auditoria do bruto e a descrição na fonte pegam.
+
+Enquanto espera, o salto é aviso, não erro: ninguém precisa fazer nada. Liberação manual
+em config/aprovacoes.yaml continua possível, mas não é necessária.
 
 Série sem histórico suficiente na janela (menos de MIN_VARIACOES variações, como as
 anuais da PNAD) não é conferida: o limite sairia de poucos pontos e daria alarme falso.
@@ -35,6 +43,19 @@ if TYPE_CHECKING:
 
 JANELA_ANOS = 10
 MIN_VARIACOES = 12
+PERSISTENCIA_HORAS = 20
+
+
+class SaltoError(ValidationError):
+    """Salto fora do histórico; `bloqueados` traz (período, valor) de cada um."""
+
+    def __init__(self, mensagem: str, bloqueados: list[tuple[date, Decimal]]):
+        super().__init__(mensagem)
+        self.bloqueados = bloqueados
+
+
+class SaltoEmEspera(SaltoError):
+    """Salto visto, esperando a confirmação automática. O job registra como aviso."""
 
 
 @dataclass(frozen=True)
@@ -105,6 +126,7 @@ def confere(
     posicao = {d: i for i, d in enumerate(ordem)}
     unidade = "p.p." if tipo == "taxa" else "%"
     problemas = []
+    bloqueados: list[tuple[date, Decimal]] = []
     sem_historico = False
     for o in mudou:
         limite = limite_ate(o.ref_date)
@@ -121,6 +143,7 @@ def confere(
                     f"{o.ref_date}: revisão de {antigo} para {o.value} ({abs(rev):.2f} "
                     f"{unidade}; maior variação em {JANELA_ANOS} anos: {limite:.2f})"
                 )
+                bloqueados.append((o.ref_date, o.value))
                 continue
         i = posicao[o.ref_date]
         if i == 0:
@@ -132,13 +155,76 @@ def confere(
                 f"{o.ref_date}: {anterior} → {o.value} ({abs(v):.2f} {unidade}; "
                 f"maior variação em {JANELA_ANOS} anos: {limite:.2f})"
             )
+            bloqueados.append((o.ref_date, o.value))
     if problemas:
-        raise ValidationError(
+        raise SaltoError(
             f"{serie}: salto fora do histórico em {len(problemas)} período(s): "
-            + "; ".join(problemas[:5])
-            + ". Confira na fonte e, se o valor estiver certo, libere em config/aprovacoes.yaml"
+            + "; ".join(problemas[:5]),
+            bloqueados,
         )
     return Resultado(len(mudou), sem_historico)
+
+
+def _registra(conn: psycopg.Connection, serie: str, d: date, v: Decimal, motivo: str | None):
+    conn.execute(
+        "insert into saltos_vistos (serie, periodo, valor, liberado, motivo) "
+        "values (%s, %s, %s, %s, %s)",
+        (serie, d, v, motivo is not None, motivo),
+    )
+
+
+def _visto_desde(conn: psycopg.Connection, serie: str, d: date, v: Decimal):
+    """Primeira vez que a fonte publicou este valor para o período, se faz tempo bastante."""
+    return conn.execute(
+        """
+        select min(visto_em) from saltos_vistos
+        where serie = %s and periodo = %s and valor = %s and not liberado
+        having min(visto_em) <= now() - make_interval(hours => %s)
+        """,
+        (serie, d, v, PERSISTENCIA_HORAS),
+    ).fetchone()
+
+
+def confere_com_registro(
+    conn: psycopg.Connection,
+    serie: str,
+    tipo: str,
+    atuais: dict[date, Decimal],
+    novas: list[Observation],
+    liberacoes: Iterable[Liberacao],
+    report: Report,
+    confirmados: Iterable[date] = (),
+) -> Resultado:
+    """`confere` com liberação automática. `confirmados`: períodos em que a segunda fonte
+    publicou o mesmo valor. Levanta SaltoEmEspera se algum salto ainda não foi confirmado."""
+    liberacoes = list(liberacoes)
+    try:
+        return confere(serie, tipo, atuais, novas, liberacoes)
+    except SaltoError as exc:
+        bloqueados = exc.bloqueados
+        mensagem = str(exc)
+    confirmados = set(confirmados)
+    motivos: dict[tuple[date, Decimal], str] = {}
+    for d, v in bloqueados:
+        if d in confirmados:
+            motivos[(d, v)] = "a segunda fonte publica o mesmo valor"
+        elif linha := _visto_desde(conn, serie, d, v):
+            motivos[(d, v)] = f"a fonte publica o mesmo valor desde {linha[0]:%d/%m/%Y %H:%M} UTC"
+    pendentes = [b for b in bloqueados if b not in motivos]
+    if pendentes:
+        for d, v in pendentes:
+            _registra(conn, serie, d, v, None)
+        raise SaltoEmEspera(
+            f"{mensagem}. Valor segurado; liberação automática se a fonte mantiver o mesmo "
+            f"valor por {PERSISTENCIA_HORAS} horas",
+            pendentes,
+        )
+    auto = [Liberacao(serie, d, v) for d, v in bloqueados]
+    resultado = confere(serie, tipo, atuais, novas, [*liberacoes, *auto])
+    for (d, v), motivo in motivos.items():
+        _registra(conn, serie, d, v, motivo)
+        report.warnings.append(f"{serie}: salto em {d} ({v}) liberado automaticamente: {motivo}")
+    return resultado
 
 
 def confere_serie(
@@ -148,12 +234,14 @@ def confere_serie(
     novas: list[Observation],
     liberacoes: Iterable[Liberacao],
     report: Report,
+    confirmados: Iterable[date] = (),
 ) -> None:
-    """`confere` com o valor vigente lido do banco; histórico curto vira aviso."""
+    """`confere_com_registro` com o valor vigente lido do banco; histórico curto vira aviso."""
     from pipelines import db
 
     atuais = {d: v for d, (v, _) in db.current_values(conn, serie).items()}
-    if confere(serie, tipo, atuais, novas, liberacoes).sem_historico:
+    r = confere_com_registro(conn, serie, tipo, atuais, novas, liberacoes, report, confirmados)
+    if r.sem_historico:
         report.warnings.append(
             f"{serie}: histórico curto para a checagem de salto; período novo não conferido"
         )

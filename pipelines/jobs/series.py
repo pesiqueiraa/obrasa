@@ -151,10 +151,14 @@ def collect_ibge_table(
     )
     for s, var in zip(group, variaveis, strict=True):
         validate(data[var], s, today)
-        saltos.confere_serie(conn, s.id, s.tipo, data[var], liberacoes, report)
+        confirmados: set[date] = set()
         if s.conferir_com:
             c = s.conferir_com
             copia = {d: v for d, (v, _) in db.current_values(conn, c.serie).items()}
+            confirmados = segunda_fonte.confirmados(c.regra, c.tolerancia, data[var], copia)
+        saltos.confere_serie(conn, s.id, s.tipo, data[var], liberacoes, report, confirmados)
+        if s.conferir_com:
+            c = s.conferir_com
             desde = date(today.year - c.anos, today.month, 1) if c.anos else None
             n = segunda_fonte.confere(s.id, c.serie, c.regra, c.tolerancia, desde, data[var], copia)
             log.info("%s: igual a %s em %d períodos", s.id, c.serie, n)
@@ -211,7 +215,7 @@ def run(
             collect_sgs(conn, store, report, s, today, registry.liberacoes)
         except Exception as exc:  # cada série falha sozinha
             log.exception("coleta de %s falhou", s.id)
-            report.errors.append(f"{s.id}: {exc}")
+            report.falhou(s.id, exc)
 
     groups: dict[tuple[int, str | None, str], list[Series]] = defaultdict(list)
     for s in (s for s in todas if s.source_id == "ibge_agregados"):
@@ -224,6 +228,6 @@ def run(
             )
         except Exception as exc:
             log.exception("coleta da tabela %s falhou", tabela)
-            report.errors.append(f"IBGE {tabela}: {exc}")
+            report.falhou(f"IBGE {tabela}", exc)
 
     return report
