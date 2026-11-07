@@ -94,6 +94,13 @@ sources:
     url_documentacao: null
     url_metodologia: null
     licenca: Texto de lei, de domínio público
+  - id: normas_leg
+    nome: Normas (texto estruturado das leis, LexML)
+    orgao: Senado Federal
+    url_fonte: https://normas.leg.br/
+    url_documentacao: https://normas.leg.br/api/public/normas
+    url_metodologia: null
+    licenca: CC-BY 4.0
 series:
   - id: ibge_agregados_1737_2265
     coletor: ipca

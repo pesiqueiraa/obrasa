@@ -6,6 +6,7 @@
 // "Para quem" só esconde marcos; não muda texto nenhum.
 
 import { useState } from "react";
+import { formatDate } from "@/lib/format";
 import type { Marco } from "@/lib/impostos";
 import styles from "./impostos.module.scss";
 
@@ -49,8 +50,18 @@ export function LinhaDoTempo({ marcos, hoje }: { marcos: Marco[]; hoje: string }
                         {m.lei}
                       </a>
                       {m.conferidoEm === null ? (
-                        <strong className={styles.rascunho}> rascunho, sem conferência</strong>
-                      ) : null}
+                        <strong className={styles.rascunho}> rascunho, reprovado na conferência</strong>
+                      ) : (
+                        <>
+                          {" · "}
+                          <a
+                            href={`https://normas.leg.br/?urn=${m.dispositivos[0]}`}
+                            rel="noopener"
+                          >
+                            conferido com o texto da lei em {formatDate(m.conferidoEm)}
+                          </a>
+                        </>
+                      )}
                     </p>
                   </li>
                 ))}

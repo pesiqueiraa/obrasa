@@ -49,6 +49,9 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # Conferência automática dos marcos de impostos (pipelines/agentes/conferir_marcos.py).
+          # Sem a chave, os marcos já conferidos continuam no site e os novos esperam.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           RAW_STORE: supabase
         run: uv run python -m pipelines.run todos
       - name: Alerta (abre, atualiza ou fecha a issue do job)

@@ -265,12 +265,14 @@ A esteira roda sem ninguém olhando; duas peças dizem quando algo precisa de um
 
 ### Agentes de investigação (`pipelines/agentes`)
 
-Três agentes ajudam a operar sem tocar no dado: o **investigador de falhas** explica por
+Três agentes ajudam a operar sem tocar no dado (o quarto, o conferidor de marcos, está mais abaixo): o **investigador de falhas** explica por
 que uma coleta, um atraso ou uma auditoria falhou; o **revisor de mudanças** confere
 alterações em `config/`, `pipelines/` e `docs/05` contra a fonte e as regras do projeto;
 o **auditor de textos** confere frases e metodologia contra o [02](02-principios-de-neutralidade.md).
-Eles explicam e apontam onde conferir. Quem grava é a coleta, e quem libera é uma pessoa,
-pelo git (`config/aprovacoes.yaml`).
+Eles explicam e apontam onde conferir. Quem grava é a coleta, e quem libera um salto ainda
+é uma pessoa, pelo git (`config/aprovacoes.yaml`); a liberação automática por segunda fonte
+está nos próximos passos ([10](10-pos-mvp.md)). Os marcos da aba Impostos já não dependem
+de pessoa: o **conferidor de marcos**, abaixo, aprova ou reprova cada um.
 
 - **Só leitura, em cinco camadas** (`pipelines/agentes/ferramentas.py`): login próprio
   do papel `leitor`, que só tem SELECT (migração `20261111000000_leitor.sql`; a conexão é
@@ -309,6 +311,16 @@ pelo git (`config/aprovacoes.yaml`).
   semanalmente quando entrar em produção. Primeira rodada nos textos atuais (02/11/2026):
   nenhum problema e três pontos de atenção (definição de informalidade resumida na frase,
   base do índice do IBC-Br, mês-base do rendimento na frase).
+- **Conferidor de marcos** (`pipelines/agentes/conferir_marcos.py`): o único agente cuja
+  resposta muda o que aparece no site, e só para esconder. Cada marco da aba Impostos passa
+  por três camadas: números e datas do marco precisam existir no texto do artigo citado
+  (código, sem IA); o modelo diz se a lei sustenta cada afirmação, com o trecho literal;
+  o código confere que cada trecho existe na lei (ou num dispositivo que o modelo leu pela
+  ferramenta `ler_dispositivo`). Aprovado vira `conferido_em`; reprovado fica fora da tela.
+  O resultado vai para `marcos_verificacoes` (só INSERT) com o hash do marco, do texto da
+  lei, do modelo e da versão do prompt: sem mudança, nada é chamado de novo. Resposta
+  inválida, erro da API ou limite de turnos ficam como inconclusivos e são tentados de novo
+  na execução seguinte. Teto de 20 chamadas por execução (`CHAMADAS_MAX`).
 - **Núcleo** (`pipelines/agentes/nucleo.py`): `claude-opus-5-5`, saída em JSON com
   schema, até 25 turnos, uma chance de correção quando a verificação recusa, fallback
   do servidor em caso de recusa de segurança. Cada execução grava um JSONL em

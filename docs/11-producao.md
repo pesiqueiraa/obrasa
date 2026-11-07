@@ -122,7 +122,7 @@ O que fazer quando chegar o e-mail "Down": abrir `/saude` no navegador. O JSON d
 | `SUPABASE_SERVICE_ROLE_KEY` | GitHub `producao` | Gravar e ler as respostas brutas no Storage. Nunca na Vercel |
 | `SUPABASE_ANON_KEY` | Vercel | Leitura pública do site |
 | `AGENTES_DATABASE_URL` | GitHub `producao` | Agentes, com o login do `leitor` (fase 4, docs/06) |
-| `ANTHROPIC_API_KEY` | GitHub `producao` | Agentes (fase 4). Definir limite de gasto mensal no console da Anthropic |
+| `ANTHROPIC_API_KEY` | GitHub `producao` | Agentes e conferência automática dos marcos de impostos (workflow Coleta). Definir limite de gasto mensal no console da Anthropic |
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` | GitHub `producao` | Cópia de segurança |
 | `SITE_URL` | Vercel | Links das imagens de compartilhamento |
 | `PONTE_IBGE_TOKEN` | Vercel | Abre a ponte do IBGE (docs/06). Mesmo valor de `IBGE_PONTE_TOKEN` |

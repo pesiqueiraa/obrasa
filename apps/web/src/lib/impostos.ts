@@ -17,13 +17,16 @@ export type Marco = {
   texto: string;
   lei: string;
   url: string;
+  /** URNs dos dispositivos lidos na conferência (normas.leg.br). */
+  dispositivos: string[];
   conferidoPor: string | null;
   conferidoEm: string | null;
 };
 
 /**
- * Marcos da linha do tempo. Sem conferência humana, o marco não vai para o site
- * (docs/02, seção 9). `rascunhos` só para revisão local (OBRASA_MARCOS_RASCUNHO=1).
+ * Marcos da linha do tempo. Só vão para o site os aprovados na conferência automática
+ * contra o texto da lei (pipelines/agentes/conferir_marcos.py; docs/02, seção 9).
+ * `rascunhos` mostra também os reprovados, só para revisão local (OBRASA_MARCOS_RASCUNHO=1).
  */
 export async function getMarcos(rascunhos = false): Promise<{ marcos: Marco[]; hoje: string }> {
   "use cache";
@@ -31,7 +34,7 @@ export async function getMarcos(rascunhos = false): Promise<{ marcos: Marco[]; h
   cacheTag("impostos");
   let q = client()
     .from("marcos_tributarios")
-    .select("id, vigencia, publico, titulo, texto, lei, url, conferido_por, conferido_em")
+    .select("id, vigencia, publico, titulo, texto, lei, url, dispositivos, conferido_por, conferido_em")
     .order("vigencia")
     .order("id");
   if (!rascunhos) q = q.not("conferido_em", "is", null);
@@ -45,6 +48,7 @@ export async function getMarcos(rascunhos = false): Promise<{ marcos: Marco[]; h
     texto: r.texto,
     lei: r.lei,
     url: r.url,
+    dispositivos: r.dispositivos,
     conferidoPor: r.conferido_por,
     conferidoEm: r.conferido_em,
   }));

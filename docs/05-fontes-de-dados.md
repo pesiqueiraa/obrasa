@@ -18,7 +18,8 @@ Regras gerais:
 | Tesouro · Siconfi | Contas de estados e municípios (pós-MVP) | API REST (ORDS) | Nenhuma | Bimestral e quadrimestral |
 | Tesouro Transparente | Resultado do Tesouro, dívida | CKAN (planilhas e CSV) | Nenhuma | Mensal |
 | Receita Federal | Arrecadação federal por tributo e UF | CSV em gov.br | Nenhuma | Mensal |
-| Planalto · Legislação | Marcos da reforma tributária e do IR (aba Impostos) | Texto da lei, conferido à mão | Nenhuma | Quando a lei muda |
+| Planalto · Legislação | Marcos da reforma tributária e do IR (aba Impostos): link exibido ao leitor | Texto da lei | Nenhuma | Quando a lei muda |
+| normas.leg.br (Senado) | Texto estruturado das leis para a conferência automática dos marcos | API JSON-LD, CC-BY 4.0 | Nenhuma | Diária (job `impostos`) |
 | Portal da Transparência (CGU) | Despesa por função, emendas | API REST | Chave gratuita | Diária |
 | Câmara dos Deputados | Projetos sobre impostos (aba Impostos); votações (pós-MVP) | API REST | Nenhuma | Contínua |
 | Senado Federal | Matérias e votações (pós-MVP) | API REST | Nenhuma | Contínua |
@@ -308,9 +309,19 @@ Páginas: https://dadosabertos.tse.jus.br/dataset/resultados-2026 e https://dado
 
 ## Planalto · Legislação (aba Impostos)
 
-- Fonte dos marcos da reforma tributária e do imposto de renda. Não há API: cada marco é escrito à mão em `config/impostos.yaml`, com lei, artigo e link para o texto compilado em `planalto.gov.br`, e conferido por uma pessoa antes de ir para a tela.
+- Fonte dos marcos da reforma tributária e do imposto de renda. Cada marco é escrito em `config/impostos.yaml`, com lei, artigo, link para o texto compilado em `planalto.gov.br` e a URN de cada dispositivo citado. O Planalto recusa conexões de programas; a conferência automática lê o texto no normas.leg.br (abaixo).
 - Um job carrega o arquivo no banco (`marcos_tributarios`), para que a tela leia o número do banco como qualquer outro (regra 1). O link da lei é a fonte exibida.
 - Lei citada sempre na versão compilada, porque as leis da reforma são alteradas com frequência.
+
+## normas.leg.br · texto das leis (aba Impostos)
+
+Testado em 07/11/2026 (status `ok`).
+
+- `GET https://normas.leg.br/api/public/normas?urn=<URN>&tipo_documento=maior-detalhe` devolve a norma inteira em JSON-LD (schema.org), licença CC-BY 4.0, sem chave. Cada dispositivo tem `legislationIdentifier` (`<URN>!art125_par4`) e versões em `workExample` com `legislationDate` e `text`; o leitor (`pipelines/sources/normas.py`) usa a versão mais recente.
+- URNs em uso: LC 214/2025 `urn:lex:br:federal:lei.complementar:2025-01-16;214` (texto compilado, 4.986 dispositivos); ADCT `urn:lex:br:federal:ato.disposicoes.constitucionais.transitorias:1988-10-05;1988` (com a EC 132); Constituição `urn:lex:br:federal:constituicao:1988-10-05;1988`; Lei 15.270/2025 `urn:lex:br:federal:lei:2025-11-26;15270`.
+- A Lei 9.250/1995 vem **sem texto estruturado**. Os artigos que a Lei 15.270 incluiu nela (3º-A, 6º-A, 16-A, 16-B) são lidos no texto da 15.270 (`!art2_cpt_alt1_art3-1` é o art. 3º-A). Alteração posterior desses artigos por outra lei não aparece ali: se acontecer, citar também a lei nova no marco.
+- O ID numérico da norma no Senado sai de `https://legis.senado.leg.br/dadosabertos/legislacao/lista?tipo=LCP&numero=214&ano=2025`.
+- Uso: `pipelines/agentes/conferir_marcos.py`, pelo job `impostos`. A resposta é guardada no armazenamento bruto quando há conferência nova.
 
 ## Outras fontes oficiais (pós-MVP)
 

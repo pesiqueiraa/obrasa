@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
@@ -495,8 +496,9 @@ class Marco(_Strict):
     texto: str
     lei: str
     url: str
-    conferido_por: str | None = None
-    conferido_em: date | None = None
+    # URNs dos dispositivos citados, como no normas.leg.br (<URN da norma>!art125). A
+    # conferência automática lê o texto deles (pipelines/agentes/conferir_marcos.py).
+    dispositivos: list[str]
 
     @model_validator(mode="after")
     def _check(self) -> Marco:
@@ -504,8 +506,11 @@ class Marco(_Strict):
             raise ValueError(f"marco {self.id}: o link precisa ser do Planalto")
         if "art" not in self.lei:
             raise ValueError(f"marco {self.id}: cite o artigo da lei (docs/02, seção 9)")
-        if (self.conferido_por is None) != (self.conferido_em is None):
-            raise ValueError(f"marco {self.id}: preencha conferido_por e conferido_em juntos")
+        if not self.dispositivos:
+            raise ValueError(f"marco {self.id}: liste os dispositivos citados (URN)")
+        for urn in self.dispositivos:
+            if not re.fullmatch(r"urn:lex:br:federal:[a-z.]+:\d{4}-\d{2}-\d{2};\d+![\w,-]+", urn):
+                raise ValueError(f"marco {self.id}: URN inválida: {urn}")
         if not self.publico:
             raise ValueError(f"marco {self.id}: informe o público (pf, pj)")
         return self

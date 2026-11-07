@@ -80,8 +80,8 @@ Ordem de trabalho decidida na conversa de 07/11/2026. Métricas de uso (D11) fic
 - **Depois:** os simuladores F2 ("Quanto eu pago") e F3 ([04](04-mvp.md)) entram nesta aba.
 - **Esforço:** M
 - **Situação em 07/11/2026:** primeira versão em `/impostos`, com as quatro partes. Pendências:
-  - Os 17 marcos de `config/impostos.yaml` estão sem conferência (`conferido_por` e `conferido_em` vazios) e não aparecem no site. Para revisar localmente: `OBRASA_MARCOS_RASCUNHO=1 pnpm dev`.
-  - Faltam dois marcos que não deu para conferir no Planalto: a lista de bens do Imposto Seletivo (LC 214/2025) e a dispensa de recolhimento da CBS e do IBS em 2026.
+  - Os marcos são conferidos automaticamente contra o normas.leg.br (docs/02, seção 9). Em 07/11/2026, 17 de 17 aprovados depois de quatro rodadas que corrigiram o texto de 9 marcos (condições omitidas nos dividendos, na devolução e na redução de 60%; a cesta básica vale desde 2026, não 2027). Custo das rodadas de ajuste: US$ 3,97; sem mudança na lei ou no texto, US$ 0.
+  - A dispensa de recolhimento em 2026 entrou no marco do ano de teste (ADCT, art. 125, § 4º). Falta a lista de bens do Imposto Seletivo (LC 214/2025, Livro II).
   - A busca da Câmara traz projetos com "tributário" na ementa que tratam de outro assunto e só citam benefício tributário (ex.: cacauicultura). A regra é pública e não usa IA. Se o ruído incomodar, a saída é filtrar por órgão (CFT, CCJC) ou pelo tema da Câmara, e não escolher projeto à mão.
   - A diferença entre a soma do arquivo por estado e o total do relatório mensal da Receita segue `confirmar` em [05](05-fontes-de-dados.md).
 

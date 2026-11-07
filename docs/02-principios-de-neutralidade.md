@@ -68,6 +68,7 @@ Cada indicador exibe:
 ## 9. Lei é fonte; projeto é proposta
 
 - Regra de imposto na tela cita a lei, o artigo e o link para o texto compilado no Planalto. Sem artigo, a regra não entra.
+- **Conferência automática, falha fechada.** Cada regra só aparece depois de conferida contra o texto da lei no normas.leg.br (Senado), sem ninguém liberar à mão: o código exige que todo número e data da regra esteja no artigo citado; um modelo de IA responde se a lei diz o que a regra diz, citando o trecho; o código confere que o trecho existe literalmente na lei. Reprovou, a regra sai da tela. Mudou a lei ou o texto da regra, a conferência é refeita ([06](06-arquitetura.md), "Agentes"). O modelo nunca escreve a regra nem um número dela: só aprova ou reprova.
 - O que ainda tramita aparece separado do que já é lei, com o selo "Proposta, não é lei" e a situação atual informada pela Câmara ou pelo Senado.
 - A linha do tempo diz o que muda e quando, com os números da lei: "a alíquota passa de X% para Y%", nunca "aumento" ou "alívio" sem o número.
 - Simulação ou estimativa tem o rótulo escrito e o aviso de que não substitui orientação contábil ([07](07-riscos-e-cuidados.md), R9).

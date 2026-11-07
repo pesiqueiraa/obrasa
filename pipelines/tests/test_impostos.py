@@ -160,4 +160,5 @@ def test_marco_sem_artigo_falha():
             texto="t",
             lei="Lei nº 1/2000",
             url="https://www.planalto.gov.br/x",
+            dispositivos=["urn:lex:br:federal:lei:2025-11-26;15270!art2"],
         )

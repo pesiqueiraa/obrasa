@@ -28,8 +28,8 @@ async function Marcos() {
   if (marcos.length === 0) {
     return (
       <p className={ui.caption}>
-        Os marcos da reforma estão em revisão: cada um só aparece aqui depois que uma pessoa confere o artigo da lei
-        citado.
+        Os marcos da reforma estão em conferência: cada um só aparece aqui depois de conferido contra o texto da lei
+        citada.
       </p>
     );
   }
@@ -37,8 +37,13 @@ async function Marcos() {
     <>
       <LinhaDoTempo marcos={marcos} hoje={hoje} />
       <p className={ui.sourceLine}>
-        Fonte: texto das leis no Planalto (Emenda Constitucional 132/2023, Lei Complementar 214/2025 e Lei 15.270/2025),
-        com o artigo citado em cada marco.
+        Fonte: Emenda Constitucional 132/2023, Lei Complementar 214/2025 e Lei 15.270/2025, com o artigo citado em cada
+        marco. Cada marco é conferido automaticamente contra o texto da lei no{" "}
+        <a href="https://normas.leg.br/" rel="noopener">
+          normas.leg.br
+        </a>{" "}
+        (Senado Federal): os números pelo código e o sentido por um modelo de IA, que precisa citar o trecho da lei.
+        Marco que não passa fica fora da página.
       </p>
     </>
   );
