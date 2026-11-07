@@ -17,9 +17,10 @@ Regras gerais:
 | TSE · Dados Abertos | Resultados das Eleições 2026 por município, candidaturas e eleitos | Zips no CDN do TSE, lidos por HTTP Range | Nenhuma | Por eleição |
 | Tesouro · Siconfi | Contas de estados e municípios (pós-MVP) | API REST (ORDS) | Nenhuma | Bimestral e quadrimestral |
 | Tesouro Transparente | Resultado do Tesouro, dívida | CKAN (planilhas e CSV) | Nenhuma | Mensal |
-| Receita Federal | Arrecadação federal | Relatórios e dados abertos | Nenhuma | Mensal |
+| Receita Federal | Arrecadação federal por tributo e UF | CSV em gov.br | Nenhuma | Mensal |
+| Planalto · Legislação | Marcos da reforma tributária e do IR (aba Impostos) | Texto da lei, conferido à mão | Nenhuma | Quando a lei muda |
 | Portal da Transparência (CGU) | Despesa por função, emendas | API REST | Chave gratuita | Diária |
-| Câmara dos Deputados | Proposições e votações (pós-MVP) | API REST | Nenhuma | Contínua |
+| Câmara dos Deputados | Projetos sobre impostos (aba Impostos); votações (pós-MVP) | API REST | Nenhuma | Contínua |
 | Senado Federal | Matérias e votações (pós-MVP) | API REST | Nenhuma | Contínua |
 | Base dos Dados | Atalho para históricos | BigQuery | Conta Google | Varia |
 | GDELT DOC 2.0 | Descoberta de notícias | API REST | Nenhuma | Contínua |
@@ -63,8 +64,10 @@ Resposta: `[{"data":"01/07/2026","valor":"0.07"}]`
 | 5793 | NFSP sem desvalorização cambial (% PIB), fluxo acumulado em 12 meses, resultado primário, setor público consolidado | % | Mensal | ok (nome e unidade conferidos no webservice SGS em 02/11/2026; ainda não usada no site) |
 | 4649 | NFSP sem desvalorização cambial, fluxo mensal corrente, resultado primário, setor público consolidado | R$ (milhões) | Mensal | ok (conferida no webservice SGS em 02/11/2026; ainda não usada) |
 | 5364 | NFSP sem desvalorização cambial (% PIB), fluxo mensal corrente, resultado primário, setor público consolidado | % | Mensal | ok (conferida no webservice SGS em 02/11/2026; ainda não usada) |
+| 5760 | NFSP sem desvalorização cambial (% PIB), fluxo acumulado em 12 meses, juros nominais, setor público consolidado | % | Mensal | ok (nome conferido no webservice SGS em 07/11/2026: 8,99 em set/2026) |
+| 5727 | NFSP sem desvalorização cambial (% PIB), fluxo acumulado em 12 meses, resultado nominal, setor público consolidado | % | Mensal | ok (07/11/2026: 9,51 em set/2026 = primário 0,52 + juros 8,99; usada só como conferência) |
 
-Atenção ao sinal das NFSP: necessidade de financiamento positiva é déficit. Conferir na nota metodológica do BC antes de exibir.
+Atenção ao sinal das NFSP: necessidade de financiamento positiva é déficit. Conferido em 07/11/2026 contra o Focus, que publica o "Resultado primário" com o sinal do resultado (−0,49% do PIB esperado para 2026 enquanto a NFSP primária de 12 meses era +0,52%). O site exibe o resultado (sinal invertido da NFSP, transformação `inverter_sinal`), na mesma convenção do Focus: negativo é déficit.
 
 Catálogo completo: https://www3.bcb.gov.br/sgspub/ (`confirmar`: respondeu HTTP 502 em 01/11/2026). Para nome, unidade e periodicidade de uma série, use o webservice abaixo.
 
@@ -111,6 +114,21 @@ Codifique os espaços e aspas da URL. Documentação: https://olinda.bcb.gov.br/
 **Colunas principais:** `Indicador`, `Data`, `DataReferencia` (nas séries da Selic, `Reuniao`), `Media`, `Mediana`, `DesvioPadrao`, `Minimo`, `Maximo`, `numeroRespondentes`, `baseCalculo`. Os nomes variam um pouco entre conjuntos; leia o `$metadata`.
 
 **Na tela:** usar a mediana e dizer que é a expectativa de instituições financeiras consultadas pelo Banco Central, não uma previsão oficial.
+
+**Testado em 07/11/2026 (`ok`):** `ExpectativasMercadoAnuais` com `$filter=Data eq 'AAAA-MM-DD' and baseCalculo eq 0` devolve uma linha por indicador e ano de referência. `baseCalculo` 0 considera as respostas dos últimos 30 dias; 1, dos últimos 5 dias úteis (há as duas linhas para cada indicador). Usamos 0. Os espaços da URL vão como `%20`: com `+` a API responde 400.
+
+| `Indicador` no Focus | Indicador do oBrasa | Unidade |
+|---|---|---|
+| `IPCA` | ipca-12-meses (variação no ano-calendário) | % |
+| `Selic` | selic (taxa no fim do ano) | % a.a. |
+| `PIB Total` | pib-4-trimestres (variação no ano) | % |
+| `Câmbio` | dolar (taxa no fim do ano) | R$/US$ |
+| `Taxa de desocupação` | desocupacao | % |
+| `Resultado primário` | resultado-primario | % do PIB |
+| `Dívida bruta do governo geral` | divida-bruta | % do PIB |
+| `Dívida líquida do setor público` | divida-liquida | % do PIB |
+
+Na pesquisa de 30/10/2026 havia 144 respondentes para o IPCA de 2026. A expectativa é sempre de um ano-calendário; o número da tela pode ser de outra janela (o IPCA de 12 meses, por exemplo). A tela diz o ano de referência.
 
 ## Banco Central · PTAX
 
@@ -211,7 +229,15 @@ GET https://apidatalake.tesouro.gov.br/ords/siconfi/tt/rgf?an_exercicio=2026&in_
 
 ## Receita Federal · Arrecadação
 
-- Relatório mensal de arrecadação das receitas federais e conjuntos em dados abertos (`confirmar` o conjunto exato e o formato).
+```http
+GET https://www.gov.br/receitafederal/dados/arrecadacao-estado.csv
+```
+
+Status `ok` (testado em 07/11/2026). CSV em ISO-8859-1, separado por `;`, com vírgula decimal e quebra de linha CRLF. Uma linha por ano, mês (nome por extenso: `Janeiro`…) e UF; uma coluna por tributo, em reais correntes. Começa em jan/2000; em 07/11/2026 ia até set/2026 (cerca de 2,4 MB).
+
+- As colunas mudam com o tempo: CPMF até 2007; `COFINS`, `PIS/PASEP` e `CSLL` sem quebra só nos primeiros anos, depois `- FINANCEIRAS` e `- DEMAIS`; `RECEITA PREVIDENCIÁRIA` aparece como `- PRÓPRIA` e `- DEMAIS` em alguns anos. Nunca há total e quebra preenchidos no mesmo ano (conferido de 2000 a 2026), então a soma das colunas não conta nada duas vezes. O coletor confere isso a cada leitura e falha se os dois aparecerem juntos.
+- Soma das 27 UFs em set/2025: R$ 216,7 bilhões; em set/2026: R$ 239,4 bilhões. `confirmar` contra o total do relatório mensal da Receita (o site `gov.br/receitafederal` não foi conferido num navegador nesta sessão).
+- Agrupamento em tributos, público, em `config/impostos.yaml` (`arrecadacao.grupos`). Coluna nova sem grupo faz a coleta falhar.
 - Relatório anual "Carga Tributária no Brasil": base para a parte indireta de F2 ([08](08-decisoes-em-aberto.md), D9).
 
 ## Portal da Transparência (CGU)
@@ -237,6 +263,17 @@ GET https://dadosabertos.camara.leg.br/api/v2/votacoes/{id}/orientacoes
 - Uma "votação da proposição X" costuma ser um conjunto de votações (parecer, emendas, destaques, redação final). Exiba isso com clareza.
 - Senado: https://legis.senado.leg.br/dadosabertos/ (`confirmar` endpoints).
 
+**Projetos sobre impostos (aba Impostos)** · status `ok` (testado em 07/11/2026):
+
+```http
+GET https://dadosabertos.camara.leg.br/api/v2/proposicoes?siglaTipo=PEC,PLP,PL&keywords=imposto&dataInicio=AAAA-MM-DD&ordem=DESC&ordenarPor=id&itens=100
+Accept: application/json
+```
+
+- `keywords` procura na ementa e na indexação. Só com `imposto`, de 01/01 a 07/11/2026 vieram cerca de 215 PEC, PLP e PL. Por isso a aba mostra só os que tiveram tramitação nos últimos 30 dias (`dataInicio`), e a lista de termos fica pública em `config/impostos.yaml`.
+- A situação atual vem de `GET /proposicoes/{id}` (`statusProposicao`). Proposição na tela tem o selo de proposta: não é lei.
+- Os temas (`/referencias/proposicoes/codTema`) não têm um tema só de tributação (há 40 Economia e 70 Finanças Públicas e Orçamento); não usamos o filtro por tema.
+
 ## TSE · Dados Abertos (Eleições 2026)
 
 Status: `ok` (testado em 01/11/2026). Configuração em `config/eleicoes.yaml`, job em `pipelines/jobs/eleicoes.py`.
@@ -256,6 +293,20 @@ Páginas: https://dadosabertos.tse.jus.br/dataset/resultados-2026 e https://dado
 - Casamento TSE → IBGE por UF e nome normalizado; 13 nomes diferentes ficam como exceção em `config/eleicoes.yaml`. O casamento tem de ser um para um e cobrir os 5.571 municípios.
 - Dos arquivos de candidaturas só são lidos campos públicos de exibição (número, nome de urna, partido, federação, situação). CPF, e-mail, título de eleitor e data de nascimento não são lidos.
 - O feed de resultados `resultados.tse.jus.br/oficial/.../dados-simplificados/...` respondeu 404 em 01/11/2026; não é usado.
+
+**Planos de governo (propostas registradas)** · status `ok` só para acesso (testado em 07/11/2026), ainda não usado:
+
+- Um zip por UF e um para presidente: `cdn.tse.jus.br/estatistica/sead/odsele/proposta_governo/proposta_governo_2026_{UF|BR}.zip` (BR: 18 MB, 14 PDFs e um `leiame.pdf`).
+- Cada PDF se chama `{UF}/2026{UF}{SQ_CANDIDATO}_{n}.pdf`. O `SQ_CANDIDATO` liga o plano ao arquivo `consulta_cand`, que já é lido.
+- Só presidente e governador registram plano. Deputados e senadores não.
+- A API do DivulgaCandContas (`divulgacandcontas.tse.jus.br/divulga/rest/v1/...`) respondeu 403 a clientes automáticos em 07/11/2026; não usar.
+- Uso planejado em [10](10-pos-mvp.md#38-acompanhar-os-eleitos), com a regra de [02](02-principios-de-neutralidade.md#10-promessas-e-mandatos).
+
+## Planalto · Legislação (aba Impostos)
+
+- Fonte dos marcos da reforma tributária e do imposto de renda. Não há API: cada marco é escrito à mão em `config/impostos.yaml`, com lei, artigo e link para o texto compilado em `planalto.gov.br`, e conferido por uma pessoa antes de ir para a tela.
+- Um job carrega o arquivo no banco (`marcos_tributarios`), para que a tela leia o número do banco como qualquer outro (regra 1). O link da lei é a fonte exibida.
+- Lei citada sempre na versão compilada, porque as leis da reforma são alteradas com frequência.
 
 ## Outras fontes oficiais (pós-MVP)
 
