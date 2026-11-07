@@ -1,0 +1,35 @@
+name: Dependabot auto-merge
+
+# PR do Dependabot entra sozinho na main quando os 4 checks obrigatórios do CI passam
+# (proteção da main; docs/11). Regra:
+#   * patch e minor: sempre;
+#   * major de dependência de desenvolvimento (TypeScript, ESLint, @types, ruff, pytest)
+#     e de GitHub Actions: o CI exercita a ferramenta inteira, então quebra aparece nele;
+#   * major de dependência de produção (Next, React, Supabase): fica aberta, porque pode
+#     mudar o comportamento do site sem quebrar o CI.
+# Se o CI falhar, o PR fica aberto e nada entra.
+
+on: pull_request
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  automerge:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - id: meta
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Liga o auto-merge (espera os checks obrigatórios)
+        if: >-
+          steps.meta.outputs.update-type != 'version-update:semver-major'
+          || steps.meta.outputs.dependency-type == 'direct:development'
+          || steps.meta.outputs.package-ecosystem == 'github_actions'
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
