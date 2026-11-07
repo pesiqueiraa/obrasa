@@ -607,3 +607,35 @@
   font-size: var(--bd-type-caption-font-size);
   color: var(--bd-color-ink-muted);
 }
+
+// "O que o mercado espera" (components/Expectativas.tsx): duas medianas do Focus lado a
+// lado, sob o topo do indicador. Linha fina em cima, como os demais blocos.
+.expectativas {
+  max-width: 44rem;
+  margin-top: var(--bd-space-xl);
+  padding-top: var(--bd-space-md);
+  border-top: 1px solid var(--bd-color-hairline);
+}
+
+.expectativasTitulo {
+  font-size: var(--bd-type-body-lg-font-size);
+  font-weight: 600;
+  margin: 0 0 var(--bd-space-sm);
+}
+
+.expectativasLista {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--bd-space-md);
+  margin: 0 0 var(--bd-space-sm);
+  dt {
+    font-size: var(--bd-type-body-sm-font-size);
+    color: var(--bd-color-ink-muted);
+  }
+  dd {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 300;
+    font-variant-numeric: tabular-nums;
+  }
+}

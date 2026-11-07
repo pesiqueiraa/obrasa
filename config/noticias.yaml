@@ -112,6 +112,10 @@ temas:
              arcabouço fiscal, meta fiscal, Orçamento, LDO, LOA, Tesouro Nacional, contingenciamento,
              bloqueio de gastos, arrecadação federal, Receita Federal, ajuste fiscal, imposto, impostos]
     excluir: []
+  impostos:
+    termos: [imposto, impostos, tributo, tributos, reforma tributária, imposto de renda, Imposto Seletivo,
+             IBS, CBS, isenção do IR, tributação de dividendos, arrecadação federal, split payment]
+    excluir: []
   educacao:
     termos: [Enem, Ideb, Inep, Saeb, MEC, Ministério da Educação, ensino médio, ensino fundamental,
              educação infantil, creche, creches, alfabetização, analfabetismo, Fies, ProUni, Sisu,

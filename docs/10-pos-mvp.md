@@ -79,6 +79,11 @@ Ordem de trabalho decidida na conversa de 07/11/2026. Métricas de uso (D11) fic
 - **Cuidado:** regras de [02](02-principios-de-neutralidade.md#9-lei-é-fonte-projeto-é-proposta). Os marcos são escritos à mão em `config/impostos.yaml` e conferidos por uma pessoa antes de publicar. Um erro de data ou alíquota pesa mais que a falta do marco.
 - **Depois:** os simuladores F2 ("Quanto eu pago") e F3 ([04](04-mvp.md)) entram nesta aba.
 - **Esforço:** M
+- **Situação em 07/11/2026:** primeira versão em `/impostos`, com as quatro partes. Pendências:
+  - Os 17 marcos de `config/impostos.yaml` estão sem conferência (`conferido_por` e `conferido_em` vazios) e não aparecem no site. Para revisar localmente: `OBRASA_MARCOS_RASCUNHO=1 pnpm dev`.
+  - Faltam dois marcos que não deu para conferir no Planalto: a lista de bens do Imposto Seletivo (LC 214/2025) e a dispensa de recolhimento da CBS e do IBS em 2026.
+  - A busca da Câmara traz projetos com "tributário" na ementa que tratam de outro assunto e só citam benefício tributário (ex.: cacauicultura). A regra é pública e não usa IA. Se o ruído incomodar, a saída é filtrar por órgão (CFT, CCJC) ou pelo tema da Câmara, e não escolher projeto à mão.
+  - A diferença entre a soma do arquivo por estado e o total do relatório mensal da Receita segue `confirmar` em [05](05-fontes-de-dados.md).
 
 ### 2.8 Página por divulgação
 - **O quê:** uma página permanente por divulgação de cada indicador (ex.: `/indicador/ipca-12-meses/2026-10`), com o número, a variação e as notícias daquele mês.

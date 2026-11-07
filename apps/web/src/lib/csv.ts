@@ -13,6 +13,8 @@ export type CsvMeta = {
   serieNome: string;
   unidade: string;
   urlPagina: string;
+  /** Linha extra no cabeçalho, ex.: transformação aplicada na exibição. */
+  nota?: string;
 };
 
 function cell(value: string): string {
@@ -29,6 +31,7 @@ export function buildCsv(meta: CsvMeta, obs: Obs[]): string {
     `# Data da coleta mais recente: ${lastCollected}`,
     `# Revisão vigente de cada período; o histórico de revisões está na página de metodologia.`,
     `# Página: ${meta.urlPagina}`,
+    ...(meta.nota ? [`# ${meta.nota}`] : []),
   ];
   const rows = obs.map((o) =>
     [o.refDate, String(o.value), meta.unidade, meta.seriesId, String(o.revision), o.collectedAt, o.rawObject]

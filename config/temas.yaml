@@ -18,14 +18,19 @@
   ordem: 2
 - slug: contas-publicas
   titulo: Contas públicas
-  resumo: Quanto o setor público deve, em relação a tudo o que o país produz em um ano.
+  resumo: Quanto o setor público deve, em relação a tudo o que o país produz em um ano, e o resultado das contas.
   ordem: 3
+- slug: impostos
+  titulo: Impostos
+  resumo: O que muda nos impostos de 2026 a 2033, com a lei de cada regra, e quanto o governo federal arrecada por mês.
+  ordem: 4
+  pagina: propria
 - slug: educacao
   titulo: Educação
   resumo: Quantos sabem ler, quanto tempo estudaram e quantos estão na escola na idade esperada.
-  ordem: 4
+  ordem: 5
 - slug: noticias
   titulo: Notícias
   resumo: O que os veículos publicaram nos últimos 7 dias sobre cada tema, ao lado do número oficial.
-  ordem: 5
+  ordem: 6
   pagina: propria

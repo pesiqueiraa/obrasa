@@ -81,6 +81,8 @@ export type Indicator = {
   casas_decimais: number;
   serie_nominal: string | null;
   ordem: number | null;
+  /** Nome do indicador no Focus do Banco Central, quando ele o cobre. */
+  focus: string | null;
 };
 
 export type Tema = {
@@ -201,6 +203,17 @@ export async function listIndicatorSlugs(): Promise<string[]> {
   return data.map((r) => r.slug);
 }
 
+/**
+ * Transformação de exibição declarada em config/indicators.yaml. O banco guarda o valor
+ * como a fonte publica; a troca acontece só aqui, e a metodologia diz qual foi.
+ * inverter_sinal: NFSP (positivo = déficit) vira resultado (negativo = déficit), como no Focus.
+ */
+export function transforma(b: SeriesBundle, t: string | null): SeriesBundle {
+  if (t === null) return b;
+  if (t !== "inverter_sinal") throw new Error(`transformação desconhecida: ${t}`);
+  return { ...b, obs: b.obs.map((o) => ({ ...o, value: o.value === 0 ? 0 : -o.value })) };
+}
+
 export async function getIndicatorView(slug: string): Promise<IndicatorView | null> {
   "use cache";
   cacheLife("hours");
@@ -215,8 +228,10 @@ export async function getIndicatorView(slug: string): Promise<IndicatorView | nu
   if (error) throw new Error(`indicador ${slug}: ${error.message}`);
   if (!indicator) return null;
 
-  const principal = await fetchBundle(db, indicator.series_id);
-  const reserva = indicator.fallback_series_id ? await fetchBundle(db, indicator.fallback_series_id) : null;
+  const principal = transforma(await fetchBundle(db, indicator.series_id), indicator.transformacao);
+  const reserva = indicator.fallback_series_id
+    ? transforma(await fetchBundle(db, indicator.fallback_series_id), indicator.transformacao)
+    : null;
   const nominal = indicator.serie_nominal ? await fetchBundle(db, indicator.serie_nominal) : null;
   const { escolhida, usandoReserva } = chooseSeries(principal, reserva);
   const latest = escolhida.obs.at(-1);
