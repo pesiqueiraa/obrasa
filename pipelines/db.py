@@ -122,15 +122,15 @@ def sync_registry(conn: psycopg.Connection, registry: Registry) -> None:
                 """
                 insert into indicators (slug, titulo, series_id, fallback_series_id, transformacao,
                                         verificacao, janela_padrao, frase_template, url_metodologia,
-                                        ordem, tema, casas_decimais, serie_nominal)
-                values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                        ordem, tema, casas_decimais, serie_nominal, focus)
+                values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 on conflict (slug) do update set titulo = excluded.titulo,
                   series_id = excluded.series_id, fallback_series_id = excluded.fallback_series_id,
                   transformacao = excluded.transformacao, verificacao = excluded.verificacao,
                   janela_padrao = excluded.janela_padrao, frase_template = excluded.frase_template,
                   url_metodologia = excluded.url_metodologia, ordem = excluded.ordem,
                   tema = excluded.tema, casas_decimais = excluded.casas_decimais,
-                  serie_nominal = excluded.serie_nominal
+                  serie_nominal = excluded.serie_nominal, focus = excluded.focus
                 """,
                 (
                     i.slug,
@@ -146,6 +146,7 @@ def sync_registry(conn: psycopg.Connection, registry: Registry) -> None:
                     i.tema,
                     i.casas_decimais,
                     i.serie_nominal.series_id if i.serie_nominal else None,
+                    i.focus,
                 ),
             )
 

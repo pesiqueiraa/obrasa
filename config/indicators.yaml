@@ -31,6 +31,7 @@
   # url_metodologia: https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9256-indice-nacional-de-precos-ao-consumidor-amplo.html
   url_metodologia: null
   ordem: 1
+  focus: "IPCA"
 
 - slug: selic
   titulo: Taxa básica de juros (meta Selic)
@@ -43,6 +44,7 @@
   monetaria: false
   frase_template: selic.pt.txt
   ordem: 2
+  focus: "Selic"
 
 - slug: dolar
   titulo: Dólar comercial
@@ -56,6 +58,7 @@
   casas_decimais: 4
   frase_template: dolar.pt.txt
   ordem: 3
+  focus: "Câmbio"
 
 - slug: pib-4-trimestres
   titulo: PIB em quatro trimestres
@@ -69,6 +72,7 @@
   casas_decimais: 1
   frase_template: pib_4t.pt.txt
   ordem: 4
+  focus: "PIB Total"
 
 - slug: pib-trimestre
   titulo: PIB no trimestre
@@ -120,6 +124,7 @@
   casas_decimais: 1
   frase_template: desocupacao.pt.txt
   ordem: 1
+  focus: "Taxa de desocupação"
 
 - slug: rendimento-medio
   titulo: Rendimento médio do trabalho
@@ -160,6 +165,7 @@
   casas_decimais: 1
   frase_template: divida_bruta.pt.txt
   ordem: 1
+  focus: "Dívida bruta do governo geral"
 
 - slug: divida-liquida
   titulo: Dívida líquida do setor público
@@ -173,6 +179,36 @@
   casas_decimais: 1
   frase_template: divida_liquida.pt.txt
   ordem: 2
+  focus: "Dívida líquida do setor público"
+
+- slug: resultado-primario
+  titulo: Resultado primário do setor público, 12 meses
+  tema: contas-publicas
+  fonte_primaria: {orgao: Banco Central, tipo: bcb_sgs, codigo: 5793, status: ok}
+  unidade: "% do PIB"
+  tipo_serie: taxa
+  frequencia: mensal
+  janela_padrao: 10a
+  monetaria: false
+  casas_decimais: 2
+  frase_template: resultado_primario.pt.txt
+  # A NFSP publica déficit como positivo; a tela mostra o resultado (docs/05).
+  transformacao: inverter_sinal
+  ordem: 3
+  focus: "Resultado primário"
+
+- slug: juros-nominais
+  titulo: Juros pagos pelo setor público, 12 meses
+  tema: contas-publicas
+  fonte_primaria: {orgao: Banco Central, tipo: bcb_sgs, codigo: 5760, status: ok}
+  unidade: "% do PIB"
+  tipo_serie: taxa
+  frequencia: mensal
+  janela_padrao: 10a
+  monetaria: false
+  casas_decimais: 2
+  frase_template: juros_nominais.pt.txt
+  ordem: 4
 
 - slug: analfabetismo
   titulo: Analfabetismo, 15 anos ou mais

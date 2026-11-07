@@ -28,7 +28,7 @@ from pipelines.config import MapaUf, Registry, Series
 from pipelines.jobs.report import Report
 from pipelines.models import ValidationError
 from pipelines.raw_store import RawStore
-from pipelines.sources import bcb_sgs, ibge_agregados
+from pipelines.sources import bcb_sgs, ibge_agregados, receita
 
 log = logging.getLogger(__name__)
 
@@ -56,6 +56,9 @@ def valores_serie(body: bytes, s: Series) -> dict[date, Decimal]:
             body, presentes, classificacao=s.classificacao, tipo=s.frequencia
         )
         return {o.ref_date: o.value for o in data[var]}
+    if s.source_id == receita.SOURCE_ID:
+        dados = receita.parse(body, config.load_impostos().arrecadacao)
+        return {o.ref_date: o.value for o in dados[s.codigo_externo]}
     raise ValidationError(f"{s.id}: fonte {s.source_id} sem parser de auditoria")
 
 

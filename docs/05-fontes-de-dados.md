@@ -233,10 +233,12 @@ GET https://apidatalake.tesouro.gov.br/ords/siconfi/tt/rgf?an_exercicio=2026&in_
 GET https://www.gov.br/receitafederal/dados/arrecadacao-estado.csv
 ```
 
-Status `ok` (testado em 07/11/2026). CSV em ISO-8859-1, separado por `;`, com vírgula decimal e quebra de linha CRLF. Uma linha por ano, mês (nome por extenso: `Janeiro`…) e UF; uma coluna por tributo, em reais correntes. Começa em jan/2000; em 07/11/2026 ia até set/2026 (cerca de 2,4 MB).
+Status `ok` (testado em 07/11/2026). CSV em ISO-8859-1, separado por `;`, com quebra de linha CRLF. Uma linha por ano, mês (nome por extenso: `Janeiro`…) e UF; uma coluna por tributo, em reais correntes. Começa em jan/2000; em 07/11/2026 ia até set/2026 (cerca de 2,4 MB). O site responde 403 a HEAD, mas 200 ao GET. Coletor: `pipelines/sources/receita.py`; job: `pipelines/jobs/arrecadacao.py` (só grava quando o hash do arquivo muda).
 
-- As colunas mudam com o tempo: CPMF até 2007; `COFINS`, `PIS/PASEP` e `CSLL` sem quebra só nos primeiros anos, depois `- FINANCEIRAS` e `- DEMAIS`; `RECEITA PREVIDENCIÁRIA` aparece como `- PRÓPRIA` e `- DEMAIS` em alguns anos. Nunca há total e quebra preenchidos no mesmo ano (conferido de 2000 a 2026), então a soma das colunas não conta nada duas vezes. O coletor confere isso a cada leitura e falha se os dois aparecerem juntos.
-- Soma das 27 UFs em set/2025: R$ 216,7 bilhões; em set/2026: R$ 239,4 bilhões. `confirmar` contra o total do relatório mensal da Receita (o site `gov.br/receitafederal` não foi conferido num navegador nesta sessão).
+- **A série começa em jan/2013.** Antes disso o arquivo não traz as receitas previdenciárias (só ago a out/2005), e o total teria uma quebra de cerca de R$ 25 bilhões por mês.
+- **Três formatos de número** (conferidos de 2003 a set/2026): inteiro (`231`), vírgula decimal (`133165371,2`, às vezes com 3 casas) e, em jun/2023 e mai/2024, ponto de milhar (`1.753.289.168`, `226.708.856,85`). Qualquer outro formato faz a leitura falhar. Em 2001 e 2002 a vírgula separa milhar (`47,953,915`).
+- **As colunas mudam com o tempo:** CPMF até 2007; `COFINS`, `PIS/PASEP` e `CSLL` sem quebra só nos primeiros anos, depois `- FINANCEIRAS` e `- DEMAIS`; `RECEITA PREVIDENCIÁRIA` aparece às vezes como `- PRÓPRIA` e `- DEMAIS` (em 2017, as duas formas em meses diferentes). O total e as partes da mesma receita nunca vêm preenchidos na mesma linha, então a soma de todas as colunas não conta nada duas vezes. A coleta confere isso a cada leitura.
+- **O total do oBrasa é a soma do arquivo por estado**: em set/2025, R$ 216,7 bilhões; em set/2026, R$ 239,4 bilhões; em dez/2019, R$ 147,5 bilhões. Pode diferir do total de manchete do relatório mensal da Receita, que inclui receitas não distribuídas por estado; a tela diz isso. `confirmar` a diferença contra o relatório num navegador.
 - Agrupamento em tributos, público, em `config/impostos.yaml` (`arrecadacao.grupos`). Coluna nova sem grupo faz a coleta falhar.
 - Relatório anual "Carga Tributária no Brasil": base para a parte indireta de F2 ([08](08-decisoes-em-aberto.md), D9).
 
@@ -271,6 +273,8 @@ Accept: application/json
 ```
 
 - `keywords` procura na ementa e na indexação. Só com `imposto`, de 01/01 a 07/11/2026 vieram cerca de 215 PEC, PLP e PL. Por isso a aba mostra só os que tiveram tramitação nos últimos 30 dias (`dataInicio`), e a lista de termos fica pública em `config/impostos.yaml`.
+- A indexação traz projetos que só citam incentivo fiscal de passagem (programa de cacauicultura, política de fitoterapia): metade dos 30 mais recentes em 07/11/2026. O coletor exige um dos termos na própria ementa.
+- `statusProposicao.dataHora` pode estar no futuro (uma reunião marcada). A tela só mostra a data quando ela já passou.
 - A situação atual vem de `GET /proposicoes/{id}` (`statusProposicao`). Proposição na tela tem o selo de proposta: não é lei.
 - Os temas (`/referencias/proposicoes/codTema`) não têm um tema só de tributação (há 40 Economia e 70 Finanças Públicas e Orçamento); não usamos o filtro por tema.
 

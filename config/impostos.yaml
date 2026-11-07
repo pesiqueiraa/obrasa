@@ -1,0 +1,305 @@
+# Aba Impostos (docs/10, 2.7; regras em docs/02, seção 9).
+#
+# Três partes:
+#   arrecadacao  agrupamento público das colunas do CSV da Receita em tributos
+#                (pipelines/sources/receita.py). Coluna nova sem grupo faz a coleta falhar.
+#   camara       termos e tipos para buscar projetos sobre impostos (pipelines/jobs/camara.py)
+#   marcos       linha do tempo da reforma tributária e do imposto de renda. Escritos à mão
+#                a partir do texto da lei, com lei, artigo e link. Só aparecem no site depois
+#                de `conferido_por` e `conferido_em` preenchidos por uma pessoa que leu o
+#                artigo no Planalto (docs/02, seção 9). O job `impostos` grava no banco.
+
+arrecadacao:
+  url: https://www.gov.br/receitafederal/dados/arrecadacao-estado.csv
+  # Antes de 2013 o arquivo não traz as receitas previdenciárias (só ago a out/2005), e em
+  # 2001 e 2002 a vírgula separa milhar. A série começa em jan/2013 (docs/05).
+  desde: 2013-01-01
+  grupos:
+    imposto-de-renda:
+      titulo: Imposto de renda
+      colunas:
+        - IRPF
+        - IRPJ - ENTIDADES FINANCEIRAS
+        - IRPJ - DEMAIS EMPRESAS
+        - IRRF - RENDIMENTOS DO TRABALHO
+        - IRRF - RENDIMENTOS DO CAPITAL
+        - IRRF - REMESSAS P/ EXTERIOR
+        - IRRF - OUTROS RENDIMENTOS
+    previdencia:
+      titulo: Contribuições à Previdência
+      colunas:
+        - RECEITA PREVIDENCIÁRIA
+        - RECEITA PREVIDENCIÁRIA - PRÓPRIA
+        - RECEITA PREVIDENCIÁRIA - DEMAIS
+        - CONTRIBUIÇÃO PLANO SEG. SOC. SERVIDORES
+        - CPSSS - Contrib. p/ o Plano de Segurid. Social Serv. Público
+    cofins:
+      titulo: Cofins
+      colunas: [COFINS, COFINS - FINANCEIRAS, COFINS - DEMAIS]
+    pis-pasep:
+      titulo: PIS/Pasep
+      colunas:
+        - CONTRIBUIÇÃO PARA O PIS/PASEP
+        - CONTRIBUIÇÃO PARA O PIS/PASEP - FINANCEIRAS
+        - CONTRIBUIÇÃO PARA O PIS/PASEP - DEMAIS
+    csll:
+      titulo: CSLL
+      colunas: [CSLL, CSLL - FINANCEIRAS, CSLL - DEMAIS]
+    ipi:
+      titulo: IPI
+      colunas:
+        - IPI - FUMO
+        - IPI - BEBIDAS
+        - IPI - AUTOMÓVEIS
+        - IPI - VINCULADO À IMPORTACAO
+        - IPI - OUTROS
+    iof:
+      titulo: IOF
+      colunas: [IMPOSTO S/ OPERAÇÕES FINANCEIRAS]
+    comercio-exterior:
+      titulo: Importação e exportação
+      colunas: [IMPOSTO SOBRE IMPORTAÇÃO, IMPOSTO SOBRE EXPORTAÇÃO]
+    outros:
+      titulo: Outras receitas
+      colunas:
+        - IMPOSTO TERRITORIAL RURAL
+        - IMPOSTO PROVIS.S/ MOVIMENT. FINANC. - IPMF
+        - CPMF
+        - CIDE-COMBUSTÍVEIS (parc. não dedutível)
+        - CIDE-COMBUSTÍVEIS
+        - CONTRIBUICÕES PARA FUNDAF
+        - REFIS
+        - PAES
+        - RETENÇÃO NA FONTE - LEI 10.833, Art. 30
+        - PAGAMENTO UNIFICADO
+        - OUTRAS RECEITAS ADMINISTRADAS
+        - DEMAIS RECEITAS
+        - ADMINISTRADAS POR OUTROS ÓRGÃOS
+  # [total, partes...]: o total e as partes da mesma receita nunca vêm preenchidos na mesma
+  # linha (conferido de 2003 a set/2026), então somar tudo não conta nada duas vezes. A
+  # coleta confere a cada leitura e falha se vierem juntos.
+  exclusivas:
+    - [RECEITA PREVIDENCIÁRIA, RECEITA PREVIDENCIÁRIA - PRÓPRIA, RECEITA PREVIDENCIÁRIA - DEMAIS]
+    - [COFINS, COFINS - FINANCEIRAS, COFINS - DEMAIS]
+    - [CONTRIBUIÇÃO PARA O PIS/PASEP, CONTRIBUIÇÃO PARA O PIS/PASEP - FINANCEIRAS, CONTRIBUIÇÃO PARA O PIS/PASEP - DEMAIS]
+    - [CSLL, CSLL - FINANCEIRAS, CSLL - DEMAIS]
+    - [CIDE-COMBUSTÍVEIS, CIDE-COMBUSTÍVEIS (parc. não dedutível)]
+    - [CONTRIBUIÇÃO PLANO SEG. SOC. SERVIDORES, CPSSS - Contrib. p/ o Plano de Segurid. Social Serv. Público]
+
+camara:
+  # Projetos com tramitação nos últimos `dias` cuja ementa ou indexação tenha um dos termos.
+  # Lista pública, como os termos das notícias (config/noticias.yaml).
+  tipos: [PEC, PLP, PL]
+  dias: 30
+  termos: [imposto, tributário, tributária, IBS, CBS, Imposto Seletivo]
+  maximo: 30
+
+marcos:
+  # publico: pf (pessoa física), pj (empresa) ou os dois.
+  # Texto sem adjetivo, com o número da lei (docs/02, seções 4 e 9).
+  # Artigos lidos no Planalto em 07/11/2026 pelo agente de IA; falta a conferência de uma
+  # pessoa (conferido_por). Enquanto faltar, o marco não aparece no site.
+
+  - id: ir-isencao-5-mil
+    vigencia: 2026-01-01
+    publico: [pf]
+    titulo: Imposto de renda zerado para quem recebe até R$ 5.000 por mês
+    texto: >-
+      O imposto de renda mensal fica zerado para rendimentos de até R$ 5.000,00. Entre
+      R$ 5.000,01 e R$ 7.350,00 o imposto é reduzido em parte; acima de R$ 7.350,00 não há
+      redução. Vale também para o 13º salário.
+    lei: Lei nº 9.250/1995, art. 3º-A, incluído pela Lei nº 15.270/2025
+    url: https://www.planalto.gov.br/ccivil_03/_ato2023-2026/2025/lei/l15270.htm
+    conferido_por: null
+    conferido_em: null
+
+  - id: ir-dividendos-retencao
+    vigencia: 2026-01-01
+    publico: [pf, pj]
+    titulo: Retenção de 10% sobre lucros e dividendos acima de R$ 50 mil por mês
+    texto: >-
+      Quando uma mesma empresa paga a uma mesma pessoa física mais de R$ 50.000,00 em lucros
+      e dividendos num mês, retém 10% de imposto de renda sobre o total pago. Lucros
+      apurados até 2025, com distribuição aprovada até 31/12/2025, ficam de fora.
+    lei: Lei nº 9.250/1995, art. 6º-A, incluído pela Lei nº 15.270/2025
+    url: https://www.planalto.gov.br/ccivil_03/_ato2023-2026/2025/lei/l15270.htm
+    conferido_por: null
+    conferido_em: null
+
+  - id: ir-tributacao-minima
+    vigencia: 2026-01-01
+    publico: [pf]
+    titulo: Imposto mínimo para rendas acima de R$ 600 mil por ano
+    texto: >-
+      A partir dos rendimentos de 2026 (declaração de 2027), quem soma mais de R$ 600.000,00
+      de rendimentos no ano passa a ter um imposto mínimo. A alíquota sobe de 0% a 10% entre
+      R$ 600.000,00 e R$ 1.200.000,00 e fica em 10% acima disso. Há um redutor para lucros e
+      dividendos já tributados na empresa.
+    lei: Lei nº 9.250/1995, arts. 16-A e 16-B, incluídos pela Lei nº 15.270/2025
+    url: https://www.planalto.gov.br/ccivil_03/_ato2023-2026/2025/lei/l15270.htm
+    conferido_por: null
+    conferido_em: null
+
+  - id: reforma-teste-2026
+    vigencia: 2026-01-01
+    publico: [pj]
+    titulo: Ano de teste da CBS e do IBS
+    texto: >-
+      Em 2026 a CBS é cobrada à alíquota de 0,9% e o IBS à alíquota estadual de 0,1%. PIS,
+      Cofins, IPI, ICMS e ISS continuam sendo cobrados.
+    lei: ADCT, art. 125, incluído pela Emenda Constitucional nº 132/2023
+    url: https://www.planalto.gov.br/ccivil_03/constituicao/emendas/emc/emc132.htm
+    conferido_por: null
+    conferido_em: null
+
+  - id: reforma-cbs-2027
+    vigencia: 2027-01-01
+    publico: [pf, pj]
+    titulo: CBS passa a ser cobrada e PIS e Cofins deixam de existir
+    texto: >-
+      A partir de 2027 a CBS (contribuição federal sobre bens e serviços) é cobrada e as
+      contribuições para o PIS e a Cofins são extintas.
+    lei: ADCT, art. 126, I, "a", e II, incluído pela Emenda Constitucional nº 132/2023
+    url: https://www.planalto.gov.br/ccivil_03/constituicao/emendas/emc/emc132.htm
+    conferido_por: null
+    conferido_em: null
+
+  - id: reforma-ipi-2027
+    vigencia: 2027-01-01
+    publico: [pj]
+    titulo: IPI com alíquota zero, exceto produtos da Zona Franca de Manaus
+    texto: >-
+      A partir de 2027 as alíquotas do IPI ficam reduzidas a zero, exceto para produtos que
+      tenham industrialização incentivada na Zona Franca de Manaus.
+    lei: ADCT, art. 126, III, "a", incluído pela Emenda Constitucional nº 132/2023
+    url: https://www.planalto.gov.br/ccivil_03/constituicao/emendas/emc/emc132.htm
+    conferido_por: null
+    conferido_em: null
+
+  - id: reforma-seletivo-2027
+    vigencia: 2027-01-01
+    publico: [pf, pj]
+    titulo: Imposto Seletivo passa a ser cobrado
+    texto: >-
+      A partir de 2027 é cobrado o Imposto Seletivo, sobre bens e serviços que a lei
+      complementar define como prejudiciais à saúde ou ao meio ambiente.
+    lei: ADCT, art. 126, I, "b", e Constituição, art. 153, VIII, incluídos pela Emenda Constitucional nº 132/2023
+    url: https://www.planalto.gov.br/ccivil_03/constituicao/emendas/emc/emc132.htm
+    conferido_por: null
+    conferido_em: null
+
+  - id: reforma-ibs-2027-2028
+    vigencia: 2027-01-01
+    publico: [pj]
+    titulo: IBS de 0,1% em 2027 e 2028, com a CBS 0,1 ponto menor
+    texto: >-
+      Em 2027 e 2028 o IBS é cobrado à alíquota estadual de 0,05% e municipal de 0,05%. A
+      alíquota da CBS nesses dois anos é reduzida em 0,1 ponto percentual.
+    lei: ADCT, art. 127, incluído pela Emenda Constitucional nº 132/2023
+    url: https://www.planalto.gov.br/ccivil_03/constituicao/emendas/emc/emc132.htm
+    conferido_por: null
+    conferido_em: null
+
+  - id: reforma-cesta-basica
+    vigencia: 2027-01-01
+    publico: [pf]
+    titulo: Alíquota zero de CBS e IBS para a Cesta Básica Nacional
+    texto: >-
+      Os alimentos da Cesta Básica Nacional, listados no Anexo I da lei, têm as alíquotas de
+      CBS e IBS reduzidas a zero. A CBS passa a ser cobrada em 2027.
+    lei: Lei Complementar nº 214/2025, art. 125 e Anexo I
+    url: https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp214.htm
+    conferido_por: null
+    conferido_em: null
+
+  - id: reforma-reducao-60
+    vigencia: 2027-01-01
+    publico: [pf, pj]
+    titulo: Alíquotas de CBS e IBS 60% menores para grupos definidos em lei
+    texto: >-
+      Educação, saúde, dispositivos médicos, medicamentos, alimentos do Anexo VII, produtos
+      de higiene e limpeza e outros grupos listados na lei têm as alíquotas de CBS e IBS
+      reduzidas em 60%.
+    lei: Lei Complementar nº 214/2025, art. 128
+    url: https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp214.htm
+    conferido_por: null
+    conferido_em: null
+
+  - id: reforma-devolucao-cbs
+    vigencia: 2027-01-01
+    publico: [pf]
+    titulo: Devolução da CBS para famílias de baixa renda
+    texto: >-
+      Famílias inscritas no CadÚnico com renda mensal de até meio salário mínimo por pessoa
+      recebem de volta 100% da CBS paga em gás de botijão de até 13 kg, energia elétrica,
+      água, esgoto, gás canalizado e telecomunicações, e 20% nos demais casos. Vale para o
+      consumo a partir de janeiro de 2027. A inclusão é automática.
+    lei: Lei Complementar nº 214/2025, arts. 112, 113, 118 e 123
+    url: https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp214.htm
+    conferido_por: null
+    conferido_em: null
+
+  - id: reforma-devolucao-ibs
+    vigencia: 2029-01-01
+    publico: [pf]
+    titulo: Devolução do IBS para famílias de baixa renda
+    texto: >-
+      As mesmas famílias passam a receber de volta 20% do IBS pago, inclusive em gás de
+      botijão, energia elétrica, água, esgoto, gás canalizado e telecomunicações. Vale para o
+      consumo a partir de janeiro de 2029.
+    lei: Lei Complementar nº 214/2025, arts. 118 e 123
+    url: https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp214.htm
+    conferido_por: null
+    conferido_em: null
+
+  - id: reforma-icms-iss-2029
+    vigencia: 2029-01-01
+    publico: [pf, pj]
+    titulo: ICMS e ISS cobrados a 90% das alíquotas
+    texto: >-
+      Em 2029 as alíquotas do ICMS e do ISS ficam em 9/10 das alíquotas fixadas na
+      legislação de cada estado e município.
+    lei: ADCT, art. 128, I, incluído pela Emenda Constitucional nº 132/2023
+    url: https://www.planalto.gov.br/ccivil_03/constituicao/emendas/emc/emc132.htm
+    conferido_por: null
+    conferido_em: null
+
+  - id: reforma-icms-iss-2030
+    vigencia: 2030-01-01
+    publico: [pf, pj]
+    titulo: ICMS e ISS cobrados a 80% das alíquotas
+    texto: Em 2030 as alíquotas do ICMS e do ISS ficam em 8/10 das alíquotas fixadas.
+    lei: ADCT, art. 128, II, incluído pela Emenda Constitucional nº 132/2023
+    url: https://www.planalto.gov.br/ccivil_03/constituicao/emendas/emc/emc132.htm
+    conferido_por: null
+    conferido_em: null
+
+  - id: reforma-icms-iss-2031
+    vigencia: 2031-01-01
+    publico: [pf, pj]
+    titulo: ICMS e ISS cobrados a 70% das alíquotas
+    texto: Em 2031 as alíquotas do ICMS e do ISS ficam em 7/10 das alíquotas fixadas.
+    lei: ADCT, art. 128, III, incluído pela Emenda Constitucional nº 132/2023
+    url: https://www.planalto.gov.br/ccivil_03/constituicao/emendas/emc/emc132.htm
+    conferido_por: null
+    conferido_em: null
+
+  - id: reforma-icms-iss-2032
+    vigencia: 2032-01-01
+    publico: [pf, pj]
+    titulo: ICMS e ISS cobrados a 60% das alíquotas
+    texto: Em 2032 as alíquotas do ICMS e do ISS ficam em 6/10 das alíquotas fixadas.
+    lei: ADCT, art. 128, IV, incluído pela Emenda Constitucional nº 132/2023
+    url: https://www.planalto.gov.br/ccivil_03/constituicao/emendas/emc/emc132.htm
+    conferido_por: null
+    conferido_em: null
+
+  - id: reforma-fim-icms-iss
+    vigencia: 2033-01-01
+    publico: [pf, pj]
+    titulo: ICMS e ISS deixam de existir
+    texto: A partir de 2033 o ICMS e o ISS são extintos.
+    lei: ADCT, art. 129, incluído pela Emenda Constitucional nº 132/2023
+    url: https://www.planalto.gov.br/ccivil_03/constituicao/emendas/emc/emc132.htm
+    conferido_por: null
+    conferido_em: null

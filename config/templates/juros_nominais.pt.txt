@@ -1,0 +1,9 @@
+# Frase "o que significa para você" do indicador juros-nominais.
+# Versão 1 (07/11/2026). Linhas com "#" são comentários.
+# Variáveis (todas calculadas a partir de valores do banco, apps/web/src/lib/template.ts):
+#   {x}        valor com unidade, formato pt-BR (nas variantes sobe/cai, sem sinal)
+#   {x_num}    só o número (ex.: 5,6)
+#   {periodo}  período de referência por extenso (ex.: julho a setembro de 2026)
+
+[padrao]
+Nos 12 meses até {periodo}, a União, os estados, os municípios e as estatais pagaram em juros sobre a dívida o equivalente a {x_num}% de tudo o que o país produz em um ano.
