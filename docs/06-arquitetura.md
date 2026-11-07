@@ -324,7 +324,8 @@ de pessoa: o **conferidor de marcos**, abaixo, aprova ou reprova cada um.
   O resultado vai para `marcos_verificacoes` (só INSERT) com o hash do marco, do texto da
   lei, do modelo e da versão do prompt: sem mudança, nada é chamado de novo. Resposta
   inválida, erro da API ou limite de turnos ficam como inconclusivos e são tentados de novo
-  na execução seguinte. Teto de 20 chamadas por execução (`CHAMADAS_MAX`).
+  na execução seguinte. Teto de 20 chamadas por execução (`CHAMADAS_MAX`) e de US$ 10 por
+  mês (`GASTO_MES_MAX_USD`); passou do teto, a conferência espera o mês seguinte.
 - **Núcleo** (`pipelines/agentes/nucleo.py`): `claude-opus-5-5`, saída em JSON com
   schema, até 25 turnos, uma chance de correção quando a verificação recusa, fallback
   do servidor em caso de recusa de segurança. Cada execução grava um JSONL em

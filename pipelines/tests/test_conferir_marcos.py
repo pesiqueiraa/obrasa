@@ -198,3 +198,19 @@ def test_job_reaproveita_conferencia_e_so_mostra_aprovado(leis, tmp_path, monkey
         linhas = dict(conn.execute("select id, conferido_em from marcos_tributarios").fetchall())
         assert linhas["teste-dividendos"] is not None and linhas["teste-errado"] is None
         raise Desfaz
+
+
+@pytest.mark.db
+def test_teto_do_mes_adia_sem_chamar_o_modelo(leis, tmp_path, monkeypatch):
+    raw = RawResponse(normas.SOURCE_ID, normas.API, CORPO, "application/json", datetime.now(UTC))
+    monkeypatch.setattr(impostos, "baixa_normas", lambda marcos: (leis, {NORMA: raw}))
+    monkeypatch.setattr(impostos, "GASTO_MES_MAX_USD", impostos.Decimal("0"))
+    with db.connect() as conn, pytest.raises(Desfaz), conn.transaction():
+        cliente, rel = Cliente(), Report()
+        store = LocalRawStore(tmp_path / "raw")
+        assert (
+            impostos.confere_marcos(conn, store, [_marco(id="teste-teto")], rel, client=cliente)
+            == {}
+        )
+        assert cliente.pedidos == [] and "adiada" in rel.warnings[0]
+        raise Desfaz

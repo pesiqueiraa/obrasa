@@ -18,6 +18,7 @@ import json
 import logging
 import os
 from datetime import date, datetime, timedelta
+from decimal import Decimal
 from zoneinfo import ZoneInfo
 
 import psycopg
@@ -34,6 +35,9 @@ log = logging.getLogger(__name__)
 FONTE_LEI = "planalto_legislacao"
 PAGINAS_MAX = 5
 CHAMADAS_MAX = 20  # conferências pelo modelo por execução (teto de gasto)
+# Teto do mês, somado de marcos_verificacoes. Conferência inconclusiva é tentada de novo
+# todo dia; o teto impede que um marco que nunca conclui gaste sem limite.
+GASTO_MES_MAX_USD = Decimal("10")
 CONFERIDO_POR = "Conferência automática: texto da lei no normas.leg.br, lido por código e por IA"
 
 
@@ -101,6 +105,10 @@ def confere_marcos(
     salvos: dict[str, str] = {}
     aprovados: dict[str, tuple[str, date]] = {}
     chamadas = 0
+    gasto = conn.execute(
+        "select coalesce(sum(custo_usd), 0) from marcos_verificacoes "
+        "where verificado_em >= date_trunc('month', now())"
+    ).fetchone()[0]
     for m in marcos:
         try:
             lei = conferir_marcos.texto_lei(m, leis)
@@ -113,11 +121,15 @@ def confere_marcos(
                 aprovados[m.id] = (h, anterior[1].date())
             continue
         numeros_ok = not conferir_marcos.checa_numeros(m, lei)
-        if numeros_ok and (not pode_chamar or chamadas >= CHAMADAS_MAX):
-            report.warnings.append(f"marco {m.id}: conferência adiada (sem chave ou teto)")
+        teto = chamadas >= CHAMADAS_MAX or gasto >= GASTO_MES_MAX_USD
+        if numeros_ok and (not pode_chamar or teto):
+            report.warnings.append(
+                f"marco {m.id}: conferência adiada (sem chave ou teto; gasto no mês US$ {gasto:.2f})"
+            )
             continue
         chamadas += numeros_ok
         c = conferir_marcos.confere(m, leis, client=client)
+        gasto += Decimal(str(c.custo_usd))
         citadas = sorted({normas.norma_de(u) for u in m.dispositivos})
         for urn in citadas:
             if urn not in salvos:
