@@ -218,10 +218,15 @@ A esteira roda sem ninguém olhando; duas peças dizem quando algo precisa de um
   Pega o caso que nada dentro do GitHub pega: o próprio GitHub parar de rodar os
   agendamentos (num repositório público, ele os desliga depois de 60 dias sem commit).
 - **Alerta por issue (`scripts/alerta.py`):** último passo dos quatro workflows
-  agendados. Falhou e não há issue aberta: abre "Alerta: <job>" com os erros e o link da
-  execução. Falhou de novo com os mesmos erros: só atualiza a issue, sem notificar. Erros
-  diferentes: comenta. Voltou a funcionar: comenta e fecha. Um feed fora do ar a cada 30
-  minutos vira uma issue, não 48 e-mails por dia.
+  agendados. Primeira falha: nada (fonte fora do ar por algumas horas se resolve sozinha,
+  e o site continua com o último valor validado). Falhou também na execução anterior e não
+  há issue aberta: abre "Alerta: <job>" com os erros, o link da execução e, na coleta, o
+  diagnóstico do investigador de falhas, que roda sozinho quando a coleta falha. Falhou de
+  novo com os mesmos erros: só atualiza a issue, sem notificar. Erros diferentes: comenta.
+  Voltou a funcionar: comenta e fecha. Auditoria e backup (`ALERTA_IMEDIATO=1`) abrem na
+  primeira falha. Um feed fora do ar a cada 30 minutos vira uma issue, não 48 e-mails por dia.
+- **Descrição que muda só de forma** (maiúscula, acento, pontuação) passa com aviso no log
+  (`pipelines/metadados.py`); mudança de palavra, número ou unidade para a série.
 
 - **Ponte do IBGE (`/api/ponte-ibge`, `apps/web/src/lib/ponte.ts`):** a API do IBGE
   (`servicodados.ibge.gov.br`) recusa conexões de fora do Brasil, e o GitHub Actions roda

@@ -14,6 +14,7 @@ on:
 permissions:
   contents: read
   issues: write  # alerta: uma issue aberta enquanto o job falhar (scripts/alerta.py)
+  actions: read  # alerta: abre a issue só se a execução anterior também falhou
 
 concurrency:
   group: atrasos

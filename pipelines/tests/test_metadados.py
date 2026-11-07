@@ -103,3 +103,31 @@ def test_toda_serie_do_bcb_e_do_ibge_tem_descricao():
     ]
     assert faltam == []
     assert all(m.na_fonte for m in config.load_regional(registry=reg).mapas)
+
+
+def _na_fonte(**c):
+    base = {"nome": "IPCA - Variação mensal", "unidade": "%", "periodicidade": "mensal"}
+    return NaFonte(**{**base, **c})
+
+
+@pytest.mark.parametrize(
+    "nome", ["IPCA – variação mensal", "IPCA: Variacao  mensal", "ipca (variação mensal)."]
+)
+def test_mudanca_so_de_forma_passa(nome):
+    metadados.confere(_na_fonte(), Descricao(nome=nome, unidade="%", periodicidade="mensal"), "s")
+
+
+@pytest.mark.parametrize(
+    ("nome", "unidade"),
+    [
+        ("IPCA - Variação trimestral", "%"),
+        ("IPCA-15 - Variação mensal", "%"),
+        ("IPCA - Variação mensal", "p.p."),
+        ("IPCA - Variação mensal", "R$"),
+    ],
+)
+def test_mudanca_de_palavra_numero_ou_unidade_para(nome, unidade):
+    with pytest.raises(ValidationError, match="mudou a descrição"):
+        metadados.confere(
+            _na_fonte(), Descricao(nome=nome, unidade=unidade, periodicidade="mensal"), "s"
+        )

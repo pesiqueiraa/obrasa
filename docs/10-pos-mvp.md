@@ -210,6 +210,7 @@ Ordem de trabalho decidida na conversa de 07/11/2026. Métricas de uso (D11) fic
 | Verificador de linguagem no CI | Bloqueia PR com termo proibido em textos da interface | P |
 | Verificador de "todo número tem série" | Teste automático que procura número na tela sem `series_id` | M |
 | Observabilidade | Painel interno com atraso por fonte, erros de coleta e custo de IA | M |
+| Correção automática por PR | Quando a fonte muda de formato ou de descrição, um agente abre um PR com a correção e o PR entra sozinho se o CI e os testes contra a fonte passarem. Precisa de um app do GitHub instalado no repositório (ex.: o app do Claude): PR aberto com o token padrão do Actions não dispara o CI, e sem CI os checks obrigatórios da `main` nunca passam. Já automático (07/11/2026): salto liberado por segunda fonte ou por persistência, marcos de impostos, descrição que muda só de forma, investigador na issue de alerta, Dependabot | M |
 | Conselho editorial plural | Pessoas de diferentes campos políticos revisam regras e textos, com nomes publicados | Contínuo |
 | Ouvidoria e reporte de erro | Formulário público com prazo de resposta publicado | P |
 | Testes de usabilidade, nunca de enquadramento | Testar se a pessoa entende a tela; nunca testar qual manchete engaja mais | Contínuo |
