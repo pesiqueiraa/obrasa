@@ -1,12 +1,14 @@
 # Temas do site (docs/08, D13). A ordem aqui é a ordem da navegação.
 # pagina: indicadores (padrão) usa a página genérica de tema, com a grade de indicadores;
-# propria tem rota própria em apps/web/src/app/<slug>/. 
+# propria tem rota própria em apps/web/src/app/<slug>/.
+# menu: temas (padrão) entra no painel "Temas" do cabeçalho; barra vira link direto nele.
 
 - slug: eleicoes-2026
   titulo: Eleições 2026
   resumo: Resultado para presidente por município, comparecimento e quem foi eleito para o Congresso e os governos estaduais.
   ordem: 0
   pagina: propria
+  menu: barra
 
 - slug: economia
   titulo: Economia
@@ -34,3 +36,4 @@
   resumo: O que os veículos publicaram nos últimos 7 dias sobre cada tema, ao lado do número oficial.
   ordem: 6
   pagina: propria
+  menu: barra

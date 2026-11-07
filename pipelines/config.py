@@ -61,6 +61,8 @@ class Tema(_Strict):
     resumo: str
     ordem: int
     pagina: Literal["indicadores", "propria"] = "indicadores"
+    # barra: link direto no cabeçalho; temas: dentro do painel "Temas" (Navegacao.tsx)
+    menu: Literal["barra", "temas"] = "temas"
 
 
 class Indicator(_Strict):

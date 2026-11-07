@@ -92,6 +92,8 @@ export type Tema = {
   ordem: number;
   /** "propria": a página do tema tem rota própria (ex.: /eleicoes-2026). */
   pagina?: "indicadores" | "propria";
+  /** "barra": link direto no cabeçalho; "temas" (padrão): dentro do painel Temas. */
+  menu?: "barra" | "temas";
 };
 
 export type Correction = {

@@ -1,0 +1,229 @@
+// Navegação do cabeçalho (Navegacao.tsx; DESIGN.md, "top-nav"). Cantos retos, sem sombra.
+// Desktop (a partir de 1056px): barra com links e dois painéis que abrem sob o cabeçalho.
+// Celular: botão Menu com a lista inteira, ocupando a tela abaixo do cabeçalho.
+
+$desk: 1056px;
+
+.nav {
+  // Sem `position`: os painéis se posicionam pelo cabeçalho (sticky), na largura toda.
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.barra {
+  display: none;
+  @media (min-width: $desk) {
+    display: block;
+  }
+  ul {
+    display: flex;
+    gap: var(--bd-space-lg);
+  }
+  a,
+  button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 48px;
+    font: inherit;
+    color: var(--bd-color-ink-muted);
+    background: none;
+    border: 0;
+    padding: 0;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    &:hover,
+    &[aria-expanded="true"] {
+      color: var(--bd-color-ink);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--bd-color-primary);
+      outline-offset: 2px;
+    }
+  }
+}
+
+.on {
+  color: var(--bd-color-ink) !important;
+  font-weight: 600;
+}
+
+.seta {
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.15s;
+  [aria-expanded="true"] > & {
+    transform: translateY(1px) rotate(-135deg);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+.sublinhado {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--bd-color-primary);
+}
+
+.painel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  z-index: 20;
+  background: var(--bd-color-canvas);
+  border-top: 1px solid var(--bd-color-hairline);
+  border-bottom: 1px solid var(--bd-color-hairline-strong);
+  padding: var(--bd-space-md) 0 var(--bd-space-lg);
+  @media (max-width: $desk - 1px) {
+    display: none;
+  }
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--bd-space-xxs) var(--bd-space-md);
+}
+
+// Entrada de painel e do menu: nome e uma linha do que tem lá (resumo de config/temas.yaml).
+.cartao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-xxs);
+  min-height: var(--bd-alvo-toque);
+  padding: var(--bd-space-sm) var(--bd-space-md);
+  border-left: 3px solid transparent;
+  color: var(--bd-color-ink);
+  text-decoration: none;
+  strong {
+    font-weight: 600;
+  }
+  span {
+    color: var(--bd-color-ink-muted);
+    font-size: var(--bd-type-caption-font-size);
+    line-height: var(--bd-type-caption-line-height);
+  }
+  &:hover {
+    background: var(--bd-color-surface-1);
+  }
+  &[aria-current="page"] {
+    border-left-color: var(--bd-color-primary);
+    background: var(--bd-color-surface-1);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--bd-color-primary);
+    outline-offset: -2px;
+  }
+}
+
+.botaoMenu {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bd-space-xs);
+  min-height: 48px;
+  min-width: 48px;
+  justify-content: flex-end;
+  font: inherit;
+  color: var(--bd-color-ink);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  @media (min-width: $desk) {
+    display: none;
+  }
+  &:focus-visible {
+    outline: 2px solid var(--bd-color-primary);
+    outline-offset: 2px;
+  }
+}
+
+// Três traços; aberto, vira um X.
+.icone {
+  position: relative;
+  width: 18px;
+  height: 2px;
+  background: currentColor;
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 18px;
+    height: 2px;
+    background: currentColor;
+    transition: transform 0.15s;
+  }
+  &::before {
+    transform: translateY(-6px);
+  }
+  &::after {
+    transform: translateY(6px);
+  }
+  &[data-aberto] {
+    background: transparent;
+    &::before {
+      transform: rotate(45deg);
+    }
+    &::after {
+      transform: rotate(-45deg);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    &::before,
+    &::after {
+      transition: none;
+    }
+  }
+}
+
+.menu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  z-index: 20;
+  height: calc(100dvh - 49px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--bd-color-canvas);
+  border-top: 1px solid var(--bd-color-hairline);
+  padding: var(--bd-space-sm) 0 var(--bd-space-xxl);
+  @media (min-width: $desk) {
+    display: none;
+  }
+  h2 {
+    font-family: var(--bd-type-eyebrow-font-family);
+    font-size: var(--bd-type-eyebrow-font-size);
+    font-weight: var(--bd-type-eyebrow-font-weight);
+    letter-spacing: var(--bd-type-eyebrow-letter-spacing);
+    line-height: var(--bd-type-eyebrow-line-height);
+    color: var(--bd-color-ink-muted);
+    margin: var(--bd-space-lg) 0 var(--bd-space-xxs);
+    padding: 0 var(--bd-space-md);
+  }
+  .cartao {
+    margin: 0 calc(-1 * var(--bd-space-md));
+    padding-left: calc(2 * var(--bd-space-md) - 3px);
+  }
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+}
+
+:global(html[data-menu-aberto]) {
+  overflow: hidden;
+}
