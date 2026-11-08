@@ -123,6 +123,12 @@ export async function getArrecadacao(): Promise<Arrecadacao | null> {
   "use cache";
   cacheLife("hours");
   cacheTag("indicadores", "impostos");
+  // Antes da primeira coleta as séries nem existem no banco: o bloco fica fora da página,
+  // em vez de quebrar a página inteira (e o build, que lê o banco de produção).
+  const ids = ["receita_arrecadacao_total", ...GRUPOS.map((id) => `receita_arrecadacao_${id}`)];
+  const { data: existentes, error } = await client().from("series").select("id").in("id", ids);
+  if (error) throw new Error(`series da arrecadação: ${error.message}`);
+  if (existentes.length !== ids.length) return null;
   const total = await getSeriesBundle("receita_arrecadacao_total");
   if (total.obs.length === 0) return null;
   const grupos = await Promise.all(

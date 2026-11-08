@@ -179,6 +179,7 @@ def test_job_reaproveita_conferencia_e_so_mostra_aprovado(leis, tmp_path, monkey
     store = LocalRawStore(tmp_path / "raw")
     bom, ruim = _marco(), _marco(id="teste-errado", texto="Retém 15% acima de R$ 50.000,00.")
     with db.connect() as conn, pytest.raises(Desfaz), conn.transaction():
+        db.sync_registry(conn, config.load())  # banco limpo do CI: registra as fontes
         cliente = Cliente(_resposta(True, "retenção de 10% acima de R$ 50.000,00"))
         aprovados = impostos.confere_marcos(conn, store, [bom, ruim], Report(), client=cliente)
         assert set(aprovados) == {"teste-dividendos"}

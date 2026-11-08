@@ -2,7 +2,17 @@
 
 import json
 
+import pytest
+
 from scripts import alerta
+
+
+@pytest.fixture(autouse=True)
+def _execucao(monkeypatch):
+    """Execução fixa: no GitHub Actions as variáveis reais da execução do CI vazariam aqui."""
+    monkeypatch.setenv("GITHUB_WORKFLOW_REF", "o/r/.github/workflows/coleta.yml@refs/heads/main")
+    monkeypatch.setenv("GITHUB_RUN_ID", "1")
+    monkeypatch.delenv("ALERTA_IMEDIATO", raising=False)
 
 
 class GhFalso:
