@@ -26,9 +26,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import os
 import re
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Protocol
@@ -38,6 +40,8 @@ import psycopg
 from psycopg import sql
 
 from pipelines import db, raw_store
+
+log = logging.getLogger(__name__)
 
 MANTER_DUMPS = 12
 _HASH_NO_NOME = re.compile(r"_([0-9a-f]{12})\.\w+$")
@@ -155,20 +159,31 @@ def confere_hash(caminho: str, corpo: bytes) -> None:
         raise RuntimeError(f"corpo de {caminho} não bate com o hash do nome")
 
 
-def copia_brutos(store: raw_store.SupabaseRawStore, destino: Destino) -> tuple[int, int]:
-    """Copia o que ainda não está no destino. Devolve (copiados, já existiam)."""
+COPIAS_PARALELAS = 16
+
+
+def copia_brutos(
+    store: raw_store.SupabaseRawStore, destino: Destino, paralelas: int = COPIAS_PARALELAS
+) -> tuple[int, int]:
+    """Copia o que ainda não está no destino. Devolve (copiados, já existiam).
+
+    Em paralelo: as notícias guardam milhares de respostas por semana, e um arquivo por vez
+    passava da hora do workflow (08/11/2026). Cada arquivo é gravado assim que chega, então
+    uma execução interrompida continua de onde parou na seguinte."""
     existentes = destino.chaves("brutos/")
-    copiados = 0
     caminhos = lista_storage(store)
-    for caminho in caminhos:
-        chave = f"brutos/{caminho}"
-        if chave in existentes:
-            continue
+    novos = [c for c in caminhos if f"brutos/{c}" not in existentes]
+
+    def copia(caminho: str) -> None:
         corpo = store.read(f"storage://{store.bucket}/{caminho}")
         confere_hash(caminho, corpo)
-        destino.grava(chave, corpo)
-        copiados += 1
-    return copiados, len(caminhos) - copiados
+        destino.grava(f"brutos/{caminho}", corpo)
+
+    with ThreadPoolExecutor(max_workers=paralelas) as pool:
+        for i, _ in enumerate(pool.map(copia, novos), 1):
+            if i % 500 == 0:
+                log.info("brutos: %d de %d copiados", i, len(novos))
+    return len(novos), len(caminhos) - len(novos)
 
 
 # --- banco ---

@@ -55,6 +55,15 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           RAW_STORE: supabase
         run: uv run python -m pipelines.run todos
+      # O investigador só usa a credencial quando a coleta falha: sem este passo, uma senha
+      # errada do `leitor` só apareceria na primeira falha, sem diagnóstico.
+      - name: Confere o acesso do investigador (papel leitor)
+        if: ${{ !cancelled() }}
+        env:
+          AGENTES_DATABASE_URL: ${{ secrets.AGENTES_DATABASE_URL }}
+        run: >-
+          uv run python -c "from pipelines.agentes.ferramentas import conecta;
+          c = conecta(); print('leitor ok:', c.execute('select count(*) from sources').fetchone()[0], 'fontes')"
       # Só leitura (papel `leitor`); explica a falha para a issue. Sem chave, o alerta sai
       # sem diagnóstico. Não corrige nada (pipelines/agentes/investigar.py).
       - name: Investiga a falha
