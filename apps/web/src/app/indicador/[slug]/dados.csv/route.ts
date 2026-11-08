@@ -25,6 +25,10 @@ export async function GET(_request: Request, ctx: RouteContext<"/indicador/[slug
       serieNome: exibida.series.nome,
       unidade: exibida.series.unidade,
       urlPagina: `/indicador/${indicator.slug}`,
+      nota:
+        indicator.transformacao === "inverter_sinal"
+          ? "Valores com o sinal trocado em relação à fonte (NFSP): negativo é déficit."
+          : undefined,
     },
     exibida.obs,
   );

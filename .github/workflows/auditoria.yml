@@ -44,4 +44,5 @@ jobs:
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
+          ALERTA_IMEDIATO: "1"  # sem esperar a próxima execução (scripts/alerta.py)
         run: uv run python scripts/alerta.py auditoria ${{ job.status }} data/agentes/falhas-auditar.json

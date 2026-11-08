@@ -112,3 +112,78 @@ def test_liberacao_exige_evidencia_e_serie_registrada():
         config.Registry(**{**dados, "liberacoes": [{**base, "evidencia": "olhei"}]})
     with pytest.raises(ValueError, match="não registrada"):
         config.Registry(**{**dados, "liberacoes": [{**base, "serie": "inventada"}]})
+
+
+# --- liberação automática (precisa do Postgres local) ---
+
+
+class _Desfaz(Exception):
+    pass
+
+
+def _salto():
+    return [Observation(PROX, D("7.3"))]  # 6,3 → 7,3: 1 p.p., acima do limite de 0,3
+
+
+def test_salto_em_espera_vira_aviso_no_relatorio():
+    from pipelines.jobs.report import Report
+
+    r = Report()
+    r.falhou("s", saltos.SaltoEmEspera("s: salto fora do histórico", []))
+    r.falhou("t", ValidationError("outra coisa"))
+    assert len(r.warnings) == 1 and r.errors == ["t: outra coisa"]
+
+
+@pytest.mark.db
+def test_salto_espera_e_e_liberado_quando_a_fonte_mantem_o_valor():
+    from pipelines import db
+    from pipelines.jobs.report import Report
+
+    serie = "teste/salto-persistente"
+    with db.connect() as conn, pytest.raises(_Desfaz), conn.transaction():
+        with pytest.raises(saltos.SaltoEmEspera, match="20 horas"):
+            saltos.confere_com_registro(conn, serie, "taxa", HIST, _salto(), (), Report())
+        # Logo depois, o mesmo valor ainda espera.
+        with pytest.raises(saltos.SaltoEmEspera):
+            saltos.confere_com_registro(conn, serie, "taxa", HIST, _salto(), (), Report())
+        # Visto há mais de 20 horas: liberado, com aviso e linha de liberação.
+        conn.execute(
+            "insert into saltos_vistos (serie, periodo, valor, liberado, visto_em) "
+            "values (%s, %s, 7.3, false, now() - interval '21 hours')",
+            (serie, PROX),
+        )
+        rel = Report()
+        r = saltos.confere_com_registro(conn, serie, "taxa", HIST, _salto(), (), rel)
+        assert r.conferidos == 1 and "liberado automaticamente" in rel.warnings[0]
+        # Outro valor para o mesmo período não aproveita a espera do anterior.
+        with pytest.raises(saltos.SaltoEmEspera):
+            saltos.confere_com_registro(
+                conn, serie, "taxa", HIST, [Observation(PROX, D("7.4"))], (), Report()
+            )
+        liberados = conn.execute(
+            "select count(*) from saltos_vistos where serie = %s and liberado", (serie,)
+        ).fetchone()[0]
+        assert liberados == 1
+        raise _Desfaz
+
+
+@pytest.mark.db
+def test_salto_confirmado_pela_segunda_fonte_passa_na_hora():
+    from pipelines import db
+    from pipelines.jobs.report import Report
+
+    with db.connect() as conn, pytest.raises(_Desfaz), conn.transaction():
+        rel = Report()
+        saltos.confere_com_registro(
+            conn, "teste/salto-2fonte", "taxa", HIST, _salto(), (), rel, confirmados={PROX}
+        )
+        assert "segunda fonte" in rel.warnings[0]
+        raise _Desfaz
+
+
+def test_segunda_fonte_confirma_so_o_periodo_igual():
+    from pipelines import segunda_fonte
+
+    novas = [Observation(PROX, D("7.3")), Observation(date(2026, 2, 1), D("7.0"))]
+    copia = {PROX: D("7.3"), date(2026, 2, 1): D("7.2")}
+    assert segunda_fonte.confirmados("igual", D(0), novas, copia) == {PROX}

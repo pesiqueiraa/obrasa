@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
@@ -60,6 +61,8 @@ class Tema(_Strict):
     resumo: str
     ordem: int
     pagina: Literal["indicadores", "propria"] = "indicadores"
+    # barra: link direto no cabeçalho; temas: dentro do painel "Temas" (Navegacao.tsx)
+    menu: Literal["barra", "temas"] = "temas"
 
 
 class Indicator(_Strict):
@@ -77,10 +80,14 @@ class Indicator(_Strict):
     monetaria: bool
     casas_decimais: int = 2
     frase_template: str
-    transformacao: str | None = None
+    # Aplicada só na exibição; o banco guarda o valor como a fonte publica (docs/05).
+    # inverter_sinal: NFSP (positivo = déficit) vira resultado (negativo = déficit).
+    transformacao: Literal["inverter_sinal"] | None = None
     verificacao: str | None = None
     url_metodologia: str | None = None
     ordem: int | None = None
+    # Nome do indicador no Focus (ExpectativasMercadoAnuais), quando o Focus o cobre.
+    focus: str | None = None
 
     @model_validator(mode="after")
     def _monetaria(self) -> Indicator:
@@ -111,6 +118,7 @@ class NaFonte(_Strict):
 
 
 FONTES_COM_DESCRICAO = {"bcb_sgs", "ibge_agregados"}
+COLETOR_DA_FONTE = {"receita_arrecadacao": "arrecadacao"}
 
 
 class Referencia(_Strict):
@@ -152,7 +160,7 @@ class Series(_Strict):
     monetaria: bool
     nota_metodologia: str | None = None
     # Como coletar (pipelines/jobs/series.py). O IPCA tem job próprio (jobs/ipca.py).
-    coletor: Literal["series", "ipca"] = "series"
+    coletor: Literal["series", "ipca", "arrecadacao"] = "series"
     classificacao: str | None = None  # IBGE, ex.: "11255[90707]"
     faixa: tuple[Decimal, Decimal] | None = None  # valores plausíveis; fora disso, recusa
     desde: date | None = None  # início do histórico buscado
@@ -177,6 +185,9 @@ class Series(_Strict):
             raise ValueError(f"série {self.id}: informe `na_fonte` (descrição na fonte)")
         if self.referencia is None:
             raise ValueError(f"série {self.id}: informe `referencia` (valor conhecido da fonte)")
+        esperado = COLETOR_DA_FONTE.get(self.source_id)
+        if esperado and self.coletor != esperado:
+            raise ValueError(f"série {self.id}: fonte {self.source_id} exige coletor {esperado}")
         return self
 
 
@@ -440,3 +451,87 @@ def load_regional(config_dir: Path = CONFIG_DIR, registry: Registry | None = Non
         if m.indicador not in slugs or m.tema not in temas:
             raise ValueError(f"mapa {m.id}: indicador ou tema fora do registro")
     return r
+
+
+# ---- Aba Impostos (config/impostos.yaml) ----
+
+
+class GrupoArrecadacao(_Strict):
+    titulo: str
+    colunas: list[str]
+
+
+class Arrecadacao(_Strict):
+    url: str
+    desde: date
+    grupos: dict[str, GrupoArrecadacao]
+    exclusivas: list[list[str]]
+
+    @model_validator(mode="after")
+    def _check(self) -> Arrecadacao:
+        vistas: set[str] = set()
+        for g in self.grupos.values():
+            for c in g.colunas:
+                if c in vistas:
+                    raise ValueError(f"arrecadação: coluna {c!r} em mais de um grupo")
+                vistas.add(c)
+        for grupo in self.exclusivas:
+            if not set(grupo) <= vistas:
+                raise ValueError(f"arrecadação: exclusivas citam coluna sem grupo: {grupo}")
+        if "total" in self.grupos:
+            raise ValueError("arrecadação: 'total' é reservado para a soma de todos os grupos")
+        return self
+
+
+class Camara(_Strict):
+    tipos: list[Literal["PEC", "PLP", "PL"]]
+    dias: int
+    termos: list[str]
+    maximo: int
+
+
+class Marco(_Strict):
+    id: str
+    vigencia: date
+    publico: list[Literal["pf", "pj"]]
+    titulo: str
+    texto: str
+    lei: str
+    url: str
+    # URNs dos dispositivos citados, como no normas.leg.br (<URN da norma>!art125). A
+    # conferência automática lê o texto deles (pipelines/agentes/conferir_marcos.py).
+    dispositivos: list[str]
+
+    @model_validator(mode="after")
+    def _check(self) -> Marco:
+        if not self.url.startswith("https://www.planalto.gov.br/"):
+            raise ValueError(f"marco {self.id}: o link precisa ser do Planalto")
+        if "art" not in self.lei:
+            raise ValueError(f"marco {self.id}: cite o artigo da lei (docs/02, seção 9)")
+        if not self.dispositivos:
+            raise ValueError(f"marco {self.id}: liste os dispositivos citados (URN)")
+        for urn in self.dispositivos:
+            if not re.fullmatch(r"urn:lex:br:federal:[a-z.]+:\d{4}-\d{2}-\d{2};\d+![\w,-]+", urn):
+                raise ValueError(f"marco {self.id}: URN inválida: {urn}")
+        if not self.publico:
+            raise ValueError(f"marco {self.id}: informe o público (pf, pj)")
+        return self
+
+
+class Impostos(_Strict):
+    arrecadacao: Arrecadacao
+    camara: Camara
+    marcos: list[Marco]
+
+    @model_validator(mode="after")
+    def _check(self) -> Impostos:
+        ids = [m.id for m in self.marcos]
+        if len(set(ids)) != len(ids):
+            raise ValueError("marcos com id repetido (config/impostos.yaml)")
+        if [m.vigencia for m in self.marcos] != sorted(m.vigencia for m in self.marcos):
+            raise ValueError("marcos fora da ordem de vigência (config/impostos.yaml)")
+        return self
+
+
+def load_impostos(config_dir: Path = CONFIG_DIR) -> Impostos:
+    return Impostos(**yaml.safe_load((config_dir / "impostos.yaml").read_text(encoding="utf-8")))

@@ -18,8 +18,9 @@ from __future__ import annotations
 from datetime import date, timedelta
 from decimal import Decimal
 
+from pipelines import config
 from pipelines.config import Series
-from pipelines.sources import bcb_sgs, ibge_agregados
+from pipelines.sources import bcb_sgs, ibge_agregados, receita
 
 
 def valor_na_fonte(s: Series, periodo: date) -> Decimal | None:
@@ -35,6 +36,9 @@ def valor_na_fonte(s: Series, periodo: date) -> Decimal | None:
         obs = ibge_agregados.parse_variables(
             raw.body, [var], classificacao=s.classificacao, tipo=s.frequencia
         )[var]
+    elif s.source_id == receita.SOURCE_ID:
+        cfg = config.load_impostos().arrecadacao
+        obs = receita.parse(receita.fetch(cfg.url).body, cfg)[s.codigo_externo]
     else:
         raise ValueError(f"fonte sem leitura de referência: {s.source_id}")
     return next((o.value for o in obs if o.ref_date == periodo), None)

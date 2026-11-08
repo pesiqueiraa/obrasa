@@ -1,9 +1,9 @@
 "use client";
 
 // Cabeçalho fixo que sai de cena ao rolar para baixo e volta ao rolar para cima. No
-// celular ele tem duas linhas (marca e temas) e tomaria ~11% da tela o tempo todo. O
+// celular ele toma uma faixa de 48px da tela o tempo todo. O
 // recolhimento só vale abaixo de 1056px (ui.module.scss); no desktop o atributo não
-// tem efeito. Não recolhe com o menu Ferramentas aberto nem com o foco de teclado dentro
+// tem efeito. Não recolhe com um painel ou o menu aberto nem com o foco de teclado dentro
 // dele (:focus-visible; o foco que fica no link tocado não conta).
 
 import { useEffect, useRef, useState, type ReactNode } from "react";

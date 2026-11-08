@@ -66,6 +66,41 @@ sources:
     url_metodologia: null
     licenca: Dados públicos do IBGE
 
+  - id: receita_arrecadacao
+    nome: Arrecadação das receitas federais por estado (dados abertos)
+    orgao: Receita Federal
+    url_fonte: https://www.gov.br/receitafederal/dados/arrecadacao-estado.csv
+    url_documentacao: null
+    url_metodologia: null
+    licenca: Dados abertos da Receita Federal
+  - id: bcb_focus
+    nome: Expectativas de mercado (Focus), API Olinda
+    orgao: Banco Central
+    url_fonte: https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/ExpectativasMercadoAnuais
+    url_documentacao: https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/documentacao
+    url_metodologia: null
+    licenca: Dados abertos do Banco Central
+  - id: camara_proposicoes
+    nome: Dados abertos da Câmara (proposições)
+    orgao: Câmara dos Deputados
+    url_fonte: https://dadosabertos.camara.leg.br/api/v2/proposicoes
+    url_documentacao: https://dadosabertos.camara.leg.br/swagger/api.html
+    url_metodologia: null
+    licenca: Dados abertos da Câmara dos Deputados
+  - id: planalto_legislacao
+    nome: Legislação federal compilada
+    orgao: Presidência da República
+    url_fonte: https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp214.htm
+    url_documentacao: null
+    url_metodologia: null
+    licenca: Texto de lei, de domínio público
+  - id: normas_leg
+    nome: Normas (texto estruturado das leis, LexML)
+    orgao: Senado Federal
+    url_fonte: https://normas.leg.br/
+    url_documentacao: https://normas.leg.br/api/public/normas
+    url_metodologia: null
+    licenca: CC-BY 4.0
 series:
   - id: ibge_agregados_1737_2265
     coletor: ipca
@@ -532,6 +567,47 @@ series:
     # Mesma divulgação da dívida bruta (estatísticas fiscais do BC).
     prazo: [3, 14]
 
+  - id: bcb_sgs_5793
+    source_id: bcb_sgs
+    codigo_externo: "5793"
+    referencia: {periodo: 2019-12-01, valor: "0.84", lido_em: 2026-11-07}
+    na_fonte:
+      nome: "NFSP sem desvalorização cambial (% PIB) - Fluxo acumulado em 12 meses - Resultado primário - Total - Setor público consolidado"
+      unidade: "%"
+      periodicidade: "M"
+    nome: Resultado primário do setor público consolidado, 12 meses (% do PIB)
+    unidade: "% do PIB"
+    frequencia: mensal
+    tipo: taxa
+    monetaria: false
+    nota_metodologia: >-
+      Série 5793 do SGS: necessidade de financiamento do setor público (NFSP) sem juros,
+      acumulada em 12 meses. Na NFSP, positivo é déficit; o site mostra o resultado, com o
+      sinal invertido, como o Focus (negativo é déficit).
+    faixa: [-15, 15]
+    desde: 2002-11-01
+    prazo: [3, 14]
+  - id: bcb_sgs_5760
+    source_id: bcb_sgs
+    codigo_externo: "5760"
+    referencia: {periodo: 2019-12-01, valor: "4.97", lido_em: 2026-11-07}
+    na_fonte:
+      nome: "NFSP sem desvalorização cambial (% PIB) - Fluxo acumulado em 12 meses - Juros nominais - Total - Setor público consolidado"
+      unidade: "%"
+      periodicidade: "M"
+    nome: Juros nominais do setor público consolidado, 12 meses (% do PIB)
+    unidade: "% do PIB"
+    frequencia: mensal
+    tipo: taxa
+    monetaria: false
+    nota_metodologia: >-
+      Série 5760 do SGS: juros pagos pelo setor público sobre a dívida, acumulados em 12
+      meses, em proporção do PIB. Resultado primário mais juros dá o resultado nominal
+      (série 5727).
+    faixa: [0, 20]
+    desde: 2002-11-01
+    prazo: [3, 14]
+
   # ---- Cópias do IBGE no SGS (segunda fonte, `conferir_com`; não aparecem no site) ----
   - id: bcb_sgs_24369
     source_id: bcb_sgs
@@ -587,3 +663,150 @@ series:
       Usada para conferir a taxa contra o trimestre anterior (5932/6564).
     faixa: [30, 400]
     desde: 1996-01-01
+
+  # ---- Arrecadação federal (Receita, config/impostos.yaml) ----
+  - id: receita_arrecadacao_total
+    source_id: receita_arrecadacao
+    codigo_externo: "total"
+    coletor: arrecadacao
+    referencia: {periodo: 2019-12-01, valor: "147500.7214202459", lido_em: 2026-11-07}
+    nome: "Arrecadação federal, soma do arquivo por estado (R$ milhões correntes)"
+    nota_metodologia: >-
+      Soma das 27 UFs e de todas as colunas do arquivo de arrecadação por estado da Receita
+      Federal, desde jan/2013 (antes disso o arquivo não traz as receitas previdenciárias).
+      Pode diferir do total do relatório mensal de arrecadação, que inclui receitas não
+      distribuídas por estado.
+    unidade: R$ milhões
+    frequencia: mensal
+    tipo: nivel
+    monetaria: true
+    faixa: [10000, 2000000]
+    desde: 2013-01-01
+    # O arquivo de set/2026 já estava publicado em 07/11/2026.
+    prazo: [2, 25]
+  - id: receita_arrecadacao_imposto-de-renda
+    source_id: receita_arrecadacao
+    codigo_externo: "imposto-de-renda"
+    coletor: arrecadacao
+    referencia: {periodo: 2019-12-01, valor: "40036.85746505", lido_em: 2026-11-07}
+    nome: "Imposto de renda (R$ milhões correntes)"
+    unidade: R$ milhões
+    frequencia: mensal
+    tipo: nivel
+    monetaria: true
+    faixa: [-20000, 1000000]
+    desde: 2013-01-01
+    # O arquivo de set/2026 já estava publicado em 07/11/2026.
+    prazo: [2, 25]
+  - id: receita_arrecadacao_previdencia
+    source_id: receita_arrecadacao
+    codigo_externo: "previdencia"
+    coletor: arrecadacao
+    referencia: {periodo: 2019-12-01, valor: "58763.15959734", lido_em: 2026-11-07}
+    nome: "Contribuições à Previdência (R$ milhões correntes)"
+    unidade: R$ milhões
+    frequencia: mensal
+    tipo: nivel
+    monetaria: true
+    faixa: [-20000, 1000000]
+    desde: 2013-01-01
+    # O arquivo de set/2026 já estava publicado em 07/11/2026.
+    prazo: [2, 25]
+  - id: receita_arrecadacao_cofins
+    source_id: receita_arrecadacao
+    codigo_externo: "cofins"
+    coletor: arrecadacao
+    referencia: {periodo: 2019-12-01, valor: "21025.45384723", lido_em: 2026-11-07}
+    nome: "Cofins (R$ milhões correntes)"
+    unidade: R$ milhões
+    frequencia: mensal
+    tipo: nivel
+    monetaria: true
+    faixa: [-20000, 1000000]
+    desde: 2013-01-01
+    # O arquivo de set/2026 já estava publicado em 07/11/2026.
+    prazo: [2, 25]
+  - id: receita_arrecadacao_pis-pasep
+    source_id: receita_arrecadacao
+    codigo_externo: "pis-pasep"
+    coletor: arrecadacao
+    referencia: {periodo: 2019-12-01, valor: "5740.11615185", lido_em: 2026-11-07}
+    nome: "PIS/Pasep (R$ milhões correntes)"
+    unidade: R$ milhões
+    frequencia: mensal
+    tipo: nivel
+    monetaria: true
+    faixa: [-20000, 1000000]
+    desde: 2013-01-01
+    # O arquivo de set/2026 já estava publicado em 07/11/2026.
+    prazo: [2, 25]
+  - id: receita_arrecadacao_csll
+    source_id: receita_arrecadacao
+    codigo_externo: "csll"
+    coletor: arrecadacao
+    referencia: {periodo: 2019-12-01, valor: "5054.7076269", lido_em: 2026-11-07}
+    nome: "CSLL (R$ milhões correntes)"
+    unidade: R$ milhões
+    frequencia: mensal
+    tipo: nivel
+    monetaria: true
+    faixa: [-20000, 1000000]
+    desde: 2013-01-01
+    # O arquivo de set/2026 já estava publicado em 07/11/2026.
+    prazo: [2, 25]
+  - id: receita_arrecadacao_ipi
+    source_id: receita_arrecadacao
+    codigo_externo: "ipi"
+    coletor: arrecadacao
+    referencia: {periodo: 2019-12-01, valor: "4854.90660738", lido_em: 2026-11-07}
+    nome: "IPI (R$ milhões correntes)"
+    unidade: R$ milhões
+    frequencia: mensal
+    tipo: nivel
+    monetaria: true
+    faixa: [-20000, 1000000]
+    desde: 2013-01-01
+    # O arquivo de set/2026 já estava publicado em 07/11/2026.
+    prazo: [2, 25]
+  - id: receita_arrecadacao_iof
+    source_id: receita_arrecadacao
+    codigo_externo: "iof"
+    coletor: arrecadacao
+    referencia: {periodo: 2019-12-01, valor: "4100.61981722", lido_em: 2026-11-07}
+    nome: "IOF (R$ milhões correntes)"
+    unidade: R$ milhões
+    frequencia: mensal
+    tipo: nivel
+    monetaria: true
+    faixa: [-20000, 1000000]
+    desde: 2013-01-01
+    # O arquivo de set/2026 já estava publicado em 07/11/2026.
+    prazo: [2, 25]
+  - id: receita_arrecadacao_comercio-exterior
+    source_id: receita_arrecadacao
+    codigo_externo: "comercio-exterior"
+    coletor: arrecadacao
+    referencia: {periodo: 2019-12-01, valor: "3341.86539149", lido_em: 2026-11-07}
+    nome: "Importação e exportação (R$ milhões correntes)"
+    unidade: R$ milhões
+    frequencia: mensal
+    tipo: nivel
+    monetaria: true
+    faixa: [-20000, 1000000]
+    desde: 2013-01-01
+    # O arquivo de set/2026 já estava publicado em 07/11/2026.
+    prazo: [2, 25]
+  - id: receita_arrecadacao_outros
+    source_id: receita_arrecadacao
+    codigo_externo: "outros"
+    coletor: arrecadacao
+    referencia: {periodo: 2019-12-01, valor: "4583.0349157859", lido_em: 2026-11-07}
+    nome: "Outras receitas (R$ milhões correntes)"
+    unidade: R$ milhões
+    frequencia: mensal
+    tipo: nivel
+    monetaria: true
+    faixa: [-20000, 1000000]
+    desde: 2013-01-01
+    # O arquivo de set/2026 já estava publicado em 07/11/2026.
+    prazo: [2, 25]

@@ -1,12 +1,14 @@
 # Temas do site (docs/08, D13). A ordem aqui é a ordem da navegação.
 # pagina: indicadores (padrão) usa a página genérica de tema, com a grade de indicadores;
-# propria tem rota própria em apps/web/src/app/<slug>/. 
+# propria tem rota própria em apps/web/src/app/<slug>/.
+# menu: temas (padrão) entra no painel "Temas" do cabeçalho; barra vira link direto nele.
 
 - slug: eleicoes-2026
   titulo: Eleições 2026
   resumo: Resultado para presidente por município, comparecimento e quem foi eleito para o Congresso e os governos estaduais.
   ordem: 0
   pagina: propria
+  menu: barra
 
 - slug: economia
   titulo: Economia
@@ -18,14 +20,20 @@
   ordem: 2
 - slug: contas-publicas
   titulo: Contas públicas
-  resumo: Quanto o setor público deve, em relação a tudo o que o país produz em um ano.
+  resumo: Quanto o setor público deve, em relação a tudo o que o país produz em um ano, e o resultado das contas.
   ordem: 3
+- slug: impostos
+  titulo: Impostos
+  resumo: O que muda nos impostos de 2026 a 2033, com a lei de cada regra, e quanto o governo federal arrecada por mês.
+  ordem: 4
+  pagina: propria
 - slug: educacao
   titulo: Educação
   resumo: Quantos sabem ler, quanto tempo estudaram e quantos estão na escola na idade esperada.
-  ordem: 4
+  ordem: 5
 - slug: noticias
   titulo: Notícias
   resumo: O que os veículos publicaram nos últimos 7 dias sobre cada tema, ao lado do número oficial.
-  ordem: 5
+  ordem: 6
   pagina: propria
+  menu: barra

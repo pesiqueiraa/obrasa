@@ -65,6 +65,26 @@ Cada indicador exibe:
 - Em gráficos, nenhum governo ou partido é associado a uma cor partidária.
 - Alta e baixa se comunicam por forma e rótulo, não só por cor.
 
+## 9. Lei é fonte; projeto é proposta
+
+- Regra de imposto na tela cita a lei, o artigo e o link para o texto compilado no Planalto. Sem artigo, a regra não entra.
+- **Conferência automática, falha fechada.** Cada regra só aparece depois de conferida contra o texto da lei no normas.leg.br (Senado), sem ninguém liberar à mão: o código exige que todo número e data da regra esteja no artigo citado; um modelo de IA responde se a lei diz o que a regra diz, citando o trecho; o código confere que o trecho existe literalmente na lei. Reprovou, a regra sai da tela. Mudou a lei ou o texto da regra, a conferência é refeita ([06](06-arquitetura.md), "Agentes"). O modelo nunca escreve a regra nem um número dela: só aprova ou reprova.
+- O que ainda tramita aparece separado do que já é lei, com o selo "Proposta, não é lei" e a situação atual informada pela Câmara ou pelo Senado.
+- A linha do tempo diz o que muda e quando, com os números da lei: "a alíquota passa de X% para Y%", nunca "aumento" ou "alívio" sem o número.
+- Simulação ou estimativa tem o rótulo escrito e o aviso de que não substitui orientação contábil ([07](07-riscos-e-cuidados.md), R9).
+
+## 10. Promessas e mandatos
+
+O oBrasa **não avalia se uma promessa foi cumprida**. Mostra o que foi dito ao lado do dado oficial, e a pessoa tira a conclusão.
+
+- **Só o que foi registrado.** A promessa é citada literalmente a partir do plano de governo entregue ao TSE, com página e link para o PDF. Discurso, entrevista e rede social ficam de fora.
+- **Ligação feita por pessoa, em arquivo público.** Qual indicador acompanha qual promessa é decidido por uma pessoa e registrado num arquivo versionado do repositório, como os termos das notícias. Nenhum modelo de IA escolhe a ligação nem resume a promessa. Qualquer leitor pode contestar pelo formulário de erro.
+- **Promessa sem número não ganha indicador.** Aparece só o texto citado.
+- **Sem veredito.** Não há selo de "cumpriu", "não cumpriu", nota, ranking, semáforo ou percentual de promessas cumpridas.
+- **Mesma régua para todos.** O mesmo formato vale para o presidente e para os 27 governadores, sem escolher quem acompanhar. O ponto de partida é o último dado antes da posse; os indicadores aparecem na ordem do plano, com o mesmo destaque, melhorem ou piorem.
+- **O resultado não é atribuído ao governante.** A tela diz o que o indicador mostra, não que o governo causou a mudança.
+- **Parlamentares:** não registram plano. Para eles só vale o registro do mandato (votos, presença, projetos, cota e emendas), no mesmo formato para todos e sem nota.
+
 ## Checklist de pull request
 
 Copie para o template de PR do repositório:

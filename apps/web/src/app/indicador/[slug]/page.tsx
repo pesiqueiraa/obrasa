@@ -6,6 +6,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ChartPanel, type Variante } from "@/components/ChartPanel";
+import { Expectativas } from "@/components/Expectativas";
 import { IndicatorHero } from "@/components/IndicatorHero";
 import { SourceLine } from "@/components/SourceLine";
 import styles from "@/components/ui.module.scss";
@@ -111,6 +112,7 @@ async function IndicatorContent({ params }: Pick<PageProps<"/indicador/[slug]">,
           </p>
         ) : null}
         <IndicatorHero view={view} />
+        {indicator.focus ? <Expectativas focus={indicator.focus} casas={indicator.casas_decimais} /> : null}
       </div>
 
       <div className="section section--surface">
@@ -131,6 +133,12 @@ async function IndicatorContent({ params }: Pick<PageProps<"/indicador/[slug]">,
       <div className="container section">
         <div className="prose">
           <h2 className="headline">Metodologia</h2>
+          {indicator.transformacao === "inverter_sinal" ? (
+            <p>
+              O Banco Central publica esta série como necessidade de financiamento, em que o déficit aparece com sinal
+              positivo. O oBrasa mostra o resultado, com o sinal trocado: valor negativo é déficit, como no Focus.
+            </p>
+          ) : null}
           <p>
             De onde vem o número, como ele é conferido e o histórico de revisões:{" "}
             <Link href={`/metodologia/${indicator.slug}`}>metodologia deste indicador</Link>.

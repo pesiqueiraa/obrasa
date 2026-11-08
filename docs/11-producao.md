@@ -14,8 +14,8 @@ O que ainda não está feito e precisa de decisão ou trabalho antes do lançame
 |---|---|---|
 | Domínio | Decidido: `.com.br` no registro.br (`obrasa.com.br`, `obrasa.org.br` e `obrasa.org` estavam livres em 02/11/2026; `obrasa.com` não) | Registrar e apontar para a Vercel (passo 3); define `SITE_URL` |
 | Repositório público | Decidido em 02/11/2026. Histórico do git sem chave nem senha (conferido na mesma data) | Tornar público em Settings → General → Danger Zone, depois de proteger a `main` |
-| Proteção da `main` | Não configurada | A coleta lê o config da `main`. Exigir CI verde antes do merge impede que um config errado chegue à coleta |
-| Atualização de dependências | Manual | Ativar o Dependabot para o npm, o uv e as GitHub Actions |
+| Proteção da `main` | Feita: exige os quatro checks do CI (conferido em 07/11/2026) | A coleta lê o config da `main`. Exigir CI verde antes do merge impede que um config errado chegue à coleta |
+| Atualização de dependências | Dependabot ativo; auto-merge em `.github/workflows/dependabot-automerge.yml` | Ligar "Allow auto-merge" em Settings → General (desligado em 07/11/2026) |
 | Formato jurídico e financiamento | Em aberto (D2, D3) | Não bloqueia o deploy técnico; bloqueia o lançamento público. A página "Quem financia" foi retirada em 02/11/2026 e volta quando D3 for decidido |
 
 ## 1. Supabase
@@ -46,6 +46,9 @@ Já feito em 02/11/2026 (repositório público `pesiqueiraa/obrasa`):
 - `main` protegida: exige os quatro checks do CI, sem force push e sem apagar a branch.
 - Dependabot (`.github/dependabot.yml`), alertas de dependência, varredura de segredos com
   bloqueio no push e relato privado de falha de segurança (`SECURITY.md`).
+- Auto-merge do Dependabot (`.github/workflows/dependabot-automerge.yml`): patch, minor e
+  major de ferramenta de desenvolvimento entram sozinhos com o CI verde; major de
+  dependência de produção (Next, React, Supabase) fica aberto.
 - Actions com token só de leitura por padrão; cada workflow pede o que precisa.
 - Workflows agendados parados: só rodam com a variável `PRODUCAO_ATIVA=true`. Vale também
   para o disparo do agendador do Supabase (`origem=agendador`). À mão (Actions → Run
@@ -122,7 +125,7 @@ O que fazer quando chegar o e-mail "Down": abrir `/saude` no navegador. O JSON d
 | `SUPABASE_SERVICE_ROLE_KEY` | GitHub `producao` | Gravar e ler as respostas brutas no Storage. Nunca na Vercel |
 | `SUPABASE_ANON_KEY` | Vercel | Leitura pública do site |
 | `AGENTES_DATABASE_URL` | GitHub `producao` | Agentes, com o login do `leitor` (fase 4, docs/06) |
-| `ANTHROPIC_API_KEY` | GitHub `producao` | Agentes (fase 4). Definir limite de gasto mensal no console da Anthropic |
+| `ANTHROPIC_API_KEY` | GitHub `producao` | Agentes e conferência automática dos marcos de impostos (workflow Coleta). Definir limite de gasto mensal no console da Anthropic |
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` | GitHub `producao` | Cópia de segurança |
 | `SITE_URL` | Vercel | Links das imagens de compartilhamento |
 | `PONTE_IBGE_TOKEN` | Vercel | Abre a ponte do IBGE (docs/06). Mesmo valor de `IBGE_PONTE_TOKEN` |

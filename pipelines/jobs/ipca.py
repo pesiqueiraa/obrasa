@@ -196,7 +196,7 @@ def run(
         ibge_12m = collect_ibge(conn, store, report, registry)
     except Exception as exc:  # cada fonte falha sozinha; o job termina com erro no fim
         log.exception("coleta do IBGE falhou")
-        report.errors.append(f"IBGE: {exc}")
+        report.falhou("IBGE", exc)
 
     try:
         n = collect_calendar(conn, store, today)
@@ -215,6 +215,6 @@ def run(
                 )
     except Exception as exc:
         log.exception("coleta do BCB falhou")
-        report.errors.append(f"BCB SGS: {exc}")
+        report.falhou("BCB SGS", exc)
 
     return report

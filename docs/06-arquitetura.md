@@ -180,7 +180,7 @@ create table fact_checks (
 - **Revisões:** nunca sobrescrever. Revisão da fonte vira nova linha com `revision + 1`; a tela usa a mais recente e a página de metodologia mostra o histórico. O banco garante a regra: `observations`, `observacoes_uf` e as tabelas de votos recusam UPDATE, DELETE e TRUNCATE (triggers `so_insert`), e o pipeline roda com o papel `coletor`, sem permissão de mudar o schema (migração `20261109000000_integridade.sql`).
 - **Falhas:** coletor que não consegue validar a resposta falha com alerta. Nunca grava dado parcial ou com layout diferente do esperado.
 - **Descrição na fonte:** antes de baixar os dados, o coletor confere nome, unidade, periodicidade e categorias da série no webservice SGS ou em `/metadados` do IBGE contra `na_fonte` no config. Qualquer diferença para a coleta: a fonte pode ter mudado o significado do código sem mudar o formato (`pipelines/metadados.py`).
-- **Salto:** período novo ou revisado que varia mais do que a maior variação da série nos 10 anos anteriores (p.p. em taxa, % em nível) para a coleta daquela série. O site continua com o último valor válido até um humano conferir na fonte e registrar o valor exato, com link de evidência, em `config/aprovacoes.yaml`. Série com menos de 12 variações na janela (as anuais da PNAD) não é conferida e gera aviso (`pipelines/saltos.py`). No histórico de 2016 a 2026 a regra segurou 6 de 3.780 períodos, todos corretos e excepcionais (IPCA de mar e jul/2022, dólar em 26/10/2026), ou seja, sem alarme em mês comum.
+- **Salto:** período novo ou revisado que varia mais do que a maior variação da série nos 10 anos anteriores (p.p. em taxa, % em nível) para a coleta daquela série. O site continua com o último valor válido até a liberação automática: (a) a segunda fonte da série (`conferir_com`) publica o mesmo valor, e o salto passa na hora; ou (b) a fonte mantém o mesmo valor para o período por 20 horas, e o salto passa na coleta do dia seguinte. Cada salto visto e cada liberação, com o motivo, ficam em `saltos_vistos` (só INSERT). Enquanto espera, o salto é aviso, não erro: não abre alerta. Erro de leitura nosso (coluna ou escala trocada) não depende desta trava: o valor de referência, a auditoria do bruto e a descrição na fonte pegam. Liberação manual em `config/aprovacoes.yaml` continua possível, mas não é necessária. Série com menos de 12 variações na janela (as anuais da PNAD) não é conferida e gera aviso (`pipelines/saltos.py`). No histórico de 2016 a 2026 a regra segurou 6 de 3.780 períodos, todos corretos e excepcionais (IPCA de mar e jul/2022, dólar em 26/10/2026), ou seja, sem alarme em mês comum.
 - **Valor de referência:** cada série tem em `referencia` um período antigo (2019) e o valor que a fonte publicava para ele. `pytest -m network`, que roda antes de cada coleta, busca esse período pelo mesmo parser da coleta e exige o mesmo valor. Pega código que passou a apontar para outra série, parser lendo a coluna errada, escala trocada na fonte e revisão de período fechado (`pipelines/referencia.py`). As três séries que a fonte recalcula inteiras a cada divulgação (ajuste sazonal, rendimento real) ficam com `sem_valor_fixo` e o motivo. O config recusa série sem `referencia`.
 - **Segunda fonte:** desocupação e PIB trimestral são conferidos contra as cópias que o BC publica no SGS (`conferir_com`, `pipelines/segunda_fonte.py`). O IPCA já era conferido contra o SGS 433 e 13522.
 - **Coerência do config:** `config.load()` recusa indicador cuja unidade, frequência ou tipo difere da série que ele mostra, e indicador monetário sem série nominal (regra 3).
@@ -218,10 +218,15 @@ A esteira roda sem ninguém olhando; duas peças dizem quando algo precisa de um
   Pega o caso que nada dentro do GitHub pega: o próprio GitHub parar de rodar os
   agendamentos (num repositório público, ele os desliga depois de 60 dias sem commit).
 - **Alerta por issue (`scripts/alerta.py`):** último passo dos quatro workflows
-  agendados. Falhou e não há issue aberta: abre "Alerta: <job>" com os erros e o link da
-  execução. Falhou de novo com os mesmos erros: só atualiza a issue, sem notificar. Erros
-  diferentes: comenta. Voltou a funcionar: comenta e fecha. Um feed fora do ar a cada 30
-  minutos vira uma issue, não 48 e-mails por dia.
+  agendados. Primeira falha: nada (fonte fora do ar por algumas horas se resolve sozinha,
+  e o site continua com o último valor validado). Falhou também na execução anterior e não
+  há issue aberta: abre "Alerta: <job>" com os erros, o link da execução e, na coleta, o
+  diagnóstico do investigador de falhas, que roda sozinho quando a coleta falha. Falhou de
+  novo com os mesmos erros: só atualiza a issue, sem notificar. Erros diferentes: comenta.
+  Voltou a funcionar: comenta e fecha. Auditoria e backup (`ALERTA_IMEDIATO=1`) abrem na
+  primeira falha. Um feed fora do ar a cada 30 minutos vira uma issue, não 48 e-mails por dia.
+- **Descrição que muda só de forma** (maiúscula, acento, pontuação) passa com aviso no log
+  (`pipelines/metadados.py`); mudança de palavra, número ou unidade para a série.
 
 - **Ponte do IBGE (`/api/ponte-ibge`, `apps/web/src/lib/ponte.ts`):** a API do IBGE
   (`servicodados.ibge.gov.br`) recusa conexões de fora do Brasil, e o GitHub Actions roda
@@ -265,12 +270,13 @@ A esteira roda sem ninguém olhando; duas peças dizem quando algo precisa de um
 
 ### Agentes de investigação (`pipelines/agentes`)
 
-Três agentes ajudam a operar sem tocar no dado: o **investigador de falhas** explica por
+Três agentes ajudam a operar sem tocar no dado (o quarto, o conferidor de marcos, está mais abaixo): o **investigador de falhas** explica por
 que uma coleta, um atraso ou uma auditoria falhou; o **revisor de mudanças** confere
 alterações em `config/`, `pipelines/` e `docs/05` contra a fonte e as regras do projeto;
 o **auditor de textos** confere frases e metodologia contra o [02](02-principios-de-neutralidade.md).
-Eles explicam e apontam onde conferir. Quem grava é a coleta, e quem libera é uma pessoa,
-pelo git (`config/aprovacoes.yaml`).
+Eles explicam e apontam onde conferir. Quem grava é a coleta, e o salto fora do histórico é
+liberado por código (segunda fonte ou valor mantido pela fonte por 20 horas; ver "Salto"). Os marcos da aba Impostos já não dependem
+de pessoa: o **conferidor de marcos**, abaixo, aprova ou reprova cada um.
 
 - **Só leitura, em cinco camadas** (`pipelines/agentes/ferramentas.py`): login próprio
   do papel `leitor`, que só tem SELECT (migração `20261111000000_leitor.sql`; a conexão é
@@ -309,6 +315,17 @@ pelo git (`config/aprovacoes.yaml`).
   semanalmente quando entrar em produção. Primeira rodada nos textos atuais (02/11/2026):
   nenhum problema e três pontos de atenção (definição de informalidade resumida na frase,
   base do índice do IBC-Br, mês-base do rendimento na frase).
+- **Conferidor de marcos** (`pipelines/agentes/conferir_marcos.py`): o único agente cuja
+  resposta muda o que aparece no site, e só para esconder. Cada marco da aba Impostos passa
+  por três camadas: números e datas do marco precisam existir no texto do artigo citado
+  (código, sem IA); o modelo diz se a lei sustenta cada afirmação, com o trecho literal;
+  o código confere que cada trecho existe na lei (ou num dispositivo que o modelo leu pela
+  ferramenta `ler_dispositivo`). Aprovado vira `conferido_em`; reprovado fica fora da tela.
+  O resultado vai para `marcos_verificacoes` (só INSERT) com o hash do marco, do texto da
+  lei, do modelo e da versão do prompt: sem mudança, nada é chamado de novo. Resposta
+  inválida, erro da API ou limite de turnos ficam como inconclusivos e são tentados de novo
+  na execução seguinte. Teto de 20 chamadas por execução (`CHAMADAS_MAX`) e de US$ 10 por
+  mês (`GASTO_MES_MAX_USD`); passou do teto, a conferência espera o mês seguinte.
 - **Núcleo** (`pipelines/agentes/nucleo.py`): `claude-opus-5-5`, saída em JSON com
   schema, até 25 turnos, uma chance de correção quando a verificação recusa, fallback
   do servidor em caso de recusa de segurança. Cada execução grava um JSONL em

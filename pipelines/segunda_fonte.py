@@ -46,6 +46,19 @@ def derivada(regra: str, copia: dict[date, Decimal]) -> dict[date, Decimal]:
     raise ValueError(f"regra desconhecida: {regra}")
 
 
+def confirmados(
+    regra: str, tolerancia: Decimal, novas: list[Observation], copia: dict[date, Decimal]
+) -> set[date]:
+    """Períodos em que a cópia publica o mesmo valor (dentro da tolerância). Usado para
+    liberar automaticamente um salto fora do histórico (pipelines/saltos.py)."""
+    ref = derivada(regra, copia) if copia else {}
+    return {
+        o.ref_date
+        for o in novas
+        if o.ref_date in ref and abs(o.value - ref[o.ref_date]) <= tolerancia
+    }
+
+
 def confere(
     serie: str,
     copia_id: str,

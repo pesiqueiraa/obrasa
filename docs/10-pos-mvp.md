@@ -8,8 +8,8 @@ Roadmap das features depois da primeira versão, organizado por fases. Cada fase
 
 | Fase | Foco | Features |
 |---|---|---|
-| 2 | Aprofundar e trazer o leitor de volta | Para onde vamos, Agenda, Alertas, Meu estado, Cards para compartilhar |
-| 3 | Alcançar quem está no WhatsApp | Verificador de número, Bot de WhatsApp, Pergunte aos dados, Radar do Congresso, Monitor de metas oficiais, Emendas, Transferências |
+| 2 | Aprofundar e trazer o leitor de volta | Para onde vamos, Agenda, Alertas, Meu estado, Cards para compartilhar, Busca, Aba Impostos, Página por divulgação |
+| 3 | Alcançar quem está no WhatsApp | Verificador de número, Bot de WhatsApp, Pergunte aos dados, Radar do Congresso, Monitor de metas oficiais, Emendas, Transferências, Acompanhar os eleitos |
 | 4 | Virar infraestrutura para outros | API pública e downloads, Widgets, Detector de recorte, Painel de revisões, Comparação internacional, Acessibilidade ampliada, Material para professores, Status das fontes |
 | 5 | Eleições municipais de 2028 | Painel por município, Dados de candidaturas, Guia de pesquisas |
 | Contínua | Melhorar os sistemas | Qualidade de dados, revisão editorial assistida, observabilidade, governança |
@@ -18,7 +18,22 @@ Roadmap das features depois da primeira versão, organizado por fases. Cada fase
 
 ## Fase 2 · Aprofundar e trazer o leitor de volta
 
+## Prioridade combinada em 07/11/2026
+
+Ordem de trabalho decidida na conversa de 07/11/2026. Métricas de uso (D11) ficam para depois, porque dependem de serviço pago ou de conta externa; a prioridade agora é o que é gratuito.
+
+| Ordem | O quê | Seção |
+|---|---|---|
+| 1 | Contas públicas completa (resultado primário, juros, arrecadação) e expectativas do Focus | 2.1, 2.7 |
+| 2 | Aba Impostos, primeira versão | 2.7 |
+| 3 | Revisão da interface com capturas em celular e desktop | Contínua |
+| 4 | Página por divulgação, QR no card, busca rápida | 2.8, 2.5, 2.6 |
+| 5 | Acompanhar os eleitos: presidente e 27 governadores | 3.8 |
+| 6 | Meu estado (Siconfi) e simuladores F2 e F3 | 2.4, [04](04-mvp.md) |
+| 7 | Parlamentares (votos, cota, emendas) e alertas por e-mail | 3.4, 3.6, 2.3 |
+
 ### 2.1 Para onde vamos
+- **Feito em parte (07/11/2026):** mediana do Focus nas páginas dos indicadores que o Focus cobre ([05](05-fontes-de-dados.md#banco-central--focus-expectativas-de-mercado)). Faltam Prisma Fiscal e IFI.
 - **O quê:** expectativas lado a lado para inflação, juros, PIB e dívida. Fontes: Focus (Banco Central), Prisma Fiscal (Ministério da Fazenda) e projeções da IFI (Senado).
 - **Por quê:** responde à terceira pergunta de toda tela ("o que vem por aí?") sem a plataforma fazer previsão própria.
 - **Cuidado:** deixar claro quem projeta o quê. Expectativa de mercado não é previsão oficial.
@@ -52,6 +67,27 @@ Roadmap das features depois da primeira versão, organizado por fases. Cada fase
 - **O quê:** caixa de busca no cabeçalho (atalho `/` no teclado) que encontra indicadores, temas, ferramentas e estados pelo nome ou por sinônimos comuns ("desemprego" → Desocupação, "juros" → Selic). Resultado com o valor atual e a linha de fonte.
 - **Por quê:** com mais temas, ferramentas e mapas, chegar ao número pelo nome fica mais rápido que pela navegação.
 - **Cuidado:** a lista de sinônimos é pública e versionada, como os termos das notícias; sem busca por IA.
+- **Esforço:** P
+
+### 2.7 Aba Impostos
+- **O quê:** um tema próprio, `/impostos`, para pessoa física e para empresa, com quatro partes:
+  1. **Linha do tempo de 2026 a 2033:** o que muda e quando na reforma tributária (EC 132/2023, LC 214/2025) e no imposto de renda, cada marco com lei, artigo e link para o Planalto.
+  2. **Arrecadação federal mês a mês, por tributo**, em valores reais e nominais (Receita Federal).
+  3. **Projetos em tramitação** sobre impostos (Câmara), separados e com o selo "Proposta, não é lei".
+  4. **Notícias** do tema impostos.
+- **Por quê:** a reforma muda os impostos sobre consumo todo ano até 2033, e janeiro de 2027 tem a CBS plena e o fim do PIS e da Cofins ([09](09-calendario.md)). "Imposto" é o número solto que mais circula.
+- **Cuidado:** regras de [02](02-principios-de-neutralidade.md#9-lei-é-fonte-projeto-é-proposta). Os marcos são escritos à mão em `config/impostos.yaml` e conferidos por uma pessoa antes de publicar. Um erro de data ou alíquota pesa mais que a falta do marco.
+- **Depois:** os simuladores F2 ("Quanto eu pago") e F3 ([04](04-mvp.md)) entram nesta aba.
+- **Esforço:** M
+- **Situação em 07/11/2026:** primeira versão em `/impostos`, com as quatro partes. Pendências:
+  - Os marcos são conferidos automaticamente contra o normas.leg.br (docs/02, seção 9). Em 07/11/2026, 17 de 17 aprovados depois de quatro rodadas que corrigiram o texto de 9 marcos (condições omitidas nos dividendos, na devolução e na redução de 60%; a cesta básica vale desde 2026, não 2027). Custo das rodadas de ajuste: US$ 3,97; sem mudança na lei ou no texto, US$ 0.
+  - A dispensa de recolhimento em 2026 entrou no marco do ano de teste (ADCT, art. 125, § 4º). Falta a lista de bens do Imposto Seletivo (LC 214/2025, Livro II).
+  - A busca da Câmara traz projetos com "tributário" na ementa que tratam de outro assunto e só citam benefício tributário (ex.: cacauicultura). A regra é pública e não usa IA. Se o ruído incomodar, a saída é filtrar por órgão (CFT, CCJC) ou pelo tema da Câmara, e não escolher projeto à mão.
+  - A diferença entre a soma do arquivo por estado e o total do relatório mensal da Receita segue `confirmar` em [05](05-fontes-de-dados.md).
+
+### 2.8 Página por divulgação
+- **O quê:** uma página permanente por divulgação de cada indicador (ex.: `/indicador/ipca-12-meses/2026-10`), com o número, a variação e as notícias daquele mês.
+- **Por quê:** é o que a pessoa procura no buscador ("IPCA outubro 2026"), e o arquivo vira referência para citar.
 - **Esforço:** P
 
 ---
@@ -92,6 +128,18 @@ Roadmap das features depois da primeira versão, organizado por fases. Cada fase
 ### 3.7 Transferências para estados e municípios
 - **O quê:** quanto cada UF e município recebe da União (FPE, FPM e outras), com a API de transferências do Tesouro.
 - **Esforço:** M
+
+### 3.8 Acompanhar os eleitos
+- **O quê:** uma página por governante eleito em 2026 (presidente e 27 governadores) com o que foi registrado no plano de governo ao lado do dado oficial. Quatro camadas:
+  1. **Plano de governo registrado no TSE:** trechos citados literalmente, com página e link para o PDF ([05](05-fontes-de-dados.md#tse--dados-abertos-eleições-2026)).
+  2. **Metas do próprio governo:** PPA 2028–2031, meta de resultado primário, meta de inflação. A régua é a que o governo definiu.
+  3. **Indicadores ligados:** para cada promessa com número, a série oficial correspondente, com o último valor antes da posse (jan/2027) e o valor atual.
+  4. **Registro do mandato** (parlamentares, depois): votos, presença, projetos, cota parlamentar e emendas, pelas APIs da Câmara, do Senado e do Portal da Transparência (3.4, 3.6).
+- **Regra central:** o oBrasa não avalia se a promessa foi cumprida ([02](02-principios-de-neutralidade.md#10-promessas-e-mandatos)). Sem selo, nota, ranking ou percentual de cumprimento.
+- **Como:** a ligação entre promessa e indicador fica em `config/promessas.yaml`, escrita e revisada por pessoas, pública e contestável pelo formulário de erro. Nenhuma IA escolhe trecho nem ligação.
+- **Por quê:** a pessoa quer saber se o eleito está fazendo o que disse. A forma neutra de responder é pôr o que foi dito ao lado do que o dado mostra, com a mesma régua para todos.
+- **Cuidado:** revisão jurídica antes de lançar (lei eleitoral e risco de difamação). Começar depois da posse, em janeiro de 2027, quando o ponto de partida fica fixo.
+- **Esforço:** G
 
 ---
 
@@ -162,6 +210,7 @@ Roadmap das features depois da primeira versão, organizado por fases. Cada fase
 | Verificador de linguagem no CI | Bloqueia PR com termo proibido em textos da interface | P |
 | Verificador de "todo número tem série" | Teste automático que procura número na tela sem `series_id` | M |
 | Observabilidade | Painel interno com atraso por fonte, erros de coleta e custo de IA | M |
+| Correção automática por PR | Quando a fonte muda de formato ou de descrição, um agente abre um PR com a correção e o PR entra sozinho se o CI e os testes contra a fonte passarem. Precisa de um app do GitHub instalado no repositório (ex.: o app do Claude): PR aberto com o token padrão do Actions não dispara o CI, e sem CI os checks obrigatórios da `main` nunca passam. Já automático (07/11/2026): salto liberado por segunda fonte ou por persistência, marcos de impostos, descrição que muda só de forma, investigador na issue de alerta, Dependabot | M |
 | Conselho editorial plural | Pessoas de diferentes campos políticos revisam regras e textos, com nomes publicados | Contínuo |
 | Ouvidoria e reporte de erro | Formulário público com prazo de resposta publicado | P |
 | Testes de usabilidade, nunca de enquadramento | Testar se a pessoa entende a tela; nunca testar qual manchete engaja mais | Contínuo |

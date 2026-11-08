@@ -78,25 +78,34 @@ def coleta(
     valida_faixa(m, dados)
     novos = {(uf, ref): v for uf, s in dados.items() for ref, v in s.valores.items()}
     nomes = {uf: s.nome for uf, s in dados.items()}
-    with conn.transaction(), conn.cursor() as cur:
+
+    def le_atual(cur) -> dict:
         cur.execute(
             "select uf, ref_date, value, revision from observacoes_uf_atual where mapa_id = %s",
             (m.id,),
         )
-        atual = {(r[0], r[1]): (r[2], r[3]) for r in cur.fetchall()}
-        # Checagem de salto por UF (pipelines/saltos.py). Mapa em % é taxa; o resto, nível.
-        tipo = "taxa" if m.unidade.startswith("%") else "nivel"
-        curtos = []
-        for uf in sorted(dados):
-            serie = f"mapa/{m.id}/{uf}"
-            hist = {ref: v for (u, ref), (v, _) in atual.items() if u == uf}
-            obs = [Observation(ref, v) for (u, ref), v in novos.items() if u == uf]
-            if saltos.confere(serie, tipo, hist, obs, liberacoes).sem_historico:
-                curtos.append(uf)
-        if curtos and report is not None:
-            report.warnings.append(
-                f"mapa {m.id}: histórico curto para a checagem de salto em {len(curtos)} UFs"
-            )
+        return {(r[0], r[1]): (r[2], r[3]) for r in cur.fetchall()}
+
+    # Checagem de salto por UF (pipelines/saltos.py), fora da transação da escrita: o
+    # registro do salto visto precisa ficar gravado mesmo quando a coleta para.
+    # Mapa em % é taxa; o resto, nível.
+    with conn.cursor() as cur:
+        atual = le_atual(cur)
+    tipo = "taxa" if m.unidade.startswith("%") else "nivel"
+    curtos = []
+    rel = report if report is not None else Report()
+    for uf in sorted(dados):
+        serie = f"mapa/{m.id}/{uf}"
+        hist = {ref: v for (u, ref), (v, _) in atual.items() if u == uf}
+        obs = [Observation(ref, v) for (u, ref), v in novos.items() if u == uf]
+        if saltos.confere_com_registro(conn, serie, tipo, hist, obs, liberacoes, rel).sem_historico:
+            curtos.append(uf)
+    if curtos and report is not None:
+        report.warnings.append(
+            f"mapa {m.id}: histórico curto para a checagem de salto em {len(curtos)} UFs"
+        )
+    with conn.transaction(), conn.cursor() as cur:
+        atual = le_atual(cur)
         plano = planeja(atual, novos)
         cur.executemany(
             """
@@ -141,5 +150,5 @@ def run(conn: psycopg.Connection, store: RawStore, registry: Registry) -> Report
                 report.warnings.append(f"mapa {m.id}: {g.revisados} valores revisados pela fonte")
         except Exception as exc:
             log.exception("mapa %s falhou", m.id)
-            report.errors.append(f"mapa {m.id}: {exc}")
+            report.falhou(f"mapa {m.id}", exc)
     return report

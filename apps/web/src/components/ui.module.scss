@@ -20,24 +20,15 @@
   }
 }
 
-// Celular: marca e Metodologia na primeira linha, temas rolando na segunda.
-// A partir de 1056px: tudo numa linha de 48px.
+// Uma linha de 48px: marca à esquerda, navegação à direita (Navegacao.tsx).
 .topNavInner {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-areas:
-    "brand aside"
-    "nav nav";
+  display: flex;
   align-items: center;
-  @media (min-width: 1056px) {
-    grid-template-columns: auto 1fr auto;
-    grid-template-areas: "brand nav aside";
-    gap: var(--bd-space-lg);
-  }
+  justify-content: space-between;
+  gap: var(--bd-space-lg);
 }
 
 .brand {
-  grid-area: brand;
   font-size: 23px;
   color: var(--bd-color-ink);
   text-decoration: none;
@@ -103,134 +94,6 @@
   .logoO {
     color: inherit;
   }
-}
-
-.navAside {
-  grid-area: aside;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--bd-space-md);
-  min-height: 48px;
-  white-space: nowrap;
-  > a {
-    display: inline-flex;
-    align-items: center;
-    min-height: 48px;
-    color: var(--bd-color-ink);
-    text-decoration: none;
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-}
-
-// Menu "Ferramentas": abre abaixo do cabeçalho, alinhado à direita.
-.ferramentas {
-  position: relative;
-  > button {
-    font: inherit;
-    color: var(--bd-color-ink);
-    background: none;
-    border: 0;
-    padding: 0;
-    min-height: max(44px, var(--bd-alvo-toque));
-    cursor: pointer;
-    span {
-      font-size: 10px;
-      margin-left: 2px;
-    }
-    &:hover {
-      text-decoration: underline;
-    }
-    &:focus-visible {
-      outline: 2px solid var(--bd-color-primary);
-      outline-offset: 2px;
-    }
-  }
-  ul {
-    position: absolute;
-    right: 0;
-    top: 100%;
-    z-index: 20;
-    min-width: 15rem;
-    background: var(--bd-color-canvas);
-    border: 1px solid var(--bd-color-hairline);
-    border-top: 2px solid var(--bd-color-ink);
-    padding: var(--bd-space-xxs) 0;
-  }
-  li a {
-    display: block;
-    padding: 10px var(--bd-space-md);
-    color: var(--bd-color-ink);
-    text-decoration: none;
-    &:hover,
-    &[aria-current="page"] {
-      background: var(--bd-color-surface-1);
-    }
-  }
-}
-
-.themeNav {
-  grid-area: nav;
-  overflow-x: auto;
-  scrollbar-width: none;
-  margin: 0 calc(-1 * var(--bd-space-md));
-  padding: 0 var(--bd-space-md);
-  @media (min-width: 1056px) {
-    margin: 0;
-    padding: 0;
-  }
-  // esmaece a borda do lado em que há temas escondidos
-  --esq: 0px;
-  --dir: 0px;
-  &[data-borda-esq] {
-    --esq: 32px;
-  }
-  &[data-borda-dir] {
-    --dir: 32px;
-  }
-  mask-image: linear-gradient(to right, transparent 0, #000 var(--esq), #000 calc(100% - var(--dir)), transparent 100%);
-  ul {
-    display: flex;
-    gap: var(--bd-space-lg);
-    white-space: nowrap;
-    // A lista com a largura dos temas (e não a da faixa): sem isso, o recuo da direita
-    // do <nav> sumia ao rolar até o fim e o último tema (Notícias) encostava na borda.
-    @media (max-width: 1055px) {
-      width: max-content;
-    }
-    @media (min-width: 1056px) {
-      gap: 20px;
-    }
-  }
-  a {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    min-height: max(44px, var(--bd-alvo-toque));
-    color: var(--bd-color-ink-muted);
-    text-decoration: none;
-    @media (min-width: 1056px) {
-      min-height: 48px;
-    }
-    &:hover {
-      color: var(--bd-color-ink);
-    }
-  }
-}
-
-.themeOn {
-  color: var(--bd-color-ink) !important;
-  font-weight: 600;
-}
-
-.themeUnderline {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 3px;
-  background: var(--bd-color-primary);
 }
 
 .footer {
@@ -564,16 +427,10 @@
   }
 }
 
-// Em 320px, "Ferramentas" e "Metodologia" cabem ao lado da marca com um vão menor.
+// Em 320px a marca encolhe um pouco para o botão Menu caber ao lado.
 @media (max-width: 359px) {
-  .topNavInner {
-    column-gap: var(--bd-space-xs);
-  }
   .brand {
     font-size: 20px;
-  }
-  .navAside {
-    gap: var(--bd-space-sm);
   }
 }
 
@@ -606,4 +463,36 @@
 .compartilharAviso {
   font-size: var(--bd-type-caption-font-size);
   color: var(--bd-color-ink-muted);
+}
+
+// "O que o mercado espera" (components/Expectativas.tsx): duas medianas do Focus lado a
+// lado, sob o topo do indicador. Linha fina em cima, como os demais blocos.
+.expectativas {
+  max-width: 44rem;
+  margin-top: var(--bd-space-xl);
+  padding-top: var(--bd-space-md);
+  border-top: 1px solid var(--bd-color-hairline);
+}
+
+.expectativasTitulo {
+  font-size: var(--bd-type-body-lg-font-size);
+  font-weight: 600;
+  margin: 0 0 var(--bd-space-sm);
+}
+
+.expectativasLista {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--bd-space-md);
+  margin: 0 0 var(--bd-space-sm);
+  dt {
+    font-size: var(--bd-type-body-sm-font-size);
+    color: var(--bd-color-ink-muted);
+  }
+  dd {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 300;
+    font-variant-numeric: tabular-nums;
+  }
 }

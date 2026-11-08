@@ -50,7 +50,7 @@ const decodifica = (s) =>
 const atributo = (tag, nome) => new RegExp(`${nome}="([^"]*)"`).exec(tag)?.[1] ?? null;
 
 const indicadores = await rest(
-  "indicators?select=slug,series_id,fallback_series_id,casas_decimais&order=ordem",
+  "indicators?select=slug,series_id,fallback_series_id,casas_decimais,transformacao&order=ordem",
 );
 const series = Object.fromEntries((await rest("series?select=id,source_id")).map((s) => [s.id, s]));
 const orgaos = Object.fromEntries((await rest("sources?select=id,orgao")).map((s) => [s.id, s.orgao]));
@@ -95,11 +95,16 @@ for (const ind of indicadores) {
 
   if (serie !== esperadoId) falha(`mostra a série ${serie}, o banco indica ${esperadoId}`);
   if (ref !== esperado.ref_date) falha(`mostra o período ${ref}, o último no banco é ${esperado.ref_date}`);
-  if (Number(valor) !== Number(esperado.value)) falha(`mostra ${valor}, o banco tem ${esperado.value}`);
+  // Transformação de exibição declarada no registro (docs/05): só a troca de sinal existe.
+  const sinal = ind.transformacao === "inverter_sinal" ? -1 : 1;
+  if (ind.transformacao && ind.transformacao !== "inverter_sinal")
+    falha(`transformação desconhecida: ${ind.transformacao}`);
+  const esperadoValor = sinal * Number(esperado.value);
+  if (Number(valor) !== esperadoValor) falha(`mostra ${valor}, o banco tem ${esperado.value}`);
   const numero = new Intl.NumberFormat("pt-BR", {
     minimumFractionDigits: ind.casas_decimais,
     maximumFractionDigits: ind.casas_decimais,
-  }).format(Number(esperado.value));
+  }).format(Math.abs(esperadoValor));
   if (!texto.includes(numero)) falha(`texto na tela "${texto.trim()}" não traz ${numero}`);
   const orgao = orgaos[series[esperadoId]?.source_id];
   const fonte = /<p[^>]*>\s*Fonte:([\s\S]*?)<\/p>/.exec(secao);
