@@ -37,3 +37,9 @@
   ordem: 6
   pagina: propria
   menu: barra
+- slug: governos
+  titulo: Governos
+  resumo: Cada mandato presidencial desde 2003 no mesmo formato, com os indicadores antes da posse e no fim e a meta de inflação de cada ano.
+  ordem: 7
+  pagina: propria
+  menu: barra

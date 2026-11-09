@@ -110,6 +110,31 @@ def parse(body: bytes, urn_norma: str) -> list[Dispositivo]:
     return list(por_urn.values())
 
 
+def versoes(body: bytes, urn_norma: str, urn_dispositivo: str) -> dict[str, str]:
+    """Todas as versões de um dispositivo: {data da versão (AAAA-MM-DD): texto puro}.
+
+    `parse` fica só com a versão mais recente; a aba Governos precisa do texto que valia
+    numa data antiga (ex.: art. 82 da Constituição antes da Emenda 111/2021).
+    """
+    try:
+        d = json.loads(body)
+    except ValueError as exc:
+        raise ValidationError(f"normas.leg.br: resposta não é JSON ({exc})") from exc
+    if not isinstance(d, dict) or d.get("legislationIdentifier") != urn_norma:
+        raise ValidationError(f"normas.leg.br: resposta não é a norma {urn_norma}")
+    achadas: dict[str, str] = {}
+    for no in _nos(d):
+        if no.get("legislationIdentifier") != urn_dispositivo:
+            continue
+        exemplos = no.get("workExample") or []
+        for e in exemplos if isinstance(exemplos, list) else [exemplos]:
+            if isinstance(e, dict) and isinstance(e.get("text"), str) and e.get("legislationDate"):
+                achadas[e["legislationDate"]] = _limpa(e["text"])
+    if not achadas:
+        raise ValidationError(f"normas.leg.br: dispositivo {urn_dispositivo} sem texto")
+    return achadas
+
+
 def trecho(dispositivos: list[Dispositivo], prefixo: str) -> list[Dispositivo]:
     """Os dispositivos dentro de `prefixo` (ex.: `<norma>!art125`), na ordem do texto."""
     achados = [d for d in dispositivos if _pertence(d.urn, prefixo)]
