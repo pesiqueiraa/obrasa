@@ -1,0 +1,132 @@
+# Aba Governos (docs/10, 3.7.1; decisão D27 em docs/08; regras em docs/02, seção 10).
+#
+# Mandatos: as datas entram aqui à mão e só vão para o banco depois da conferência do job
+# `governos`, sem ninguém liberar: cada prova precisa ter o trecho, literalmente, no texto
+# citado. Prova `urn` lê o dispositivo no normas.leg.br, na versão `versao` (a que valia na
+# posse); prova `url` lê a página do Senado. O fim de um mandato é a véspera do início do
+# seguinte (o job confere). Lula 3 fica sem fim até a posse de 2027. O primeiro mandato
+# da lista começa sem anterior: não há conferência do fim de quem veio antes.
+#
+# Dilma 2 e Temer: datas de exercício do cargo. Dilma foi afastada e Temer assumiu em
+# 12/05/2016, com a aprovação do Parecer 475/2016 no Senado; o mandato terminou em
+# 31/08/2016 com a Resolução do Senado 35/2016 (docs/05, "Senado · página da matéria").
+
+provas_comuns:
+  art82: &art82
+    urn: "urn:lex:br:federal:constituicao:1988-10-05;1988!art82_cpt"
+    versao: "1997-06-04"
+    trecho: "terá início em primeiro de janeiro do ano seguinte ao da sua eleição"
+
+mandatos:
+  - slug: lula-1
+    presidente: Luiz Inácio Lula da Silva
+    rotulo: Lula 1
+    sem_plano: "O TSE não guarda planos de governo de eleições anteriores a 2010."
+    foto:
+      arquivo: "File:Foto oficial do primeiro mandato do presidente Luiz Inácio Lula da Silva - 53155275756.jpg"
+      licenca: "CC BY-SA 4.0"
+      autor: "Lula Oficial"
+    inicio: 2003-01-01
+    provas: [*art82]
+  - slug: lula-2
+    presidente: Luiz Inácio Lula da Silva
+    rotulo: Lula 2
+    sem_plano: "O TSE não guarda planos de governo de eleições anteriores a 2010."
+    foto:
+      arquivo: "File:Lula - foto oficial - 05 jan 2007.jpg"
+      licenca: "CC BY 3.0 br"
+      autor: "Ricardo Stuckert"
+    inicio: 2007-01-01
+    provas: [*art82]
+  - slug: dilma-1
+    presidente: Dilma Rousseff
+    rotulo: Dilma 1
+    plano: {ano: 2010, sq_candidato: "280000000005"}
+    foto:
+      arquivo: "File:Foto Oficial Presidenta Dilma Rousseff (5766411752).jpg"
+      licenca: "CC BY-SA 2.0"
+      autor: "Dilma Rousseff from Brasil"
+    inicio: 2011-01-01
+    provas: [*art82]
+  - slug: dilma-2
+    presidente: Dilma Rousseff
+    rotulo: Dilma 2
+    plano: {ano: 2014, sq_candidato: "280000000083"}
+    foto:
+      # sem retrato próprio do 2º mandato no Commons: vale o mais recente até a posse
+      arquivo: "File:Foto Oficial Presidenta Dilma Rousseff (5766411752).jpg"
+      licenca: "CC BY-SA 2.0"
+      autor: "Dilma Rousseff from Brasil"
+    inicio: 2015-01-01
+    provas: [*art82]
+  - slug: temer
+    presidente: Michel Temer
+    rotulo: Temer
+    sem_plano: "Michel Temer foi eleito vice-presidente em 2014. O plano registrado no TSE naquela eleição é o da chapa encabeçada por Dilma Rousseff."
+    ver_plano: dilma-2
+    foto:
+      arquivo: "File:Michel Temer (foto oficial) (3x4).jpg"
+      licenca: "CC BY 2.0"
+      autor: "Beto Barata/PR"
+    inicio: 2016-05-12
+    nota: Exerceu o cargo como presidente interino de 12/05/2016 a 30/08/2016, durante o processo de impeachment, e como presidente a partir de 31/08/2016.
+    provas:
+      - url: "https://www25.senado.leg.br/web/atividade/materias/-/materia/125567"
+        trecho: "12/05/2016 Publicado no DSF Páginas 8-171 Aprovado o Parecer nº 475, de 2016"
+      - url: "https://www25.senado.leg.br/web/atividade/materias/-/materia/125567"
+        trecho: "para posse ao Excelentíssimo Senhor Michel Temer, como Presidente da República"
+      - url: "https://www25.senado.leg.br/web/atividade/materias/-/materia/125567"
+        trecho: "Resolução do Senado Federal nº 35 de 31/08/2016"
+  - slug: bolsonaro
+    presidente: Jair Bolsonaro
+    rotulo: Bolsonaro
+    plano: {ano: 2018, sq_candidato: "280000614517"}
+    foto:
+      arquivo: "File:2019-01-10 Retrato Oficial do Presidente da República - Jair Messias Bolsonaro.jpg"
+      licenca: "CC BY 3.0 br"
+      autor: "Alan Santos/ PR"
+    inicio: 2019-01-01
+    provas: [*art82]
+  - slug: lula-3
+    presidente: Luiz Inácio Lula da Silva
+    rotulo: Lula 3
+    plano: {ano: 2022, sq_candidato: "280001607829"}
+    foto:
+      arquivo: "File:Foto oficial do Presidente da República Luiz Inácio Lula da Silva.jpg"
+      licenca: "CC BY 2.0"
+      autor: "Ricardo Stuckert/PR"
+    inicio: 2023-01-01
+    provas:
+      - *art82
+      # A posse em 5 de janeiro (Emenda 111/2021) só vale a partir da eleição de 2026.
+      - urn: "urn:lex:br:federal:emenda.constitucional:2021-09-28;111!art5_cpt"
+        versao: "2021-09-28"
+        trecho: "serão aplicadas somente a partir das eleições de 2026"
+
+# Foto: retrato oficial do mandato no Wikimedia Commons (sem retrato próprio, o mais
+# recente da pessoa até a posse). O job confere licença e autor no Commons a cada coleta.
+
+# Bloco 1: os mesmos indicadores para todos os mandatos, nesta ordem. `serie` precisa estar
+# em config/sources.yaml. `casas`: casas decimais na tela.
+#
+# Só entram mandatos com todos os indicadores antes da posse e no fim (decisão de
+# 08/11/2026, D27): por isso a aba começa em Lula 1 (2003). FHC fica de fora porque
+# dívida líquida (desde dez/2001) e resultado primário (desde nov/2002) não cobrem a posse;
+# desocupação (PNAD Contínua, desde 2012) e dívida bruta (desde dez/2006) ficam de fora
+# porque não cobrem todos os mandatos desde 2003. O site esconde qualquer mandato que fique
+# sem um desses pontos (lib/governos.ts), sem trocar de pesquisa para preencher.
+indicadores:
+  - {id: inflacao, titulo: "Inflação em 12 meses (IPCA)", serie: ibge_agregados_1737_2265, casas: 2}
+  - {id: selic, titulo: "Selic efetiva no mês, anualizada", serie: bcb_sgs_4189, casas: 2}
+  - {id: pib, titulo: "PIB em quatro trimestres", serie: ibge_agregados_5932_6562, casas: 1}
+  - {id: divida-liquida, titulo: "Dívida líquida do setor público", serie: bcb_sgs_4513, casas: 1}
+  - {id: resultado-primario, titulo: "Resultado primário do setor público, 12 meses", serie: bcb_sgs_5793, transformacao: inverter_sinal, casas: 2}
+  - {id: salario-minimo, titulo: "Salário mínimo", serie: bcb_sgs_1619, casas: 2}
+  - {id: dolar, titulo: "Dólar comercial", serie: bcb_sgs_1, casas: 4}
+
+# Bloco 4: todas as emendas à Constituição e leis complementares assinadas durante o
+# mandato, da lista de legislação do Senado (job governos confere que a numeração não tem
+# buraco). Marca "Impostos" quando a ementa oficial casa com esta expressão (sem
+# diferenciar maiúsculas); o oBrasa não escolhe norma a norma.
+normas:
+  impostos: '\b(tribut\w*|impost\w*|contribuiç\w*|ICMS|ISS|ISSQN|IPI|IBS|CBS|Simples Nacional)\b'

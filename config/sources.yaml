@@ -101,6 +101,42 @@ sources:
     url_documentacao: https://normas.leg.br/api/public/normas
     url_metodologia: null
     licenca: CC-BY 4.0
+  - id: bcb_metas_inflacao
+    nome: "Histórico: meta de inflação vs. inflação efetiva"
+    orgao: Banco Central
+    url_fonte: https://www.bcb.gov.br/controleinflacao/historicometas
+    # A página é montada a partir deste JSON (testado em 08/11/2026); o job governos lê daqui.
+    url_documentacao: https://www.bcb.gov.br/api/paginasite/sitebcb/controleinflacao/historicometas
+    url_metodologia: null
+    licenca: Dados abertos do Banco Central
+  - id: wikimedia_commons
+    nome: Retratos oficiais da Presidência (aba Governos)
+    orgao: Wikimedia Commons
+    url_fonte: https://commons.wikimedia.org/
+    url_documentacao: https://www.mediawiki.org/wiki/API:Imageinfo
+    url_metodologia: null
+    licenca: Licença de cada arquivo (CC BY ou CC BY-SA), com autor; conferida a cada coleta
+  - id: tse_planos_governo
+    nome: Planos de governo registrados (candidaturas a presidente)
+    orgao: TSE
+    url_fonte: https://dadosabertos.tse.jus.br/dataset/candidatos-2022
+    url_documentacao: https://cdn.tse.jus.br/estatistica/sead/odsele/proposta_governo/proposta_governo_2022_BR.zip
+    url_metodologia: null
+    licenca: Dados abertos do TSE
+  - id: senado_legislacao
+    nome: Legislação federal (lista por tipo e ano)
+    orgao: Senado Federal
+    url_fonte: https://legis.senado.leg.br/dadosabertos/legislacao/lista
+    url_documentacao: https://legis.senado.leg.br/dadosabertos/docs/
+    url_metodologia: null
+    licenca: Dados abertos do Senado Federal
+  - id: senado_materias
+    nome: Atividade legislativa (página da matéria)
+    orgao: Senado Federal
+    url_fonte: https://www25.senado.leg.br/web/atividade/materias/-/materia/125567
+    url_documentacao: null
+    url_metodologia: null
+    licenca: Dados públicos do Senado Federal
 series:
   - id: ibge_agregados_1737_2265
     coletor: ipca
@@ -663,6 +699,48 @@ series:
       Usada para conferir a taxa contra o trimestre anterior (5932/6564).
     faixa: [30, 400]
     desde: 1996-01-01
+
+  # ---- Aba Governos (config/governos.yaml) ----
+  # Séries que cobrem todos os mandatos desde 1995 com a mesma régua. Testadas no
+  # webservice e na API do SGS em 08/11/2026.
+  - id: bcb_sgs_4189
+    source_id: bcb_sgs
+    codigo_externo: "4189"
+    referencia: {periodo: 2019-12-01, valor: "4.59", lido_em: 2026-11-08}
+    na_fonte:
+      nome: "Taxa de juros - Selic acumulada no mês anualizada base 252"
+      unidade: "% a.a."
+      periodicidade: "M"
+    nome: Selic efetiva acumulada no mês, anualizada (base 252)
+    unidade: "% a.a."
+    frequencia: mensal
+    tipo: taxa
+    monetaria: false
+    nota_metodologia: >-
+      Série 4189 do SGS. Taxa Selic efetiva do mês, em termos anuais. A meta Selic (série
+      432) só existe desde mar/1999; esta série cobre todos os mandatos desde 1995 e por
+      isso é a usada na aba Governos.
+    faixa: [0, 200]
+    desde: 1994-07-01
+  - id: bcb_sgs_1619
+    source_id: bcb_sgs
+    codigo_externo: "1619"
+    referencia: {periodo: 2019-12-01, valor: "998.00", lido_em: 2026-11-08}
+    na_fonte:
+      nome: "Salário mínimo"
+      unidade: "u.m.c."
+      periodicidade: "M"
+    nome: Salário mínimo
+    unidade: R$
+    frequencia: mensal
+    tipo: nivel
+    monetaria: true
+    nota_metodologia: >-
+      Série 1619 do SGS, valor mensal nominal. O histórico começa em jul/1994, início do
+      real. A fonte publica o valor de meses futuros já fixados em lei; o coletor guarda
+      só até o mês da coleta. Versão real corrigida pelo IPCA (1737/2266).
+    faixa: [50, 10000]
+    desde: 1994-07-01
 
   # ---- Arrecadação federal (Receita, config/impostos.yaml) ----
   - id: receita_arrecadacao_total

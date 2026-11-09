@@ -197,6 +197,7 @@ create table fact_checks (
 | PTAX | Dias úteis, 13h30 e 18h | |
 | IBGE | Diariamente, 10h | Compara com o calendário de divulgações |
 | Tesouro e Receita | Diariamente, 18h | Divulgações mensais |
+| Governos (mandatos e metas de inflação) | Na coleta diária (`todos`), depois do IPCA | Confere as datas dos mandatos no texto da Constituição e no Senado e as metas do CMN contra o IPCA do banco; falhou, o banco fica como estava |
 | Notícias (RSS) | A cada 15 min | |
 | Notícias (GDELT) | A cada 15 min | Respeitar 1 requisição a cada 5 s |
 | Agrupamento e checagens | A cada hora | |
@@ -315,8 +316,17 @@ de pessoa: o **conferidor de marcos**, abaixo, aprova ou reprova cada um.
   semanalmente quando entrar em produção. Primeira rodada nos textos atuais (02/11/2026):
   nenhum problema e três pontos de atenção (definição de informalidade resumida na frase,
   base do índice do IBC-Br, mês-base do rendimento na frase).
-- **Conferidor de marcos** (`pipelines/agentes/conferir_marcos.py`): o único agente cuja
-  resposta muda o que aparece no site, e só para esconder. Cada marco da aba Impostos passa
+- **Localizador de promessas** (`pipelines/agentes/localizar_promessas.py`, job `governos`):
+  lê o plano registrado no TSE pela chapa eleita, em blocos de 8 páginas, e copia todo
+  trecho que promete algo com número, com a página e o indicador da mesma área (lista
+  fechada ou "nenhum"). O código confere cada trecho, sem espaços, na página citada (ou na
+  junção com a seguinte), exige algarismo e fim de frase e recusa repetição; qualquer falha
+  recusa o plano inteiro e os trechos anteriores ficam. Roda só quando muda o hash (PDF,
+  versão do prompt, modelo, lista de indicadores); sem `ANTHROPIC_API_KEY`, espera. Custo
+  da primeira leitura dos 4 planos: cerca de US$ 0,86 (08/11/2026). Tabelas `planos` e
+  `planos_trechos`.
+- **Conferidor de marcos** (`pipelines/agentes/conferir_marcos.py`): resposta que muda o
+  que aparece no site, e só para esconder. Cada marco da aba Impostos passa
   por três camadas: números e datas do marco precisam existir no texto do artigo citado
   (código, sem IA); o modelo diz se a lei sustenta cada afirmação, com o trecho literal;
   o código confere que cada trecho existe na lei (ou num dispositivo que o modelo leu pela

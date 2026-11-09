@@ -181,7 +181,7 @@ def executa(
                 model=MODELO,
                 max_tokens=16000,
                 system=tarefa.sistema,
-                tools=[f.definicao() for f in ferramentas],
+                **({"tools": [f.definicao() for f in ferramentas]} if ferramentas else {}),
                 messages=mensagens,
                 output_config={
                     "effort": tarefa.esforco,

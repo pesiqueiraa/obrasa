@@ -129,6 +129,17 @@ Ordem de trabalho decidida na conversa de 07/11/2026. Métricas de uso (D11) fic
 - **O quê:** quanto cada UF e município recebe da União (FPE, FPM e outras), com a API de transferências do Tesouro.
 - **Esforço:** M
 
+### 3.7.1 Governos anteriores (aba Governos)
+- **Decidido em 08/11/2026 (D27).** Uma página por mandato presidencial encerrado desde 1995 (FHC 1 e 2, Lula 1 e 2, Dilma 1, Dilma 2 e Temer, Bolsonaro), e Lula 3 como "em curso" até jan/2027. Revisto em 08/11/2026: só mandatos com todos os indicadores, o que leva o início para 2003 (FHC fica de fora; ver "Estado"). Mesmo formato e mesmos indicadores para todos.
+- **Blocos, nesta ordem de entrega:**
+  1. **Na posse e no fim:** os mesmos indicadores para todos (inflação, Selic, desemprego, PIB, dívida, resultado primário, salário mínimo real, dólar), no último dado antes da posse e no último do mandato, com fonte e versão real. Aviso fixo: a variação não prova que o governo causou a mudança.
+  2. **Metas do próprio governo:** meta de inflação do CMN por ano ao lado do IPCA de dezembro, e meta de resultado primário da LDO ao lado do resultado.
+  3. **Plano registrado no TSE** (eleições de 2010 a 2022; `proposta_governo_{ano}_BR.zip` respondeu 200 em 08/11/2026, 2002 e 2006 responderam 404): todos os trechos com número ou prazo, citados literalmente com página, ao lado do indicador da área. IA localiza, código confere no PDF ([02](02-principios-de-neutralidade.md#10-promessas-e-mandatos)).
+  4. **Normas do período:** emendas constitucionais, leis complementares e medidas provisórias, todas, filtráveis por tema.
+- **Sem:** veredito, nota, ranking, adjetivo, ordem por desempenho, causalidade.
+- **Esforço:** M (blocos 1 e 2), M (bloco 3), P (bloco 4).
+- **Estado em 08/11/2026:** blocos 1, 2 (meta de inflação) e 4 implementados (`/governos`, job `governos`, `config/governos.yaml`). Só entram mandatos com todos os indicadores antes da posse e no fim (decisão de 08/11/2026): a aba começa em Lula 1 (2003), com sete indicadores; desocupação e dívida bruta ficaram fora, e o banco não guarda meta de ano anterior a 2003. `/governos` é uma trilha com o retrato oficial (Wikimedia Commons, licença e autor conferidos a cada coleta), o nome e os anos de cada mandato. Página do mandato: cartões com a linha do mandato, régua da meta de inflação por ano e "Leis e emendas do período" (todas as emendas e leis complementares do Senado, com filtro "Impostos" por critério público sobre a ementa). Regras em `/metodologia#governos`. **Falta:** meta de primário da LDO (bloco 2), plano registrado no TSE (bloco 3, a partir de Dilma 1) e o CSV por mandato.
+
 ### 3.8 Acompanhar os eleitos
 - **O quê:** uma página por governante eleito em 2026 (presidente e 27 governadores) com o que foi registrado no plano de governo ao lado do dado oficial. Quatro camadas:
   1. **Plano de governo registrado no TSE:** trechos citados literalmente, com página e link para o PDF ([05](05-fontes-de-dados.md#tse--dados-abertos-eleições-2026)).
@@ -136,7 +147,7 @@ Ordem de trabalho decidida na conversa de 07/11/2026. Métricas de uso (D11) fic
   3. **Indicadores ligados:** para cada promessa com número, a série oficial correspondente, com o último valor antes da posse (jan/2027) e o valor atual.
   4. **Registro do mandato** (parlamentares, depois): votos, presença, projetos, cota parlamentar e emendas, pelas APIs da Câmara, do Senado e do Portal da Transparência (3.4, 3.6).
 - **Regra central:** o oBrasa não avalia se a promessa foi cumprida ([02](02-principios-de-neutralidade.md#10-promessas-e-mandatos)). Sem selo, nota, ranking ou percentual de cumprimento.
-- **Como:** a ligação entre promessa e indicador fica em `config/promessas.yaml`, escrita e revisada por pessoas, pública e contestável pelo formulário de erro. Nenhuma IA escolhe trecho nem ligação.
+- **Como:** o mesmo da aba Governos (3.7.1): todos os trechos com número ou prazo, localizados por IA e conferidos literalmente no PDF por código (D27).
 - **Por quê:** a pessoa quer saber se o eleito está fazendo o que disse. A forma neutra de responder é pôr o que foi dito ao lado do que o dado mostra, com a mesma régua para todos.
 - **Cuidado:** revisão jurídica antes de lançar (lei eleitoral e risco de difamação). Começar depois da posse, em janeiro de 2027, quando o ponto de partida fica fixo.
 - **Esforço:** G

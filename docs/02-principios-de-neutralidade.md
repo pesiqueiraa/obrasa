@@ -78,11 +78,13 @@ Cada indicador exibe:
 O oBrasa **não avalia se uma promessa foi cumprida**. Mostra o que foi dito ao lado do dado oficial, e a pessoa tira a conclusão.
 
 - **Só o que foi registrado.** A promessa é citada literalmente a partir do plano de governo entregue ao TSE, com página e link para o PDF. Discurso, entrevista e rede social ficam de fora.
-- **Ligação feita por pessoa, em arquivo público.** Qual indicador acompanha qual promessa é decidido por uma pessoa e registrado num arquivo versionado do repositório, como os termos das notícias. Nenhum modelo de IA escolhe a ligação nem resume a promessa. Qualquer leitor pode contestar pelo formulário de erro.
+- **Todas as promessas com número ou prazo, por um critério público.** Entra todo trecho do plano que traz um número ou uma data, sem escolha a dedo de quais mostrar. Um modelo de IA localiza esses trechos e indica o indicador da mesma área, numa lista fechada de indicadores; o código confere que cada trecho existe, palavra por palavra, no PDF do TSE e na página citada. O que não passa fica fora. O modelo nunca resume, reescreve nem completa a promessa: o leitor vê o texto do plano. Qualquer leitor pode contestar pelo formulário de erro (decisão D27, 08/11/2026; antes, a ligação era feita por pessoa).
 - **Promessa sem número não ganha indicador.** Aparece só o texto citado.
 - **Sem veredito.** Não há selo de "cumpriu", "não cumpriu", nota, ranking, semáforo ou percentual de promessas cumpridas.
 - **Mesma régua para todos.** O mesmo formato vale para o presidente e para os 27 governadores, sem escolher quem acompanhar. O ponto de partida é o último dado antes da posse; os indicadores aparecem na ordem do plano, com o mesmo destaque, melhorem ou piorem.
 - **O resultado não é atribuído ao governante.** A tela diz o que o indicador mostra, não que o governo causou a mudança.
+- **Metas do próprio governo são a régua mais objetiva.** Meta de inflação do Conselho Monetário Nacional e meta de resultado primário da Lei de Diretrizes Orçamentárias aparecem ao lado do resultado oficial, com o número das duas. Quando a fonte oficial registra o descumprimento (a carta aberta do Banco Central), a tela cita o documento; o oBrasa não acrescenta veredito.
+- **Governos anteriores:** o mesmo formato vale para os mandatos encerrados desde 1995 (aba Governos, [10](10-pos-mvp.md)). Mandato sem plano registrado no TSE (antes de 2010) aparece sem o bloco do plano, sem substituto de outra fonte.
 - **Parlamentares:** não registram plano. Para eles só vale o registro do mandato (votos, presença, projetos, cota e emendas), no mesmo formato para todos e sem nota.
 
 ## Checklist de pull request

@@ -535,3 +535,151 @@ class Impostos(_Strict):
 
 def load_impostos(config_dir: Path = CONFIG_DIR) -> Impostos:
     return Impostos(**yaml.safe_load((config_dir / "impostos.yaml").read_text(encoding="utf-8")))
+
+
+# ---- Aba Governos (config/governos.yaml) ----
+
+
+class Prova(_Strict):
+    """Trecho que precisa estar, literalmente, no dispositivo (`urn`) ou na página (`url`)."""
+
+    trecho: str
+    urn: str | None = None
+    versao: date | None = None  # versão do dispositivo no normas.leg.br
+    url: str | None = None
+
+    @model_validator(mode="after")
+    def _check(self) -> Prova:
+        if (self.urn is None) == (self.url is None):
+            raise ValueError("prova: informe `urn` ou `url`, só um dos dois")
+        if self.urn is not None:
+            if self.versao is None:
+                raise ValueError(f"prova {self.urn}: informe a versão do dispositivo")
+            if not re.fullmatch(
+                r"urn:lex:br:federal:[a-z.]+:\d{4}-\d{2}-\d{2};\d+![\w,-]+", self.urn
+            ):
+                raise ValueError(f"prova: URN inválida: {self.urn}")
+        if self.url is not None and not self.url.startswith("https://www25.senado.leg.br/"):
+            raise ValueError(f"prova: página fora do Senado: {self.url}")
+        return self
+
+
+class Foto(_Strict):
+    """Retrato oficial no Wikimedia Commons. `licenca` e `autor` precisam ser iguais ao que o
+    Commons informa (o job confere a cada coleta)."""
+
+    arquivo: str
+    licenca: Literal["CC BY 2.0", "CC BY 3.0 br", "CC BY-SA 2.0", "CC BY-SA 4.0"]
+    autor: str
+
+    @model_validator(mode="after")
+    def _check(self) -> Foto:
+        if not self.arquivo.startswith("File:") or "oficial" not in self.arquivo.lower():
+            raise ValueError(
+                f"foto {self.arquivo}: use um arquivo do Commons com 'oficial' no título"
+            )
+        return self
+
+
+class Plano(_Strict):
+    """Plano de governo registrado no TSE pela candidatura eleita (bloco 3). O job confere,
+    no arquivo de candidaturas do TSE, que `sq_candidato` é o eleito para presidente."""
+
+    ano: int
+    sq_candidato: str
+
+    @model_validator(mode="after")
+    def _check(self) -> Plano:
+        if self.ano < 2010 or self.ano % 4 != 2 or not self.sq_candidato.isdigit():
+            raise ValueError(
+                f"plano {self.ano}/{self.sq_candidato}: ano de eleição desde 2010 e sq numérico"
+            )
+        return self
+
+
+class Mandato(_Strict):
+    slug: str
+    presidente: str
+    rotulo: str
+    inicio: date
+    nota: str | None = None
+    provas: list[Prova]
+    foto: Foto
+    plano: Plano | None = None
+    # Mandato sem plano próprio: a frase que a página mostra no lugar do bloco 3.
+    sem_plano: str | None = None
+    # Vice que assumiu: o plano é o da chapa, mostrado na página deste outro mandato.
+    ver_plano: str | None = None
+
+    @model_validator(mode="after")
+    def _plano(self) -> Mandato:
+        if (self.plano is None) == (self.sem_plano is None):
+            raise ValueError(f"mandato {self.slug}: informe `plano` ou `sem_plano`, um dos dois")
+        if self.ver_plano is not None and self.sem_plano is None:
+            raise ValueError(f"mandato {self.slug}: `ver_plano` só vale com `sem_plano`")
+        return self
+
+    @model_validator(mode="after")
+    def _check(self) -> Mandato:
+        if not re.fullmatch(r"[a-z0-9-]+", self.slug):
+            raise ValueError(f"mandato {self.slug}: slug inválido")
+        if not self.provas:
+            raise ValueError(f"mandato {self.slug}: informe ao menos uma prova da data de início")
+        return self
+
+
+class IndicadorGoverno(_Strict):
+    id: str
+    titulo: str
+    serie: str
+    transformacao: Literal["inverter_sinal"] | None = None
+    casas: int = 2
+
+
+class NormasGoverno(_Strict):
+    """Bloco 4: emendas à Constituição e leis complementares assinadas no mandato.
+    `impostos`: expressão regular sobre a ementa oficial que marca a norma como de impostos
+    (critério público, na metodologia)."""
+
+    impostos: str
+
+    @model_validator(mode="after")
+    def _check(self) -> NormasGoverno:
+        re.compile(self.impostos)
+        return self
+
+
+class Governos(_Strict):
+    provas_comuns: dict[str, Prova] = {}
+    mandatos: list[Mandato]
+    indicadores: list[IndicadorGoverno]
+    normas: NormasGoverno
+
+    @model_validator(mode="after")
+    def _check(self) -> Governos:
+        slugs = [m.slug for m in self.mandatos]
+        if len(set(slugs)) != len(slugs):
+            raise ValueError("mandatos com slug repetido (config/governos.yaml)")
+        inicios = [m.inicio for m in self.mandatos]
+        if inicios != sorted(set(inicios)):
+            raise ValueError("mandatos fora da ordem de início (config/governos.yaml)")
+        ids = [i.id for i in self.indicadores]
+        if len(set(ids)) != len(ids):
+            raise ValueError("indicadores com id repetido (config/governos.yaml)")
+        com_plano = {m.slug for m in self.mandatos if m.plano}
+        for m in self.mandatos:
+            if m.ver_plano is not None and m.ver_plano not in com_plano:
+                raise ValueError(
+                    f"mandato {m.slug}: ver_plano {m.ver_plano!r} não é mandato com plano"
+                )
+        return self
+
+
+def load_governos(config_dir: Path = CONFIG_DIR, registry: Registry | None = None) -> Governos:
+    g = Governos(**yaml.safe_load((config_dir / "governos.yaml").read_text(encoding="utf-8")))
+    if registry is not None:
+        conhecidas = {s.id for s in registry.series}
+        faltam = [i.serie for i in g.indicadores if i.serie not in conhecidas]
+        if faltam:
+            raise ValueError(f"governos.yaml cita séries fora de sources.yaml: {faltam}")
+    return g

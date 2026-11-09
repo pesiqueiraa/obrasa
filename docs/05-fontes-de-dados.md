@@ -19,10 +19,13 @@ Regras gerais:
 | Tesouro Transparente | Resultado do Tesouro, dívida | CKAN (planilhas e CSV) | Nenhuma | Mensal |
 | Receita Federal | Arrecadação federal por tributo e UF | CSV em gov.br | Nenhuma | Mensal |
 | Planalto · Legislação | Marcos da reforma tributária e do IR (aba Impostos): link exibido ao leitor | Texto da lei | Nenhuma | Quando a lei muda |
-| normas.leg.br (Senado) | Texto estruturado das leis para a conferência automática dos marcos | API JSON-LD, CC-BY 4.0 | Nenhuma | Diária (job `impostos`) |
+| normas.leg.br (Senado) | Texto estruturado das leis para a conferência automática dos marcos e das datas de posse (aba Governos) | API JSON-LD, CC-BY 4.0 | Nenhuma | Diária (jobs `impostos` e `governos`) |
+| Banco Central · histórico de metas | Meta de inflação do CMN por ano e carta aberta (aba Governos) | JSON da página do site | Nenhuma | Anual (job `governos`) |
 | Portal da Transparência (CGU) | Despesa por função, emendas | API REST | Chave gratuita | Diária |
 | Câmara dos Deputados | Projetos sobre impostos (aba Impostos); votações (pós-MVP) | API REST | Nenhuma | Contínua |
-| Senado Federal | Matérias e votações (pós-MVP) | API REST | Nenhuma | Contínua |
+| Senado Federal · legislação | Emendas à Constituição e leis complementares de cada mandato (aba Governos) | API REST JSON | Nenhuma | Diária (job `governos`) |
+| Wikimedia Commons | Retrato oficial de cada mandato (aba Governos), carregado de lá | API MediaWiki (imageinfo) | Nenhuma | Diária (job `governos`) |
+| Senado Federal | Página da matéria DEN 1/2016 (datas de Dilma 2 e Temer, aba Governos); matérias e votações (pós-MVP) | Página HTML; API REST | Nenhuma | Contínua |
 | Base dos Dados | Atalho para históricos | BigQuery | Conta Google | Varia |
 | GDELT DOC 2.0 | Descoberta de notícias | API REST | Nenhuma | Contínua |
 | RSS dos veículos | Notícias | RSS/Atom | Nenhuma | Contínua |
@@ -67,6 +70,10 @@ Resposta: `[{"data":"01/07/2026","valor":"0.07"}]`
 | 5364 | NFSP sem desvalorização cambial (% PIB), fluxo mensal corrente, resultado primário, setor público consolidado | % | Mensal | ok (conferida no webservice SGS em 02/11/2026; ainda não usada) |
 | 5760 | NFSP sem desvalorização cambial (% PIB), fluxo acumulado em 12 meses, juros nominais, setor público consolidado | % | Mensal | ok (nome conferido no webservice SGS em 07/11/2026: 8,99 em set/2026) |
 | 5727 | NFSP sem desvalorização cambial (% PIB), fluxo acumulado em 12 meses, resultado nominal, setor público consolidado | % | Mensal | ok (07/11/2026: 9,51 em set/2026 = primário 0,52 + juros 8,99; usada só como conferência) |
+| 4189 | Selic acumulada no mês, anualizada base 252 | % a.a. | Mensal | ok (08/11/2026: com dados antes de 1994, conferidos desde jan/1990; usada desde jul/1994 na aba Governos, porque a meta Selic, 432, só existe desde mar/1999; 4,59 em dez/2019) |
+| 1619 | Salário mínimo | u.m.c. (R$ desde jul/1994) | Mensal | ok (08/11/2026: com dados antes de 1994, conferidos desde fev/1990; traz meses futuros já fixados em lei, que o coletor descarta; R$ 998,00 em dez/2019) |
+| 4782 | NFSP sem desvalorização cambial, fluxo acumulado no ano, resultado primário, Governo Federal e Banco Central | R$ (milhões) | Mensal | ok (08/11/2026: desde fev/1991; candidata para comparar com a meta de primário da LDO, ainda não usada) |
+| 4792 | NFSP sem desvalorização cambial, fluxo acumulado no ano, resultado primário, setor público consolidado | R$ (milhões) | Mensal | ok (08/11/2026: desde dez/2001; candidata para a meta da LDO, ainda não usada) |
 
 Atenção ao sinal das NFSP: necessidade de financiamento positiva é déficit. Conferido em 07/11/2026 contra o Focus, que publica o "Resultado primário" com o sinal do resultado (−0,49% do PIB esperado para 2026 enquanto a NFSP primária de 12 meses era +0,52%). O site exibe o resultado (sinal invertido da NFSP, transformação `inverter_sinal`), na mesma convenção do Focus: negativo é déficit.
 
@@ -299,13 +306,41 @@ Páginas: https://dadosabertos.tse.jus.br/dataset/resultados-2026 e https://dado
 - Dos arquivos de candidaturas só são lidos campos públicos de exibição (número, nome de urna, partido, federação, situação). CPF, e-mail, título de eleitor e data de nascimento não são lidos.
 - O feed de resultados `resultados.tse.jus.br/oficial/.../dados-simplificados/...` respondeu 404 em 01/11/2026; não é usado.
 
-**Planos de governo (propostas registradas)** · status `ok` só para acesso (testado em 07/11/2026), ainda não usado:
+**Planos de governo (propostas registradas)** · status `ok` (testado em 08/11/2026), fonte `tse_planos_governo`, usado no bloco 3 da aba Governos:
 
 - Um zip por UF e um para presidente: `cdn.tse.jus.br/estatistica/sead/odsele/proposta_governo/proposta_governo_2026_{UF|BR}.zip` (BR: 18 MB, 14 PDFs e um `leiame.pdf`).
 - Cada PDF se chama `{UF}/2026{UF}{SQ_CANDIDATO}_{n}.pdf`. O `SQ_CANDIDATO` liga o plano ao arquivo `consulta_cand`, que já é lido.
 - Só presidente e governador registram plano. Deputados e senadores não.
 - A API do DivulgaCandContas (`divulgacandcontas.tse.jus.br/divulga/rest/v1/...`) respondeu 403 a clientes automáticos em 07/11/2026; não usar.
 - Uso planejado em [10](10-pos-mvp.md#38-acompanhar-os-eleitos), com a regra de [02](02-principios-de-neutralidade.md#10-promessas-e-mandatos).
+- Presidente, 2010 a 2022 (testado em 08/11/2026): `proposta_governo_{2010,2014,2018,2022}_BR.zip` respondem 200; 2002 e 2006, 404. O nome do PDF é `BR/{ano}BR{SQ_CANDIDATO}.pdf`. O eleito vem de `consulta_cand_{ano}.zip` (`DS_SIT_TOT_TURNO` = ELEITO, cargo PRESIDENTE): 2010 `280000000005`, 2014 `280000000083`, 2018 `280000614517`, 2022 `280001607829`. O job lê só o PDF de dentro do zip (leitura por partes, como os demais arquivos do TSE).
+- Texto extraído com pdfminer.six: o pypdf partia palavras com espaços ("est ão") no plano de 2014. Os 4 PDFs têm camada de texto; não há OCR.
+- O TSE não publica link por PDF fora do zip; a página liga o zip do ano e diz o nome do arquivo.
+
+## Banco Central · Histórico de metas de inflação (aba Governos)
+
+Testado em 08/11/2026 (status `ok`). A página `https://www.bcb.gov.br/controleinflacao/historicometas` é montada a partir de:
+```http
+GET https://www.bcb.gov.br/api/paginasite/sitebcb/controleinflacao/historicometas
+```
+Resposta: `{"metatags": {...}, "conteudo": "<html da página>"}`. O leitor (`pipelines/sources/bcb_metas.py`) lê:
+
+- a tabela "Histórico do regime de metas de inflação (1999–2024)": ano, resolução do CMN, data, meta, tamanho e intervalo de tolerância, inflação efetiva (IPCA) e carta aberta, com o link do PDF. Em 2003 e 2004 a célula traz duas resoluções e duas metas (a mais recente primeiro); a nota "*" traz as metas ajustadas pela carta aberta de 21/1/2003 (8,5% e 5,5%). A norma de 1999 a 2001 vem numa célula só (Resolução 2.615);
+- o parágrafo da meta contínua, desde 2025: 3,00% com tolerância de ±1,5 ponto percentual (Resolução CMN 5.141/2024), verificada mês a mês.
+
+Armadilhas: as aspas dos atributos vêm escapadas (`\&#34;`), há caracteres de largura zero dentro de "Resolução CMN" e uma célula de data quebrada em dois `<span>` (por isso a data da resolução não é usada). O leitor recusa a resposta se o cabeçalho mudar, se o intervalo não for meta ± tamanho ou se faltar um ano. O job `governos` confere o IPCA efetivo de cada ano contra o IPCA de 12 meses de dezembro do banco (IBGE 1737/2265): todos os 26 anos iguais em 08/11/2026. A tabela anual não registra os anos da meta contínua; a carta aberta desses anos fica fora (`confirmar` uma fonte para ela antes de exibir).
+
+## Senado Federal · lista de legislação (aba Governos)
+
+Testado em 08/11/2026 (status `ok`). `GET https://legis.senado.leg.br/dadosabertos/legislacao/lista?tipo=EMC|LCP&ano=AAAA` (com `Accept: application/json`) devolve, por norma, tipo (`EMC-n`, `LCP`), número, data de assinatura, nome e ementa oficial. De 2002 a 2026: emendas 36 a 141 (106) e leis complementares 114 a 238 (125), sem buraco nem repetição. O job `governos` (`pipelines/sources/senado_legislacao.py`) lê do ano anterior ao primeiro mandato até o ano corrente, exige numeração contínua de cada tipo e só então troca a tabela `normas_federais`. Link de cada norma: `https://normas.leg.br/?urn=urn:lex:br:federal:{emenda.constitucional|lei.complementar}:{data};{número}` (o mesmo que o detalhe da norma devolve em `urlDocumento`). O detalhe (`/legislacao/{id}`) não traz classificação por assunto; a marca "Impostos" é uma expressão sobre a ementa, em `config/governos.yaml`.
+
+## Wikimedia Commons · retratos oficiais (aba Governos)
+
+Testado em 08/11/2026 (status `ok`). `GET https://commons.wikimedia.org/w/api.php?action=query&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=320&titles=File:...` devolve, por arquivo, a miniatura (`thumburl`, em `thumb.wikimedia.org`; o leitor tira os parâmetros `utm_*`), a página do arquivo, a licença (`extmetadata.LicenseShortName`) e o autor (`Artist`). Critério: retrato oficial de cada mandato publicado pela Presidência ou pela Agência Brasil; sem retrato próprio (Dilma 2), o mais recente da pessoa até a posse. Arquivos, licença e autor em `config/governos.yaml`; o job `governos` (`pipelines/sources/commons.py`) confere licença e autor a cada coleta e não grava se divergirem. A imagem é carregada do endereço do Wikimedia, nunca copiada para o oBrasa, e o crédito (autor, licença, link) fica na página. Licenças em uso em 08/11/2026: CC BY 2.0, CC BY 3.0 BR, CC BY-SA 2.0 e CC BY-SA 4.0.
+
+## Senado Federal · página da matéria (aba Governos)
+
+Testado em 08/11/2026 (status `ok`): `https://www25.senado.leg.br/web/atividade/materias/-/materia/125567` (Denúncia 1/2016) traz a tramitação com "12/05/2016 ... Aprovado o Parecer nº 475, de 2016" (afastamento de Dilma Rousseff e início do exercício de Michel Temer), "para posse ao Excelentíssimo Senhor Michel Temer, como Presidente da República" e "Resolução do Senado Federal nº 35 de 31/08/2016". O job `governos` exige esses trechos, literalmente, na página. A API de matérias (`legis.senado.leg.br/dadosabertos/materia/...`) foi desativada em 01/02/2026 e a substituta (`/dadosabertos/processo`) devolveu lista vazia para DEN 1/2016; a página da Biblioteca da Presidência estava "em manutenção" em 08/11/2026.
 
 ## Planalto · Legislação (aba Impostos)
 
@@ -313,7 +348,7 @@ Páginas: https://dadosabertos.tse.jus.br/dataset/resultados-2026 e https://dado
 - Um job carrega o arquivo no banco (`marcos_tributarios`), para que a tela leia o número do banco como qualquer outro (regra 1). O link da lei é a fonte exibida.
 - Lei citada sempre na versão compilada, porque as leis da reforma são alteradas com frequência.
 
-## normas.leg.br · texto das leis (aba Impostos)
+## normas.leg.br · texto das leis (abas Impostos e Governos)
 
 Testado em 07/11/2026 (status `ok`).
 
@@ -322,6 +357,8 @@ Testado em 07/11/2026 (status `ok`).
 - A Lei 9.250/1995 vem **sem texto estruturado**. Os artigos que a Lei 15.270 incluiu nela (3º-A, 6º-A, 16-A, 16-B) são lidos no texto da 15.270 (`!art2_cpt_alt1_art3-1` é o art. 3º-A). Alteração posterior desses artigos por outra lei não aparece ali: se acontecer, citar também a lei nova no marco.
 - O ID numérico da norma no Senado sai de `https://legis.senado.leg.br/dadosabertos/legislacao/lista?tipo=LCP&numero=214&ano=2025`.
 - Uso: `pipelines/agentes/conferir_marcos.py`, pelo job `impostos`. A resposta é guardada no armazenamento bruto quando há conferência nova.
+- **Versões antigas** (aba Governos, testado em 08/11/2026): `workExample` guarda todas as versões do dispositivo. O art. 82 da Constituição tem quatro: 1988 ("cinco anos ... 1º de janeiro"), 07/06/1994 ("quatro anos ... 1º de janeiro"), 04/06/1997 ("primeiro de janeiro", sem a vedação da reeleição) e 28/09/2021 ("5 de janeiro", Emenda 111, que pelo art. 5º só vale a partir das eleições de 2026, URN `urn:lex:br:federal:emenda.constitucional:2021-09-28;111`). `normas.versoes()` devolve todas; o job `governos` usa a versão que valia em cada posse.
+- **LDOs antigas sem texto estruturado** (testado em 08/11/2026): a LDO de 2024 (Lei 14.791/2023) tem os dispositivos (art. 2º: meta de primário); as LDOs de 2000 (Lei 9.811/1999), 2003 (Lei 10.524/2002) e 2010 (Lei 12.017/2009) vêm só com o HTML da publicação no Diário Oficial em `encoding[].contentUrl` (`https://normas.leg.br/api/binario/<id>/texto`). A meta de primário da aba Governos precisa ler esse HTML (`confirmar` o formato antes de usar).
 
 ## Outras fontes oficiais (pós-MVP)
 

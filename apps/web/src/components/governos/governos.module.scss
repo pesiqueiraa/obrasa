@@ -1,0 +1,809 @@
+// Aba Governos (docs/10, 3.7.1). Cartões por indicador na grade de filetes dos temas
+// (DESIGN.md, "indicator-tile"), linha do mandato em chart-1, faixa da meta em surface-1.
+// Cantos retos, sem sombra, sem cor por governo ou partido (docs/02, seção 8).
+
+$tablet: 672px;
+
+.secao {
+  max-width: 72rem;
+  margin-top: var(--bd-space-xl);
+  h2 {
+    font-size: var(--bd-type-headline-font-size);
+    font-weight: 300;
+    margin: 0 0 var(--bd-space-sm);
+  }
+  > p {
+    max-width: 44rem;
+  }
+}
+
+.aviso {
+  max-width: 44rem;
+  border-left: 2px solid var(--bd-color-ink);
+  padding: var(--bd-space-xs) 0 var(--bd-space-xs) var(--bd-space-md);
+  margin: var(--bd-space-md) 0;
+}
+
+
+.valor {
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.ref {
+  display: block;
+  font-size: 12px;
+  color: var(--bd-color-ink-muted);
+}
+
+
+
+.vizinhos {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--bd-space-md);
+  margin-top: var(--bd-space-xl);
+  padding-top: var(--bd-space-md);
+  border-top: 1px solid var(--bd-color-hairline);
+}
+
+
+/* Bloco 1: um cartão por indicador */
+
+.cartoes {
+  display: grid;
+  grid-template-columns: 1fr;
+  border-top: 1px solid var(--bd-color-hairline);
+  border-left: 1px solid var(--bd-color-hairline);
+  @media (min-width: $tablet) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 1056px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.cartao {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-xs);
+  padding: var(--bd-space-lg) var(--bd-space-md);
+  background: var(--bd-color-canvas);
+  border-right: 1px solid var(--bd-color-hairline);
+  border-bottom: 1px solid var(--bd-color-hairline);
+  font-variant-numeric: tabular-nums;
+  > p {
+    margin: 0;
+  }
+}
+
+.cartaoTitulo {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.pontas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--bd-space-md);
+  margin: var(--bd-space-xs) 0 0;
+  dt {
+    font-size: 12px;
+    color: var(--bd-color-ink-muted);
+  }
+  dd {
+    margin: 0;
+  }
+  .valor {
+    font-size: 28px;
+    font-weight: 300;
+    line-height: 1.15;
+    white-space: nowrap;
+  }
+}
+
+.linha {
+  position: relative;
+  margin: var(--bd-space-sm) 0 var(--bd-space-xs);
+  height: 96px;
+}
+
+.linhaSvg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.pontoPosse,
+.pontoFim,
+.pontoFoco {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.pontoPosse {
+  background: var(--bd-color-canvas);
+  border: 2px solid var(--bd-color-chart-1);
+}
+
+.pontoFim {
+  background: var(--bd-color-chart-1);
+}
+
+.pontoFoco {
+  background: var(--bd-color-canvas);
+  border: 2px solid var(--bd-color-ink);
+}
+
+.leitura,
+.metasLeitura {
+  position: absolute;
+  bottom: 100%;
+  margin-bottom: 4px;
+  padding: 2px 6px;
+  background: var(--bd-color-ink);
+  color: var(--bd-color-canvas);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Bloco 2: meta de inflação, uma régua por ano */
+
+.regua {
+  margin-top: var(--bd-space-lg);
+  font-variant-numeric: tabular-nums;
+}
+
+.reguaAnos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.reguaLinha {
+  display: grid;
+  grid-template-columns: 3rem 1fr 4.5rem;
+  align-items: center;
+  column-gap: var(--bd-space-sm);
+  padding: var(--bd-space-lg) 0;
+  border-bottom: 1px solid var(--bd-color-hairline);
+}
+
+.reguaAno {
+  font-weight: 600;
+}
+
+.reguaTrilho {
+  position: relative;
+  height: 28px;
+}
+
+.reguaGrade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid var(--bd-color-hairline);
+}
+
+.reguaFaixa {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  background: var(--bd-color-surface-1);
+  border: 1px solid var(--bd-color-ink-muted);
+}
+
+.reguaAlvo {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  margin-left: -1px;
+  border-left: 3px solid var(--bd-color-ink);
+}
+
+
+
+.reguaPonto {
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border-radius: 50%;
+  background: var(--bd-color-chart-1);
+  border: 3px solid var(--bd-color-canvas);
+  box-shadow: 0 0 0 1px var(--bd-color-chart-1);
+}
+
+.reguaValor {
+  font-size: 20px;
+  font-weight: 300;
+  text-align: right;
+}
+
+.reguaFrase {
+  grid-column: 2 / -1;
+  margin: var(--bd-space-md) 0 0;
+  line-height: 1.5;
+  font-size: var(--bd-type-body-sm-font-size);
+  @media (max-width: #{$tablet - 1px}) {
+    grid-column: 1 / -1;
+  }
+}
+
+.reguaNorma {
+  display: block;
+  margin-top: var(--bd-space-xs);
+  font-size: 12px;
+  color: var(--bd-color-ink-muted);
+}
+
+.reguaEixo {
+  position: relative;
+  height: 20px;
+  margin: var(--bd-space-xs) calc(4.5rem + var(--bd-space-sm)) 0 calc(3rem + var(--bd-space-sm));
+  span {
+    position: absolute;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: var(--bd-color-ink-muted);
+  }
+}
+
+/* /governos: trilha dos mandatos */
+
+.trilha {
+  position: relative;
+  list-style: none;
+  margin: var(--bd-space-lg) 0;
+  padding: 0;
+  max-width: 56rem;
+  li {
+    position: absolute;
+    left: 0;
+    right: 0;
+  }
+}
+
+.trilhaSvg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: visible;
+}
+
+.parada {
+  position: absolute;
+}
+
+.paradaLink {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-space-md);
+  color: var(--bd-color-ink);
+  text-decoration: none;
+  &:hover .paradaFoto,
+  &:focus-visible .paradaFoto {
+    box-shadow: 0 0 0 4px var(--bd-color-canvas), 0 0 0 7px var(--bd-color-ink);
+  }
+  &:hover strong,
+  &:focus-visible strong {
+    text-decoration: underline;
+  }
+}
+
+.paradaFoto {
+  flex: none;
+  display: block;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: 50% 15%;
+  background: var(--bd-color-surface-1);
+  box-shadow: 0 0 0 4px var(--bd-color-canvas), 0 0 0 7px var(--bd-color-chart-1);
+  transition: box-shadow 0.15s;
+}
+
+.paradaTexto {
+  display: flex;
+  flex-direction: column;
+  white-space: nowrap;
+  strong {
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+}
+
+.paradaAnos {
+  font-size: 15px;
+  color: var(--bd-color-ink-muted);
+}
+
+
+/* Cabeçalho do mandato com o retrato */
+
+.cabecalho {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--bd-space-lg);
+  > div {
+    min-width: 0;
+  }
+}
+
+.retrato {
+  flex: none;
+  margin: var(--bd-space-xs) 0 0;
+  width: 120px;
+  img {
+    display: block;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: 50% 15%;
+    background: var(--bd-color-surface-1);
+    box-shadow: 0 0 0 4px var(--bd-color-canvas), 0 0 0 7px var(--bd-color-chart-1);
+  }
+  @media (max-width: #{$tablet - 1px}) {
+    width: 80px;
+    img {
+      width: 80px;
+      height: 80px;
+    }
+  }
+}
+
+/* Bloco 4: leis e emendas do período */
+
+.filtros {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  margin: var(--bd-space-md) 0;
+  background: var(--bd-color-hairline);
+  border: 1px solid var(--bd-color-hairline);
+  @media (min-width: $tablet) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.filtro {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: var(--bd-space-md);
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: var(--bd-color-canvas);
+  color: var(--bd-color-ink);
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  &:hover {
+    background: var(--bd-color-surface-1);
+  }
+  &[aria-pressed="true"] {
+    background: var(--bd-color-surface-1);
+    border-bottom-color: var(--bd-color-chart-1);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--bd-color-ink);
+    outline-offset: -2px;
+  }
+}
+
+.filtroN {
+  font-size: 36px;
+  font-weight: 300;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.normas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.norma {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr;
+  gap: var(--bd-space-md);
+  padding: var(--bd-space-md) 0;
+  border-bottom: 1px solid var(--bd-color-hairline);
+  p {
+    margin: 0;
+  }
+  @media (max-width: #{$tablet - 1px}) {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+}
+
+.normaData {
+  font-size: 14px;
+  color: var(--bd-color-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.normaNome {
+  font-weight: 600;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bd-space-xs) var(--bd-space-sm);
+}
+
+.selo {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 1px 8px;
+  border: 1px solid var(--bd-color-ink);
+}
+
+.normaEmenta {
+  margin-top: 2px !important;
+  max-width: 44rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.verMais {
+  margin: var(--bd-space-md) 0;
+  padding: var(--bd-space-sm) var(--bd-space-md);
+  border: 1px solid var(--bd-color-ink);
+  background: var(--bd-color-canvas);
+  color: var(--bd-color-ink);
+  font: inherit;
+  cursor: pointer;
+  &:hover {
+    background: var(--bd-color-surface-1);
+  }
+}
+
+/* Legenda das réguas da meta */
+
+.legenda {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bd-space-xs) var(--bd-space-sm);
+  margin: 0 0 var(--bd-space-sm);
+  font-size: 14px;
+  color: var(--bd-color-ink-muted);
+}
+
+.legFaixa,
+.legMeta,
+.legPonto {
+  display: inline-block;
+  flex: none;
+}
+
+.legFaixa {
+  width: 24px;
+  height: 14px;
+  background: var(--bd-color-surface-1);
+  border: 1px solid var(--bd-color-ink-muted);
+}
+
+.legMeta {
+  width: 3px;
+  height: 18px;
+  background: var(--bd-color-ink);
+}
+
+.legPonto {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--bd-color-chart-1);
+}
+
+// Bloco 3: trechos do plano registrado no TSE (DESIGN.md, `mandate-plan`)
+.planoFonte {
+  margin-top: var(--bd-space-md);
+}
+
+.planoContagem {
+  display: flex;
+  align-items: baseline;
+  gap: var(--bd-space-sm);
+  margin: var(--bd-space-md) 0;
+}
+
+.planoLista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: var(--bd-space-md);
+}
+
+.planoCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--bd-space-md);
+  padding: var(--bd-space-md);
+  background: var(--bd-color-surface-1);
+  border-left: 3px solid var(--bd-color-ink);
+}
+
+.planoTrecho {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+.planoRodape {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bd-space-sm);
+  font-size: 13px;
+  color: var(--bd-color-ink-muted);
+  a.selo {
+    color: var(--bd-color-ink);
+    text-decoration: none;
+    &:hover {
+      background: var(--bd-color-canvas);
+    }
+  }
+}
+
+.cartao:target {
+  outline: 2px solid var(--bd-color-ink);
+  outline-offset: 4px;
+}
+
+// Um indicador em todos os mandatos (/governos; DESIGN.md, `chart-panel` e `mandate-band`)
+.todos {
+  margin-top: var(--bd-space-md);
+  font-variant-numeric: tabular-nums;
+}
+
+.todosEscolha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bd-space-xs);
+  margin-bottom: var(--bd-space-md);
+  // no celular, uma linha que rola para o lado (a página continua rolando na vertical)
+  @media (max-width: #{$tablet - 1px}) {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-right: calc(-1 * var(--bd-space-md));
+    padding-right: var(--bd-space-md);
+    button {
+      flex: none;
+    }
+  }
+}
+
+.todosBotao {
+  padding: 6px 12px;
+  border: 1px solid var(--bd-color-hairline-strong);
+  background: var(--bd-color-canvas);
+  color: var(--bd-color-ink);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  &:hover {
+    background: var(--bd-color-surface-1);
+  }
+  &[aria-pressed="true"] {
+    background: var(--bd-color-ink);
+    border-color: var(--bd-color-ink);
+    color: var(--bd-color-canvas);
+  }
+}
+
+.todosSub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bd-space-sm);
+  margin-bottom: var(--bd-space-sm);
+  p {
+    margin: 0;
+    color: var(--bd-color-ink-muted);
+    font-size: 14px;
+  }
+}
+
+.todosModo {
+  display: inline-flex;
+  border: 1px solid var(--bd-color-ink);
+  button {
+    padding: 4px 14px;
+    border: 0;
+    background: var(--bd-color-canvas);
+    color: var(--bd-color-ink);
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    &[aria-pressed="true"] {
+      background: var(--bd-color-ink);
+      color: var(--bd-color-canvas);
+    }
+  }
+}
+
+.todosArea {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--bd-space-xs);
+}
+
+.todosEixoY {
+  position: relative;
+  min-width: 2.5rem;
+  span {
+    position: absolute;
+    right: 0;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: var(--bd-color-ink-muted);
+    white-space: nowrap;
+  }
+}
+
+.todosGrafico {
+  position: relative;
+  border-bottom: 1px solid var(--bd-color-ink);
+}
+
+.todosFaixa {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: var(--bd-color-canvas);
+  border-left: 1px solid var(--bd-color-hairline);
+  &[data-par] {
+    background: var(--bd-color-chart-band);
+  }
+}
+
+.todosRotulo {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-decoration: none;
+  color: var(--bd-color-ink-muted);
+  font-size: 11px;
+  white-space: nowrap;
+  z-index: 3;
+  img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center 20%;
+  }
+  &:hover img,
+  &:focus-visible img {
+    outline: 2px solid var(--bd-color-ink);
+    outline-offset: 1px;
+  }
+  @media (max-width: #{$tablet - 1px}) {
+    img {
+      width: 22px;
+      height: 22px;
+    }
+    span {
+      display: none;
+    }
+  }
+}
+
+.todosGrade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px solid var(--bd-color-hairline);
+  pointer-events: none;
+  &[data-zero] {
+    border-top: 1px dashed var(--bd-color-chart-reference);
+  }
+}
+
+.todosSvg {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.todosToque {
+  position: absolute;
+  top: 48px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  cursor: crosshair;
+  z-index: 2;
+}
+
+.todosEtiqueta {
+  position: absolute;
+  top: 54px;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 3px 8px;
+  background: var(--bd-color-ink);
+  color: var(--bd-color-canvas);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 4;
+  span {
+    display: block;
+    font-weight: 400;
+  }
+}
+
+.todosAcoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--bd-space-md);
+  details {
+    flex: 1 1 20rem;
+    padding: var(--bd-space-sm) 0;
+  }
+  summary {
+    cursor: pointer;
+    color: var(--bd-color-link);
+  }
+  .verMais {
+    margin: 0;
+  }
+}
+
+.todosTabela {
+  margin-top: var(--bd-space-sm);
+  border-collapse: collapse;
+  font-size: 14px;
+  caption {
+    text-align: left;
+    color: var(--bd-color-ink-muted);
+    padding-bottom: var(--bd-space-xs);
+  }
+  th,
+  td {
+    padding: 4px 16px 4px 0;
+    border-bottom: 1px solid var(--bd-color-hairline);
+    text-align: left;
+  }
+  td:nth-child(2) {
+    text-align: right;
+  }
+}

@@ -1,5 +1,5 @@
 """Ponto de entrada: `uv run python -m pipelines.run todos` (ou `ipca`, `series`, `eleicoes`,
-`noticias`, `agenda`, `regional`, `arrecadacao`, `focus`, `impostos`, `atrasos`, `auditar`).
+`noticias`, `agenda`, `regional`, `arrecadacao`, `focus`, `impostos`, `governos`, `atrasos`, `auditar`).
 
 `atrasos` não coleta nada: confere se algum indicador ou mapa passou do prazo de
 divulgação e sai com erro se passou (workflow .github/workflows/atrasos.yml).
@@ -31,6 +31,7 @@ from pipelines.jobs import (
     auditar,
     eleicoes,
     focus,
+    governos,
     impostos,
     ipca,
     noticias,
@@ -50,6 +51,7 @@ def todos(conn, store, registry) -> Report:
         ("arrecadação", arrecadacao.run),
         ("Focus", focus.run),
         ("impostos", impostos.run),
+        ("governos", governos.run),
     ):
         try:
             report.merge(job(conn, store, registry))
@@ -69,6 +71,7 @@ JOBS = {
     "arrecadacao": arrecadacao.run,
     "focus": focus.run,
     "impostos": impostos.run,
+    "governos": governos.run,
     "atrasos": atrasos.run,
     "auditar": auditar.run,
     "todos": todos,
