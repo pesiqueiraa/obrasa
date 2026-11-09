@@ -21,12 +21,15 @@ import {
   getNormasDoMandato,
   getPlanoDoMandato,
   getPosseEFim,
+  getSlugsDoConfig,
   type Mandato,
   type Prova,
 } from "@/lib/governos";
 
+// Do config, não do banco: banco sem mandato conferido não pode derrubar o build (ver
+// getSlugsDoConfig). A página confere no banco e responde 404 ao mandato incompleto.
 export async function generateStaticParams() {
-  return (await getMandatos()).map((m) => ({ mandato: m.slug }));
+  return (await getSlugsDoConfig()).map((mandato) => ({ mandato }));
 }
 
 export async function generateMetadata(props: PageProps<"/governos/[mandato]">): Promise<Metadata> {

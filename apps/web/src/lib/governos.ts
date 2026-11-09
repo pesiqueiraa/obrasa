@@ -60,6 +60,17 @@ async function getMandatosDoBanco(): Promise<Mandato[]> {
   }));
 }
 
+/**
+ * Slugs de todos os mandatos de config/governos.yaml, sem depender do banco. Servem para o
+ * build gerar as páginas: com Cache Components, `generateStaticParams` não pode voltar vazio,
+ * e o banco fica sem mandatos quando a conferência do job falha (ou antes da primeira coleta).
+ * Mandato que não estiver completo no banco cai em notFound() na própria página.
+ */
+export async function getSlugsDoConfig(): Promise<string[]> {
+  const cfg = parseYaml(await readFile(join(configDir(), "governos.yaml"), "utf8")) as { mandatos: { slug: string }[] };
+  return cfg.mandatos.map((m) => m.slug);
+}
+
 async function indicadoresCfg(): Promise<IndicadorCfg[]> {
   const cfg = parseYaml(await readFile(join(configDir(), "governos.yaml"), "utf8")) as { indicadores: IndicadorCfg[] };
   return cfg.indicadores;
